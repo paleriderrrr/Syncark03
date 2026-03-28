@@ -41,6 +41,12 @@ func _run() -> void:
 	_assert(editor.get_node_or_null("Margin/RootVBox/BottomInventoryPanel/InventoryDropZone") != null, "Inventory drop zone should exist")
 	_assert(editor.get_node_or_null("Margin/RootVBox/BottomInventoryPanel/InventoryDropZone/InventoryStrip") != null, "Bottom inventory strip should exist")
 	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardFrame/BoardCenter/BentoBoardView") != null, "Board should be centered inside the editor area")
+	await process_frame
+	await process_frame
+	var viewport_rect := Rect2(Vector2.ZERO, editor.get_viewport().get_visible_rect().size)
+	_assert(_rect_inside_viewport(editor.get_node("Margin/RootVBox/StatusPanel").get_global_rect(), viewport_rect), "Status panel should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("Margin/RootVBox/TopMarketPanel").get_global_rect(), viewport_rect), "Top market panel should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("Margin/RootVBox/BottomInventoryPanel").get_global_rect(), viewport_rect), "Bottom inventory panel should remain inside the viewport")
 	run_state.current_gold = 999
 	run_state.current_market_index = 4
 	for _i in range(10):
@@ -68,3 +74,6 @@ func _assert(condition: bool, message: String) -> void:
 	if not condition:
 		_failures.append(message)
 		push_error(message)
+
+func _rect_inside_viewport(rect: Rect2, viewport_rect: Rect2) -> bool:
+	return rect.position.x >= viewport_rect.position.x and rect.position.y >= viewport_rect.position.y and rect.end.x <= viewport_rect.end.x and rect.end.y <= viewport_rect.end.y

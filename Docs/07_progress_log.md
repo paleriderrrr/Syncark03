@@ -225,3 +225,10 @@
 - Blockers: No automated blocker remains after the second editor-height reduction pass.
 - Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Docs/07_progress_log.md
 - Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup and `ui_runner.gd` clean exit after the second layout-budget reduction pass.
+### 2026-03-29 06:20
+- Completed: Rebuilt the editor layout budget around fixed top and bottom bands plus a remaining-height main area, removed the oversized static minimum sizes that were still pushing the page past `1920x1080`, and changed the board to compute its `8x6` cell size from the live center-area dimensions.
+- In Progress: Manual confirmation that the fixed `16:9` editor now keeps the status strip, market band, center board, and inventory band simultaneously inside the visible frame.
+- Next: Reopen the project in Godot at `1920x1080` and verify that the top status strip, top market, center board, and bottom inventory all remain fully visible at once.
+- Blockers: No automated blocker remains for the out-of-frame editor issue after the layout-budget rebuild.
+- Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for `ui_runner.gd` and `campaign_runner.gd` after the layout-budget rebuild and dynamic board-size implementation.

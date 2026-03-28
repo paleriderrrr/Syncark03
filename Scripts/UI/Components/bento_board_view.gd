@@ -25,7 +25,15 @@ var _hover_cells: Array[Vector2i] = []
 var _hover_valid: bool = false
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(GRID_WIDTH * cell_pixel_size, GRID_HEIGHT * cell_pixel_size)
+	_apply_cell_metrics()
+
+func set_cell_pixel_size(new_size: int) -> void:
+	var clamped_size: int = max(new_size, 16)
+	if clamped_size == cell_pixel_size:
+		return
+	cell_pixel_size = clamped_size
+	_apply_cell_metrics()
+	queue_redraw()
 
 func set_food_textures(texture_lookup: Dictionary) -> void:
 	_texture_lookup = texture_lookup.duplicate(false)
@@ -37,8 +45,11 @@ func refresh_board(character_state: Dictionary, preview_cells: Array[Vector2i], 
 	_food_lookup = food_lookup
 	if not texture_lookup.is_empty():
 		_texture_lookup = texture_lookup.duplicate(false)
-	custom_minimum_size = Vector2(GRID_WIDTH * cell_pixel_size, GRID_HEIGHT * cell_pixel_size)
+	_apply_cell_metrics()
 	queue_redraw()
+
+func _apply_cell_metrics() -> void:
+	custom_minimum_size = Vector2(GRID_WIDTH * cell_pixel_size, GRID_HEIGHT * cell_pixel_size)
 
 func _draw() -> void:
 	var expansion_lookup: Dictionary = {}
