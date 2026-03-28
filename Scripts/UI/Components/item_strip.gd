@@ -34,14 +34,3 @@ func get_entry_count() -> int:
 
 func _on_card_clicked(entry: Dictionary) -> void:
 	entry_clicked.emit(entry)
-
-func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	if not (data is Dictionary):
-		return false
-	var payload: Dictionary = data
-	return accepted_sources.has(payload.get("source", &""))
-
-func _drop_data(_at_position: Vector2, data: Variant) -> void:
-	if not (data is Dictionary):
-		return
-	strip_drop_requested.emit(data)

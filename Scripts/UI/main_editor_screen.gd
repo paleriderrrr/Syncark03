@@ -62,22 +62,22 @@ func _ready() -> void:
 	_refresh()
 
 func _apply_static_texts() -> void:
-	top_market_strip.set_title("市场")
-	inventory_strip.set_title("共享仓库")
-	market_refresh_button.text = "刷新市场"
-	clear_selection_button.text = "清除选择"
-	restore_button.text = "恢复上次战前方案"
-	tab_buttons[&"warrior"].text = "战士"
-	tab_buttons[&"hunter"].text = "猎人"
-	tab_buttons[&"mage"].text = "法师"
+	top_market_strip.set_title("Market")
+	inventory_strip.set_title("Shared Inventory")
+	market_refresh_button.text = "Refresh Market"
+	clear_selection_button.text = "Clear Selection"
+	restore_button.text = "Restore Previous Loadout"
+	tab_buttons[&"warrior"].text = "Warrior"
+	tab_buttons[&"hunter"].text = "Hunter"
+	tab_buttons[&"mage"].text = "Mage"
 
 func _refresh() -> void:
 	var run_state: Node = _run_state()
 	_role_names = run_state.get_character_display_names()
-	gold_label.text = "金币: %d" % run_state.current_gold
+	gold_label.text = "Gold: %d" % run_state.current_gold
 	route_label.text = _build_route_label(run_state)
-	node_label.text = "当前节点: %s" % _display_name_for_node(run_state.get_current_node_type())
-	risk_label.text = "危险度: %s" % _estimate_risk_label()
+	node_label.text = "Current Node: %s" % _display_name_for_node(run_state.get_current_node_type())
+	risk_label.text = "Risk: %s" % _estimate_risk_label()
 	selected_item_label.text = run_state.get_selected_item_summary()
 	action_button.text = run_state.get_action_button_text()
 	market_refresh_button.disabled = run_state.get_current_node_type() != run_state.NODE_MARKET
@@ -90,7 +90,7 @@ func _refresh() -> void:
 	_refresh_synergy_panel()
 
 func _refresh_selected_role(character_id: StringName) -> void:
-	selected_role_label.text = "当前角色: %s" % String(_role_names.get(character_id, String(character_id)))
+	selected_role_label.text = "Current Role: %s" % String(_role_names.get(character_id, String(character_id)))
 	for role_id in tab_buttons.keys():
 		tab_buttons[role_id].disabled = role_id == character_id
 
@@ -156,12 +156,12 @@ func _refresh_board() -> void:
 func _refresh_next_monster_panel() -> void:
 	var summary: Dictionary = _run_state().get_next_monster_summary()
 	if summary.is_empty():
-		next_monster_name_label.text = "未知"
+		next_monster_name_label.text = "Unknown"
 		next_monster_stats_label.text = "-"
 		next_monster_skill_label.text = "-"
 		return
 	next_monster_name_label.text = "%s / %s" % [String(summary.get("display_name", "")), String(summary.get("category_name", ""))]
-	next_monster_stats_label.text = "HP %d  ATK %.1f  间隔 %.1fs" % [
+	next_monster_stats_label.text = "HP %d  ATK %.1f  Interval %.1fs" % [
 		int(summary.get("hp", 0)),
 		float(summary.get("attack", 0.0)),
 		float(summary.get("attack_interval", 0.0)),
@@ -181,13 +181,13 @@ func _build_route_label(run_state: Node) -> String:
 func _display_name_for_node(node_type: StringName) -> String:
 	match node_type:
 		&"market":
-			return "市场"
+			return "Market"
 		&"battle":
-			return "战斗"
+			return "Battle"
 		&"rest":
-			return "休整"
+			return "Rest"
 		&"boss_battle":
-			return "Boss 战"
+			return "Boss Battle"
 		_:
 			return String(node_type)
 
@@ -292,18 +292,18 @@ func _estimate_risk_label() -> String:
 			total_power += food.attack_speed_percent / 10.0
 	var monster: MonsterDefinition = run_state.get_current_monster_definition()
 	if monster == null:
-		return "未知"
+		return "Unknown"
 	var monster_power: float = monster.base_attack * 2.0 + monster.base_hp / 6.0
 	var ratio: float = total_power / maxf(monster_power, 1.0)
 	if ratio >= 1.8:
-		return "碾压"
+		return "Crush"
 	if ratio >= 1.2:
-		return "稳定"
+		return "Stable"
 	if ratio >= 0.85:
-		return "胶着"
+		return "Close"
 	if ratio >= 0.6:
-		return "危险"
-	return "送命"
+		return "Risky"
+	return "Fatal"
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:

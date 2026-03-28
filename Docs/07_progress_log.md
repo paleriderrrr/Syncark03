@@ -141,3 +141,17 @@
 - Blockers: No automated blocker remains for the dedicated inventory drop-zone implementation.
 - Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scripts/UI/Components/inventory_drop_zone.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
 - Notes: Plain headless launch exits cleanly; `editor_dragdrop_runner.gd` and `campaign_runner.gd` pass under Godot 4.6.1 after introducing the dedicated inventory drop zone. `ui_runner.gd` still exits cleanly without reliably printing a visible `PASS` line in this environment.
+### 2026-03-29 04:05
+- Completed: Finalized the editor drag-flow correction round by making the shared-inventory strip a true display-only foreground while its cards forward accepted drops into the dedicated `InventoryDropZone`, removing the on-screen rotate button in favor of `R`-key rotation, rebuilding the main editor scene with clean Chinese labels for the current node and NODE route header, and enlarging the horizontal `8x6` board so it fills the editor area more fully.
+- In Progress: Manual confirmation in the Godot editor that market-to-inventory drag no longer shows the forbidden cursor when released above inventory cards and that inventory-to-board drag feels correct under real mouse input.
+- Next: Reopen the project in Godot and verify these exact paths in one pass: drag a market package onto empty inventory area, drag a market package onto an inventory card, drag one stacked inventory item onto the board, press `R` while a selected item is active to rotate it, and confirm the header now reads `NODE x / y` and `当前节点` without garbling.
+- Blockers: No automated blocker remains for the drag-chain, hotkey-rotation, board-scaling, and node-text correction round.
+- Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scripts/UI/Components/item_strip.gd, Scripts/UI/Components/inventory_drop_zone.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `editor_dragdrop_runner.gd`, and `campaign_runner.gd`. `ui_runner.gd` still exits cleanly without consistently printing a visible pass line in this environment.
+### 2026-03-29 04:15
+- Completed: Cleared the final stale `ItemStrip` interface remnants by removing the old strip-local drop handlers that still referenced deleted `accepted_sources` and `strip_drop_requested` symbols after the inventory-drop-zone refactor.
+- In Progress: Manual editor-side confirmation that the project now opens without the reported parse errors and that drag/drop still behaves correctly.
+- Next: Reopen the project in Godot and verify that the editor loads cleanly, then repeat one inventory-to-board drag and one market-to-inventory drag.
+- Blockers: No automated blocker remains for the reported `ItemStrip` compile errors.
+- Files Touched: Scripts/UI/Components/item_strip.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup and `editor_dragdrop_runner.gd` after removing the stale `ItemStrip` drop API remnants.

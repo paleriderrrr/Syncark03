@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/item_strip.tscn" id="4_strip"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/synergy_panel.tscn" id="5_synergy"]
-[ext_resource type="Texture2D" path="res://Art/UI/鑳屾櫙.png" id="6_bg"]
+[ext_resource type="Texture2D" path="res://Art/UI/背景.png" id="6_bg"]
 [ext_resource type="Script" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
 
 [node name="MainEditorScreen" type="Control"]
@@ -56,7 +56,7 @@ theme_override_constants/separation = 14
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "金币: 0"
+text = "Gold: 0"
 
 [node name="RouteLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
 unique_name_in_owner = true
@@ -68,13 +68,13 @@ text = "NODE"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "当前节点"
+text = "Current Node"
 
 [node name="RiskLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "危险度"
+text = "Risk"
 
 [node name="TopMarketPanel" type="PanelContainer" parent="Margin/RootVBox"]
 layout_mode = 2
@@ -94,7 +94,7 @@ size_flags_horizontal = 3
 [node name="MarketRefreshButton" type="Button" parent="Margin/RootVBox/TopMarketPanel/TopMarketVBox/TopMarketActions"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "刷新市场"
+text = "Refresh Market"
 
 [node name="TopMarketStrip" parent="Margin/RootVBox/TopMarketPanel/TopMarketVBox" instance=ExtResource("4_strip")]
 unique_name_in_owner = true
@@ -120,30 +120,30 @@ alignment = 1
 
 [node name="RoleTitle" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 layout_mode = 2
-text = "角色标签"
+text = "Role Tabs"
 
 [node name="SelectedRoleLabel" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "当前角色"
+text = "Current Role"
 
 [node name="WarriorTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(160, 72)
-text = "战士"
+text = "Warrior"
 
 [node name="HunterTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(160, 72)
-text = "猎人"
+text = "Hunter"
 
 [node name="MageTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(160, 72)
-text = "法师"
+text = "Mage"
 
 [node name="CenterPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox"]
 layout_mode = 2
@@ -158,13 +158,13 @@ theme_override_constants/separation = 10
 [node name="BoardTitle" type="Label" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "桌面编辑区"
+text = "Board Editor"
 
 [node name="SelectedItemLabel" type="Label" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 horizontal_alignment = 1
-text = "未选择物品"
+text = "No Item Selected"
 
 [node name="BoardControls" type="HBoxContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
 layout_mode = 2
@@ -174,7 +174,7 @@ alignment = 1
 [node name="ClearSelectionButton" type="Button" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardControls"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "清除选择"
+text = "Clear Selection"
 
 [node name="BoardFrame" type="PanelContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
 layout_mode = 2
@@ -212,7 +212,7 @@ theme_override_constants/separation = 4
 
 [node name="NextMonsterTitle" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel/NextMonsterVBox"]
 layout_mode = 2
-text = "下一个怪物"
+text = "Next Monster"
 
 [node name="NextMonsterNameLabel" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel/NextMonsterVBox"]
 unique_name_in_owner = true
@@ -243,12 +243,12 @@ theme_override_constants/separation = 8
 [node name="ActionButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/RightButtons"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "继续"
+text = "Continue"
 
 [node name="RestoreButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/RightButtons"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "恢复上次战前方案"
+text = "Restore Previous Loadout"
 
 [node name="BottomInventoryPanel" type="PanelContainer" parent="Margin/RootVBox"]
 layout_mode = 2
