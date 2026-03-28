@@ -15,6 +15,7 @@ const TEX_WANTED := preload("res://Art/UI/Slices/ui1_wanted_poster.png")
 @onready var route_label: Label = %RouteLabel
 @onready var node_label: Label = %NodeLabel
 @onready var risk_label: Label = %RiskLabel
+@onready var status_panel: PanelContainer = %StatusPanel
 @onready var selected_role_label: Label = %SelectedRoleLabel
 @onready var selected_item_label: Label = %SelectedItemLabel
 @onready var board_view: BentoBoardView = %BentoBoardView
@@ -97,22 +98,45 @@ func _apply_surface_art() -> void:
 	apply_panel_texture(board_frame, TEX_BOARD_WOOD, 56)
 	apply_panel_texture(right_panel, TEX_RIGHT_BOARD, 36)
 	apply_panel_texture(next_monster_panel, TEX_RIGHT_BOARD, 36)
+	_apply_status_panel_style()
 	apply_button_texture(market_refresh_button, TEX_REFRESH, 24)
 	apply_button_texture(action_button, TEX_DEPART, 32)
 	apply_button_texture(tab_buttons[&"warrior"], TEX_ROLE_TOP, 30)
 	apply_button_texture(tab_buttons[&"hunter"], TEX_ROLE_MID, 30)
 	apply_button_texture(tab_buttons[&"mage"], TEX_ROLE_BOTTOM, 30)
 	wanted_poster_rect.texture = TEX_WANTED
-	market_refresh_button.custom_minimum_size = Vector2(164, 76)
-	action_button.custom_minimum_size = Vector2(220, 96)
+	market_refresh_button.custom_minimum_size = Vector2(140, 58)
+	action_button.custom_minimum_size = Vector2(200, 82)
 	for role_button_variant in tab_buttons.values():
 		var role_button: Button = role_button_variant
-		role_button.custom_minimum_size = Vector2(188, 96)
+		role_button.custom_minimum_size = Vector2(164, 70)
 	_apply_button_font_color(market_refresh_button, Color(0.96, 0.96, 0.96))
 	_apply_button_font_color(action_button, Color(0.46, 0.11, 0.08))
 	_apply_button_font_color(tab_buttons[&"warrior"], Color(0.12, 0.12, 0.12))
 	_apply_button_font_color(tab_buttons[&"hunter"], Color(0.12, 0.12, 0.12))
 	_apply_button_font_color(tab_buttons[&"mage"], Color(0.12, 0.12, 0.12))
+
+func _apply_status_panel_style() -> void:
+	status_panel.z_index = 50
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.04, 0.07, 0.1, 0.92)
+	panel_style.corner_radius_top_left = 18
+	panel_style.corner_radius_top_right = 18
+	panel_style.corner_radius_bottom_right = 18
+	panel_style.corner_radius_bottom_left = 18
+	panel_style.border_width_left = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_color = Color(0.84, 0.78, 0.62, 0.95)
+	panel_style.content_margin_left = 16
+	panel_style.content_margin_top = 6
+	panel_style.content_margin_right = 16
+	panel_style.content_margin_bottom = 6
+	status_panel.add_theme_stylebox_override("panel", panel_style)
+	for label in [gold_label, route_label, node_label, risk_label]:
+		label.add_theme_color_override("font_color", Color(0.97, 0.93, 0.82))
+		label.add_theme_font_size_override("font_size", 17)
 
 func apply_panel_texture(panel: PanelContainer, texture: Texture2D, margin: int) -> void:
 	var style := StyleBoxTexture.new()

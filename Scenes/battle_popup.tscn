@@ -5,7 +5,7 @@
 [node name="BattlePopup" type="PopupPanel"]
 unique_name_in_owner = true
 initial_position = 1
-size = Vector2i(1280, 720)
+size = Vector2i(1500, 620)
 script = ExtResource("1_popup")
 
 [node name="Margin" type="MarginContainer" parent="."]
@@ -111,7 +111,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 scroll_following = true
-bbcode_enabled = false
+bbcode_enabled = true
 
 [node name="ResultLabel" type="Label" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox"]
 unique_name_in_owner = true

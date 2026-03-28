@@ -3,6 +3,7 @@ class_name BattlePopup
 
 const PLAYBACK_SPEED := 6.0
 const MAX_EVENT_DELAY := 0.5
+const MAX_VISIBLE_LOG_LINES := 8
 
 @onready var title_label: Label = %TitleLabel
 @onready var route_label: Label = %BattleRouteLabel
@@ -17,6 +18,7 @@ const MAX_EVENT_DELAY := 0.5
 @onready var close_button: Button = %CloseBattleButton
 
 var _is_playing: bool = false
+var _recent_lines: Array[String] = []
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -33,7 +35,7 @@ func open_battle() -> void:
 	var run_state: Node = _run_state()
 	var report: Dictionary = CombatEngine.simulate(run_state)
 	_prepare_playback(report)
-	popup_centered(Vector2i(1280, 720))
+	popup_centered(Vector2i(1500, 620))
 	await _play_report(report)
 	run_state.apply_battle_report(report)
 	_render_final_report(report)
@@ -45,6 +47,7 @@ func _prepare_playback(report: Dictionary) -> void:
 	route_label.text = _run_state().get_route_label()
 	playback_time_label.text = "Time 0.0s"
 	result_label.text = "Timeline playback running..."
+	_recent_lines.clear()
 	_fill_party_labels(report.get("characters", []), true)
 	monster_name_label.text = String(report.get("monster_name", "Unknown"))
 	monster_hp_label.text = "HP %.1f / %.1f" % [float(report.get("monster_max_hp", 0.0)), float(report.get("monster_max_hp", 0.0))]
@@ -61,7 +64,7 @@ func _play_report(report: Dictionary) -> void:
 			await get_tree().create_timer(wait_seconds).timeout
 			playback_time_label.text = "Time %.1fs" % event_time
 			previous_time = event_time
-		battle_log.append_text("%s\n" % line)
+		_append_recent_log_line(line)
 		has_events = true
 	if not has_events:
 		await get_tree().create_timer(0.25).timeout
@@ -94,6 +97,19 @@ func _fill_party_labels(characters: Array, pending: bool) -> void:
 		party_meta_label.text = "Party data loaded.\nWaiting for event playback."
 	else:
 		party_meta_label.text = "Alive Heroes: %d / %d" % [alive_count, characters.size()]
+
+func _append_recent_log_line(line: String) -> void:
+	_recent_lines.append(line)
+	while _recent_lines.size() > MAX_VISIBLE_LOG_LINES:
+		_recent_lines.remove_at(0)
+	var rendered_lines: Array[String] = []
+	for index in range(_recent_lines.size()):
+		var alpha: float = lerpf(0.28, 1.0, float(index + 1) / float(_recent_lines.size()))
+		var color_hex: String = Color(0.95, 0.95, 0.95, alpha).to_html()
+		rendered_lines.append("[color=#%s]%s[/color]" % [color_hex, _recent_lines[index]])
+	battle_log.bbcode_enabled = true
+	battle_log.clear()
+	battle_log.append_text("\n".join(rendered_lines))
 
 func _extract_log_time(line: String) -> float:
 	var close_index: int = line.find("s]")

@@ -11,13 +11,20 @@ config_version=5
 [application]
 
 config/name="Syncark03"
+run/main_scene="res://Scenes/title_screen.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
-run/main_scene="res://Scenes/title_screen.tscn"
 
 [autoload]
 
 RunState="*res://Scripts/Autoload/run_state.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/resizable=false
+window/stretch/mode="canvas_items"
 
 [physics]
 

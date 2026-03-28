@@ -197,3 +197,31 @@
 - Blockers: No automated blocker remains for the title-page-only redesign.
 - Files Touched: Scenes/title_screen.tscn, Scripts/UI/title_screen.gd, Scripts/Tests/title_runner.gd, Docs/07_progress_log.md
 - Notes: Godot 4.6.1 headless launch and the dedicated `title_runner.gd` scene-load test pass after the title-page redesign.
+### 2026-03-29 05:20
+- Completed: Forced the top editor status strip into a high-contrast top-layer presentation by styling `StatusPanel` with an explicit dark translucent frame and larger bright label text, and updated the battle popup so it now uses a wider horizontal rectangle while the event feed only shows the latest few lines with older entries fading out.
+- In Progress: Manual acceptance of the new top-strip visibility and battle-log readability during real-time playback.
+- Next: Reopen the project in Godot and verify that Gold / NODE / Current Node / Risk are now clearly visible above the rest of the editor, then run one battle to confirm the center event feed keeps only recent lines and older lines fade.
+- Blockers: No automated blocker remains for the latest status-visibility or battle-feed presentation update.
+- Files Touched: Scripts/UI/main_editor_screen.gd, Scenes/main_editor_screen.tscn, Scripts/UI/battle_popup.gd, Scenes/battle_popup.tscn, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `campaign_runner.gd`, and `ui_runner.gd` clean exit after the top-status styling and battle-feed update.
+### 2026-03-29 05:40
+- Completed: Replaced the interrupted portrait migration with a fixed `16:9` landscape baseline by setting the project viewport to `1920x1080`, restoring the main editor to a horizontal three-column layout that fits within that width, and resizing the battle popup back to a wide horizontal rectangle that remains inside the landscape frame.
+- In Progress: Manual confirmation that no editor or battle data now extends beyond the visible frame at the fixed `16:9` baseline.
+- Next: Reopen the project in Godot and verify the main editor, top status strip, and battle popup all remain fully inside the `1920x1080` visible area.
+- Blockers: No automated blocker remains for the requested fixed `16:9` landscape ratio change.
+- Files Touched: project.godot, Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scenes/battle_popup.tscn, Scripts/UI/battle_popup.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `campaign_runner.gd`, and `ui_runner.gd` clean exit after reverting to the fixed landscape baseline.
+### 2026-03-29 05:50
+- Completed: Tightened the vertical layout budget for the fixed `16:9` editor screen by reducing the top market height, bottom inventory height, role-tab button size, and board cell size so the combined page no longer exceeds the available `1080`-pixel height budget.
+- In Progress: Manual confirmation that the top status strip, top market, and bottom inventory now all remain inside the visible frame on the fixed landscape baseline.
+- Next: Reopen the project in Godot at the fixed `1920x1080` baseline and verify the top status strip, market row, and bottom inventory are fully visible together with the board area.
+- Blockers: No automated blocker remains for the reported out-of-frame editor panels.
+- Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup and `ui_runner.gd` clean exit after reducing the editor layout height budget.
+### 2026-03-29 06:00
+- Completed: Applied a second, more aggressive height-budget reduction for the fixed `16:9` editor by shrinking outer margins, inter-section spacing, status-row height, top-market height, bottom-inventory height, role-button height, action-button height, and board cell size.
+- In Progress: Manual confirmation that the top and bottom panels are now both inside the visible frame on the fixed landscape baseline.
+- Next: Reopen the project in Godot and recheck the top status strip, top market, center board, and bottom inventory together inside the `1920x1080` frame.
+- Blockers: No automated blocker remains after the second editor-height reduction pass.
+- Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup and `ui_runner.gd` clean exit after the second layout-budget reduction pass.
