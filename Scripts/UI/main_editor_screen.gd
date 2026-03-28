@@ -7,32 +7,28 @@ extends Control
 @onready var selected_role_label: Label = %SelectedRoleLabel
 @onready var selected_item_label: Label = %SelectedItemLabel
 @onready var board_view: BentoBoardView = %BentoBoardView
-@onready var market_list: ItemList = %MarketList
-@onready var inventory_list: ItemList = %InventoryList
-@onready var pending_expansion_list: ItemList = %PendingExpansionList
-@onready var reroll_button: Button = %RerollButton
-@onready var buy_button: Button = %BuyButton
+@onready var top_market_strip: Control = %TopMarketStrip
+@onready var market_refresh_button: Button = %MarketRefreshButton
+@onready var inventory_drop_zone: InventoryDropZone = %InventoryDropZone
+@onready var inventory_strip: Control = %InventoryStrip
 @onready var rotate_button: Button = %RotateButton
 @onready var clear_selection_button: Button = %ClearSelectionButton
 @onready var restore_button: Button = %RestoreButton
 @onready var action_button: Button = %ActionButton
+@onready var next_monster_name_label: Label = %NextMonsterNameLabel
+@onready var next_monster_stats_label: Label = %NextMonsterStatsLabel
+@onready var next_monster_skill_label: Label = %NextMonsterSkillLabel
+@onready var synergy_panel: Control = %SynergyPanel
 @onready var battle_popup: BattlePopup = %BattlePopup
-@onready var left_vbox: VBoxContainer = $Margin/RootVBox/MainHBox/LeftPanel/LeftVBox
-@onready var board_title: Label = $Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardTitle
-@onready var inventory_title: Label = $Margin/RootVBox/InventoryPanel/InventoryVBox/InventoryTitle
-@onready var market_title: Label = $Margin/RootVBox/MainHBox/RightPanel/RightVBox/MarketTitle
-@onready var role_title: Label = $Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/RoleTitle
-@onready var pending_expansion_title: Label = $Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/PendingExpansionTitle
+
 @onready var tab_buttons: Dictionary = {
 	&"warrior": %WarriorTabButton,
 	&"hunter": %HunterTabButton,
 	&"mage": %MageTabButton,
 }
 
-var _market_offer_ids: Array[StringName] = []
-var _inventory_ids: Array[StringName] = []
-var _pending_expansion_ids: Array[StringName] = []
-var _role_preview_views: Dictionary = {}
+var _food_textures: Dictionary = {}
+var _role_names: Dictionary = {}
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -40,18 +36,21 @@ func _run_state() -> Node:
 func _ready() -> void:
 	var run_state: Node = _run_state()
 	run_state.ensure_initialized()
+	_food_textures = FoodVisuals.build_food_texture_lookup()
+	_role_names = run_state.get_character_display_names()
 	_apply_static_texts()
-	_build_role_previews()
 	run_state.state_changed.connect(_refresh)
 	run_state.selected_character_changed.connect(_on_selected_character_changed)
 	run_state.selected_item_changed.connect(_refresh)
 	run_state.battle_requested.connect(_on_battle_requested)
 	board_view.cell_clicked.connect(_on_board_cell_clicked)
-	market_list.item_selected.connect(_on_market_selected)
-	inventory_list.item_selected.connect(_on_inventory_selected)
-	pending_expansion_list.item_selected.connect(_on_pending_expansion_selected)
-	reroll_button.pressed.connect(_on_reroll_pressed)
-	buy_button.pressed.connect(_on_buy_pressed)
+	board_view.cell_right_clicked.connect(_on_board_cell_right_clicked)
+	board_view.board_drop_requested.connect(_on_board_drop_requested)
+	top_market_strip.entry_clicked.connect(_on_market_entry_clicked)
+	market_refresh_button.pressed.connect(_on_market_refresh_pressed)
+	inventory_strip.entry_clicked.connect(_on_inventory_entry_clicked)
+	inventory_drop_zone.drop_received.connect(_on_inventory_strip_drop_requested)
+	inventory_drop_zone.accepted_sources = [&"market_offer", &"board_food", &"market_expansion"]
 	rotate_button.pressed.connect(func() -> void: _run_state().rotate_selected_item())
 	clear_selection_button.pressed.connect(func() -> void: _run_state().clear_selection())
 	restore_button.pressed.connect(_on_restore_pressed)
@@ -59,142 +58,192 @@ func _ready() -> void:
 	tab_buttons[&"warrior"].pressed.connect(func() -> void: _run_state().select_character(&"warrior"))
 	tab_buttons[&"hunter"].pressed.connect(func() -> void: _run_state().select_character(&"hunter"))
 	tab_buttons[&"mage"].pressed.connect(func() -> void: _run_state().select_character(&"mage"))
+	board_view.set_food_textures(_food_textures)
 	_refresh()
 
 func _apply_static_texts() -> void:
-	role_title.text = "角色饭盒"
-	pending_expansion_title.text = "待放置拓展"
-	board_title.text = "当前角色饭盒编辑"
-	inventory_title.text = "共享仓库"
-	market_title.text = "市场"
-	selected_role_label.text = "当前编辑角色"
-	selected_item_label.text = "未选择物品"
+	top_market_strip.set_title("市场")
+	inventory_strip.set_title("共享仓库")
+	market_refresh_button.text = "刷新市场"
 	rotate_button.text = "旋转"
 	clear_selection_button.text = "清除选择"
-	restore_button.text = "恢复上一战方案"
-	buy_button.text = "购买选中商品"
-	reroll_button.text = "刷新商店"
+	restore_button.text = "恢复上次战前方案"
 	tab_buttons[&"warrior"].text = "战士"
 	tab_buttons[&"hunter"].text = "猎人"
 	tab_buttons[&"mage"].text = "法师"
 
-func _build_role_previews() -> void:
-	if not _role_preview_views.is_empty():
-		return
-	var order: Array[StringName] = [&"warrior", &"hunter", &"mage"]
-	for role_id in order:
-		var preview_board := BentoBoardView.new()
-		preview_board.name = "%sPreviewBoard" % String(role_id)
-		preview_board.read_only = true
-		preview_board.cell_pixel_size = 18
-		preview_board.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		preview_board.cell_clicked.connect(func(_cell: Vector2i) -> void:
-			_run_state().select_character(role_id)
-		)
-		left_vbox.add_child(preview_board)
-		var button_index: int = left_vbox.get_children().find(tab_buttons[role_id])
-		left_vbox.move_child(preview_board, button_index + 1)
-		_role_preview_views[role_id] = preview_board
-
 func _refresh() -> void:
 	var run_state: Node = _run_state()
+	_role_names = run_state.get_character_display_names()
 	gold_label.text = "金币: %d" % run_state.current_gold
 	route_label.text = run_state.get_route_label()
 	node_label.text = "当前节点: %s" % run_state.get_node_display_name(run_state.get_current_node_type())
-	risk_label.text = "危险度评级: %s" % _estimate_risk_label()
+	risk_label.text = "危险度: %s" % _estimate_risk_label()
 	selected_item_label.text = run_state.get_selected_item_summary()
 	action_button.text = run_state.get_action_button_text()
+	market_refresh_button.disabled = run_state.get_current_node_type() != run_state.NODE_MARKET
 	restore_button.disabled = run_state.get_current_node_type() != run_state.NODE_REST
 	_refresh_selected_role(run_state.selected_character_id)
-	_refresh_lists()
+	_refresh_market_strip()
+	_refresh_inventory_strip()
 	_refresh_board()
-	_refresh_role_previews()
+	_refresh_next_monster_panel()
+	_refresh_synergy_panel()
 
 func _refresh_selected_role(character_id: StringName) -> void:
-	var names: Dictionary = _run_state().get_character_display_names()
-	selected_role_label.text = "当前编辑: %s" % names.get(character_id, String(character_id))
-	for id in tab_buttons.keys():
-		tab_buttons[id].disabled = id == character_id
+	selected_role_label.text = "当前角色: %s" % String(_role_names.get(character_id, String(character_id)))
+	for role_id in tab_buttons.keys():
+		tab_buttons[role_id].disabled = role_id == character_id
 
-func _refresh_lists() -> void:
+func _refresh_market_strip() -> void:
 	var run_state: Node = _run_state()
-	market_list.clear()
-	_market_offer_ids.clear()
-	for entry in run_state.get_market_display_entries():
-		market_list.add_item(entry["label"])
-		_market_offer_ids.append(entry["offer_id"])
-	var is_market: bool = run_state.get_current_node_type() == run_state.NODE_MARKET
-	market_list.mouse_filter = Control.MOUSE_FILTER_STOP if is_market else Control.MOUSE_FILTER_IGNORE
-	reroll_button.disabled = not is_market
-	buy_button.disabled = not is_market
+	var entries: Array[Dictionary] = []
+	for entry_variant in run_state.get_market_package_entries():
+		var entry: Dictionary = entry_variant.duplicate(true)
+		if entry.get("kind", &"") == &"food":
+			var definition: FoodDefinition = run_state.get_food_definition(entry["definition_id"])
+			entry["drag_payload"] = {
+				"source": &"market_offer",
+				"offer_id": entry["offer_id"],
+				"definition_id": entry["definition_id"],
+				"shape_cells": definition.shape_cells,
+				"rotation": 0,
+			}
+		elif entry.get("kind", &"") == &"expansion":
+			entry["drag_payload"] = {
+				"source": &"market_expansion",
+				"offer_id": entry["offer_id"],
+				"target_character_id": entry["target_character_id"],
+				"shape_cells": entry.get("shape_cells", []),
+				"rotation": 0,
+			}
+		else:
+			entry["drag_payload"] = {}
+		entries.append(entry)
+	top_market_strip.set_entries(entries, _food_textures)
 
-	inventory_list.clear()
-	_inventory_ids.clear()
-	for entry in run_state.get_inventory_display_entries():
-		inventory_list.add_item(entry["label"])
-		_inventory_ids.append(entry["instance_id"])
-
-	pending_expansion_list.clear()
-	_pending_expansion_ids.clear()
-	for entry in run_state.get_pending_expansion_entries(run_state.selected_character_id):
-		pending_expansion_list.add_item(entry["label"])
-		_pending_expansion_ids.append(entry["instance_id"])
+func _refresh_inventory_strip() -> void:
+	var run_state: Node = _run_state()
+	var entries: Array[Dictionary] = []
+	for entry_variant in run_state.get_grouped_inventory_entries():
+		var entry: Dictionary = entry_variant.duplicate(true)
+		if entry.get("entry_kind", &"food") == &"expansion":
+			entry["drag_payload"] = {
+				"source": &"pending_expansion",
+				"instance_id": entry["instance_id"],
+				"target_character_id": entry["target_character_id"],
+				"shape_cells": entry.get("shape_cells", []),
+				"rotation": int(entry.get("rotation", 0)),
+			}
+		else:
+			var definition: FoodDefinition = run_state.get_food_definition(entry["definition_id"])
+			entry["drag_payload"] = {
+				"source": &"inventory",
+				"group_key": entry["group_key"],
+				"definition_id": entry["definition_id"],
+				"shape_cells": definition.shape_cells,
+				"rotation": 0,
+			}
+		entries.append(entry)
+	inventory_strip.set_entries(entries, _food_textures)
 
 func _refresh_board() -> void:
 	var run_state: Node = _run_state()
 	var preview_cells: Array[Vector2i] = []
 	if not run_state.selected_item.is_empty():
 		preview_cells = run_state.get_selected_item_cells()
-	board_view.refresh_board(run_state.get_selected_character_state(), preview_cells, run_state.food_lookup)
+	board_view.refresh_board(run_state.get_selected_character_state(), preview_cells, run_state.food_lookup, _food_textures)
 
-func _refresh_role_previews() -> void:
+func _refresh_next_monster_panel() -> void:
+	var summary: Dictionary = _run_state().get_next_monster_summary()
+	if summary.is_empty():
+		next_monster_name_label.text = "未知"
+		next_monster_stats_label.text = "-"
+		next_monster_skill_label.text = "-"
+		return
+	next_monster_name_label.text = "%s / %s" % [String(summary.get("display_name", "")), String(summary.get("category_name", ""))]
+	next_monster_stats_label.text = "HP %d  ATK %.1f  间隔 %.1fs" % [
+		int(summary.get("hp", 0)),
+		float(summary.get("attack", 0.0)),
+		float(summary.get("attack_interval", 0.0)),
+	]
+	next_monster_skill_label.text = String(summary.get("skill_summary", ""))
+
+func _refresh_synergy_panel() -> void:
 	var run_state: Node = _run_state()
-	for role_id in _role_preview_views.keys():
-		var preview_board: BentoBoardView = _role_preview_views[role_id]
-		preview_board.refresh_board(run_state.get_character_state(role_id), [], run_state.food_lookup)
-		preview_board.modulate = Color(1.0, 1.0, 1.0, 1.0) if role_id == run_state.selected_character_id else Color(0.82, 0.82, 0.82, 1.0)
+	var summary: Dictionary = run_state.get_synergy_summary(run_state.selected_character_id)
+	var role_name: String = String(_role_names.get(run_state.selected_character_id, String(run_state.selected_character_id)))
+	synergy_panel.set_summary(summary, role_name)
 
 func _on_selected_character_changed(character_id: StringName) -> void:
 	_refresh_selected_role(character_id)
 	_refresh()
 
-func _on_market_selected(index: int) -> void:
-	if index < 0 or index >= _market_offer_ids.size():
-		return
+func _on_market_entry_clicked(entry: Dictionary) -> void:
+	if entry.get("kind", &"") == &"expansion":
+		_run_state().purchase_market_offer_package(entry.get("offer_id", &""))
 
-func _on_inventory_selected(index: int) -> void:
-	if index < 0 or index >= _inventory_ids.size():
-		return
-	_run_state().select_inventory_item(_inventory_ids[index])
-
-func _on_pending_expansion_selected(index: int) -> void:
-	if index < 0 or index >= _pending_expansion_ids.size():
-		return
-	_run_state().select_pending_expansion(_pending_expansion_ids[index])
-
-func _on_reroll_pressed() -> void:
-	_run_state().refresh_market_offers()
-
-func _on_buy_pressed() -> void:
-	var selected: PackedInt32Array = market_list.get_selected_items()
-	if selected.is_empty():
-		return
-	var index: int = selected[0]
-	if index >= 0 and index < _market_offer_ids.size():
-		_run_state().buy_market_offer(index)
+func _on_inventory_entry_clicked(entry: Dictionary) -> void:
+	if entry.get("entry_kind", &"food") == &"expansion":
+		_run_state().select_pending_expansion(entry.get("instance_id", &""))
+	else:
+		_run_state().pick_inventory_instance(entry.get("group_key", &""))
 
 func _on_board_cell_clicked(cell: Vector2i) -> void:
 	var run_state: Node = _run_state()
-	if run_state.selected_item.is_empty():
-		run_state.remove_item_at_cell(cell)
-	else:
+	if not run_state.selected_item.is_empty():
 		run_state.try_place_selected_item(cell)
+
+func _on_board_cell_right_clicked(cell: Vector2i) -> void:
+	_run_state().remove_item_at_cell(cell)
+
+func _on_board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary) -> void:
+	var run_state: Node = _run_state()
+	match drag_data.get("source", &""):
+		&"market_offer":
+			var gained_items: Array[Dictionary] = run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
+			if not gained_items.is_empty() and drag_data.has("definition_id"):
+				var first_instance: Dictionary = gained_items[0]
+				run_state.select_inventory_item(first_instance["instance_id"])
+				if not run_state.try_place_selected_item(anchor_cell):
+					run_state.clear_selection()
+		&"inventory":
+			var picked_item: Dictionary = run_state.pick_inventory_instance(drag_data.get("group_key", &""))
+			if not picked_item.is_empty():
+				if not run_state.try_place_selected_item(anchor_cell):
+					run_state.clear_selection()
+		&"pending_expansion":
+			run_state.select_pending_expansion(drag_data.get("instance_id", &""))
+			if not run_state.try_place_selected_item(anchor_cell):
+				run_state.clear_selection()
+		&"board_food":
+			run_state.move_placed_food(drag_data.get("from_cell", Vector2i.ZERO), anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO))
+		&"board_expansion":
+			run_state.move_placed_expansion(drag_data.get("from_cell", Vector2i.ZERO), anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO))
+		&"board_base":
+			var adjusted_anchor: Vector2i = anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)
+			run_state.move_base_board(adjusted_anchor)
+	_refresh()
+
+func _on_inventory_strip_drop_requested(drag_data: Dictionary) -> void:
+	var run_state: Node = _run_state()
+	match drag_data.get("source", &""):
+		&"market_offer":
+			run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
+		&"market_expansion":
+			run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
+		&"board_food":
+			run_state.store_placed_food(drag_data.get("from_cell", Vector2i.ZERO))
+	_refresh()
 
 func _on_restore_pressed() -> void:
 	_run_state().try_restore_snapshot()
 
 func _on_action_pressed() -> void:
 	_run_state().perform_primary_action()
+
+func _on_market_refresh_pressed() -> void:
+	_run_state().refresh_market_offers()
 
 func _on_battle_requested() -> void:
 	battle_popup.open_battle()
@@ -212,7 +261,8 @@ func _estimate_risk_label() -> String:
 				base_hp = definition.base_hp
 				break
 		total_power += base_attack + base_hp / 8.0
-		for placed in state["placed_foods"]:
+		for placed_variant in state["placed_foods"]:
+			var placed: Dictionary = placed_variant
 			var food: FoodDefinition = run_state.get_food_definition(placed["definition_id"])
 			total_power += food.attack_bonus * 1.5
 			total_power += food.hp_bonus / 8.0
@@ -231,4 +281,4 @@ func _estimate_risk_label() -> String:
 		return "胶着"
 	if ratio >= 0.6:
 		return "危险"
-	return "送死"
+	return "送命"

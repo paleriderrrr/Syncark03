@@ -93,3 +93,51 @@
 - Blockers: No automated blocker remains for the four reported issues; remaining follow-up, if any, should come from direct manual acceptance feedback.
 - Files Touched: Data/Configs/stage_flow_config.tres, Scripts/Autoload/run_state.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/main_editor_screen.gd, Scripts/UI/battle_popup.gd, Scripts/Tests/ui_runner.gd, Scripts/Tests/battle_playback_runner.gd, Docs/07_progress_log.md
 - Notes: Fresh verification passed for plain headless startup, `ui_runner.gd`, and `campaign_runner.gd`; the battle playback regression path now exits cleanly under headless execution after routing through `BattlePopup.open_battle()`.
+
+### 2026-03-29 01:00
+- Completed: Diagnosed the GitHub archive push failure to root cause instead of retrying blindly: HTTPS transport to `github.com:443` from this environment was unstable, SSH on the default Git port timed out, and SSH over `ssh.github.com:443` was confirmed reachable; created an SSH config mapping `github.com` to `ssh.github.com:443`, switched the repository remote from HTTPS to SSH, and re-tested push with the corrected transport path.
+- In Progress: Waiting for GitHub account-side SSH key authorization so the already-corrected SSH-over-443 route can complete the archive push.
+- Next: Add the current machine public key to the target GitHub account, then retry `git push -u origin main` without further repository changes.
+- Blockers: Push is now blocked by GitHub-side SSH authorization only; the latest error is `Permission denied (publickey)` rather than network connection failure.
+- Files Touched: C:\Users\tsc29\.ssh\config
+- Notes: Verified that `ssh.github.com:443` is reachable and that the repository remote now uses `git@github.com:paleriderrrr/Syncark03.git`. The current public key that must be added to GitHub is the local `id_rsa.pub` key.
+
+### 2026-03-29 02:05
+- Completed: Rebuilt the main editor page around the approved layout by moving the market strip to the top, reducing the left side to three role tabs, replacing the old grid-button board with a colored drag/drop desktop, adding a dedicated expansion strip, moving the inventory into a horizontal stacked icon strip, and adding right-side next-monster and synergy panels; also wired Art/UI and Art/Food assets into the new item-card deployment path where exact mappings exist.
+- In Progress: Manual editor-side UX tuning and any follow-up polish from user acceptance.
+- Next: Reopen the project in Godot and manually verify the new drag/drop editor behavior for role switching, market-to-board purchase placement, inventory-to-board placement, board item moves, and expansion moves.
+- Blockers: No automated blocker remains for the approved editor redesign requirements; any remaining work should now come from hands-on visual/interaction acceptance.
+- Files Touched: Scenes/main_editor_screen.tscn, Scenes/Components/item_strip.tscn, Scenes/Components/item_icon_card.tscn, Scenes/Components/synergy_panel.tscn, Scripts/UI/main_editor_screen.gd, Scripts/UI/food_visuals.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/Components/item_strip.gd, Scripts/UI/Components/item_icon_card.gd, Scripts/UI/Components/synergy_panel.gd, Scripts/Autoload/run_state.gd, Scripts/Tests/ui_runner.gd, Scripts/Tests/editor_dragdrop_runner.gd, Docs/superpowers/plans/2026-03-29-editor-redesign-and-dragdrop.md, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `ui_runner.gd`, `editor_dragdrop_runner.gd`, and `campaign_runner.gd`. The new market/inventory strips use grouped entries with one-icon-one-count display, and each drag consumes or places only one instance.
+
+### 2026-03-29 02:30
+- Completed: Updated the editor interaction model again to match the latest user direction by changing the workspace from `6x8` to horizontal `8x6`, making the base bento body draggable in addition to individual expansion blocks, allowing market offers to be dragged into the inventory strip as a purchase action, and changing market food purchases from single-instance extraction to whole-package buying while keeping inventory stacking by definition.
+- In Progress: Manual acceptance of the new package-purchase and horizontal-workspace feel inside the editor.
+- Next: Reopen the project in Godot and directly verify these latest behaviors: drag a market package into inventory to buy the whole package, drag a market package to the board to buy the whole package and place one instance, drag an inventory stack to place one instance, drag a placed food back into inventory, drag the base bento body by clicking an empty bento cell, and confirm the horizontal `8x6` board layout reads correctly.
+- Blockers: No automated blocker remains for the latest five editor interaction updates.
+- Files Touched: Scripts/Autoload/run_state.gd, Scripts/UI/main_editor_screen.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/Components/item_strip.gd, Scripts/Tests/editor_dragdrop_runner.gd, Scripts/Tests/smoke_runner.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for `ui_runner.gd`, `editor_dragdrop_runner.gd`, and `campaign_runner.gd` after the `8x6` workspace and whole-package market purchase change. The smoke script exits cleanly under headless launch, though it still does not print a pass line in this environment.
+
+### 2026-03-29 02:55
+- Completed: Applied the latest editor/UI correction round from user acceptance by removing left-click-to-storage behavior in favor of right-click return, merging pending character expansions into the shared inventory strip, moving the primary action buttons under the right-side synergy panel, enlarging and vertically centering the left-side role tabs, and tightening market generation so one shop refresh no longer repeats the same food definition and epic food packages never spawn above quantity `1`.
+- In Progress: Manual editor-side acceptance of the refined storage interaction and updated market behavior.
+- Next: Reopen the project in Godot and verify these corrected behaviors directly: left click no longer returns items to storage, right click returns placed food to storage, pending expansions appear in the shared inventory strip, market packages can be dragged into storage, right-side buttons sit below the synergy panel, and repeated rerolls no longer show duplicate food definitions or epic packages above `1`.
+- Blockers: No automated blocker remains for this six-item correction round.
+- Files Touched: Scenes/main_editor_screen.tscn, Scenes/Components/item_strip.tscn, Scripts/UI/main_editor_screen.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/Components/item_strip.gd, Scripts/Autoload/run_state.gd, Scripts/Tests/ui_runner.gd, Scripts/Tests/editor_dragdrop_runner.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `ui_runner.gd`, `editor_dragdrop_runner.gd`, and `campaign_runner.gd` after the right-click storage change, shared-inventory expansion merge, right-panel button move, and market de-duplication/epic-quantity correction.
+
+### 2026-03-29 03:10
+- Completed: Added a visible market refresh button, changed market purchasing so bought packages no longer auto-refill the market row, enlarged and centered market/inventory item cards, and enlarged/centered the board workspace inside the editor panel; also reinforced the market-to-inventory drop path by restructuring the strip container so the strip itself remains the effective drop target instead of only its child card row.
+- In Progress: Manual acceptance of market-to-inventory drag feel and the new visual sizing/balance of the editor screen.
+- Next: Reopen the project in Godot and directly verify that dragging a market package into shared inventory now lands reliably, the refresh button is visible and works, bought packages leave an empty slot instead of instantly replacing themselves, item cards feel large enough, and the board reads as a larger centered workspace.
+- Blockers: No automated blocker remains for this five-item refinement round.
+- Files Touched: Scenes/main_editor_screen.tscn, Scenes/Components/item_strip.tscn, Scenes/Components/item_icon_card.tscn, Scripts/UI/main_editor_screen.gd, Scripts/Autoload/run_state.gd, Scripts/Tests/ui_runner.gd, Scripts/Tests/editor_dragdrop_runner.gd, Docs/07_progress_log.md
+- Notes: `editor_dragdrop_runner.gd` and `campaign_runner.gd` passed under Godot 4.6.1 after the no-auto-refill and layout updates. Plain headless launch exits cleanly. `ui_runner.gd` also exits cleanly in this environment, but it still does not always print a visible `PASS` line, so its status should be treated as clean-exit rather than stdout-confirmed pass.
+
+### 2026-03-29 03:25
+- Completed: Implemented the decision-complete fix for the market-to-inventory drag path by adding a dedicated `InventoryDropZone` component and rerouting shared-inventory drop handling from the visual `ItemStrip` shell to the explicit inventory receive surface. The inventory strip now remains display-only while the new receive layer handles `market_offer`, `market_expansion`, and `board_food` drops and immediately triggers the existing purchase/store state update path.
+- In Progress: Manual confirmation in the Godot editor that the previously no-op market-to-inventory drag now lands reliably under real cursor use.
+- Next: Reopen the project and verify dragging a market package directly into the shared inventory area without aiming for a specific card gap or sub-node.
+- Blockers: No automated blocker remains for the dedicated inventory drop-zone implementation.
+- Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scripts/UI/Components/inventory_drop_zone.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
+- Notes: Plain headless launch exits cleanly; `editor_dragdrop_runner.gd` and `campaign_runner.gd` pass under Godot 4.6.1 after introducing the dedicated inventory drop zone. `ui_runner.gd` still exits cleanly without reliably printing a visible `PASS` line in this environment.

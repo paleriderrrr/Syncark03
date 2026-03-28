@@ -14,11 +14,17 @@ func _run() -> void:
 	root.add_child(editor)
 	await process_frame
 
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/warriorPreviewBoard") != null, "Warrior bento preview should exist")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/hunterPreviewBoard") != null, "Hunter bento preview should exist")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/magePreviewBoard") != null, "Mage bento preview should exist")
-	_assert(not (editor.get_node("Margin/RootVBox/MainHBox/RightPanel/RightVBox/MarketButtons/BuyButton") as Button).disabled, "Buy button should be enabled on market nodes")
-	_assert(not (editor.get_node("Margin/RootVBox/MainHBox/RightPanel/RightVBox/MarketButtons/RerollButton") as Button).disabled, "Reroll button should be enabled on market nodes")
+	_assert(editor.get_node_or_null("Margin/RootVBox/TopMarketPanel/TopMarketStrip") != null, "Top market strip should exist")
+	_assert(editor.get_node_or_null("Margin/RootVBox/TopMarketPanel/TopMarketVBox/TopMarketActions/MarketRefreshButton") != null, "Market refresh button should exist")
+	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox/WarriorTabButton") != null, "Warrior role tab should exist")
+	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox/warriorPreviewBoard") == null, "Legacy warrior preview board should be removed")
+	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel") != null, "Next monster panel should exist")
+	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/RightPanel/RightVBox/SynergyPanel") != null, "Synergy panel should exist")
+	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/RightPanel/RightVBox/RightButtons/ActionButton") != null, "Action button should be below the synergy panel")
+	var market_strip: Node = editor.get_node("Margin/RootVBox/TopMarketPanel/TopMarketStrip")
+	_assert(market_strip.has_method("get_entry_count"), "Top market strip should expose grouped entries")
+	if market_strip.has_method("get_entry_count"):
+		_assert(int(market_strip.call("get_entry_count")) > 0, "Top market strip should render at least one grouped market entry")
 	var before_offer_ids: Array[StringName] = []
 	for offer in run_state.current_market_offers:
 		before_offer_ids.append(offer["offer_id"])
@@ -30,6 +36,21 @@ func _run() -> void:
 			changed_offer_ids = true
 			break
 	_assert(changed_offer_ids, "Reroll should change the market offers")
+	_assert(editor.get_node_or_null("Margin/RootVBox/BottomInventoryPanel/InventoryDropZone") != null, "Inventory drop zone should exist")
+	_assert(editor.get_node_or_null("Margin/RootVBox/BottomInventoryPanel/InventoryDropZone/InventoryStrip") != null, "Bottom inventory strip should exist")
+	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardFrame/BoardCenter/BentoBoardView") != null, "Board should be centered inside the editor area")
+	run_state.current_gold = 999
+	run_state.current_market_index = 4
+	for _i in range(10):
+		_assert(run_state.refresh_market_offers(), "Reroll should succeed during market validation sweep")
+		var seen_food_ids: Dictionary = {}
+		for offer in run_state.current_market_offers:
+			if offer.get("kind", &"") != &"food":
+				continue
+			_assert(not seen_food_ids.has(offer["definition_id"]), "One market refresh should not contain duplicate food definitions")
+			seen_food_ids[offer["definition_id"]] = true
+			if offer.get("rarity", &"") == &"epic":
+				_assert(int(offer.get("quantity", 0)) == 1, "Epic food packages should not refresh with quantity above 1")
 
 	editor.queue_free()
 	if _failures.is_empty():

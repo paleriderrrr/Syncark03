@@ -21,17 +21,15 @@ func _run() -> void:
 	_assert(run_state.character_roster.characters.size() == 3, "Character roster should contain 3 roles")
 	_assert(run_state.food_catalog.foods.size() == 54, "Food catalog should contain 54 foods")
 	_assert(run_state.current_market_offers.size() == 5, "First market should generate 5 offers")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/warriorPreviewBoard") != null, "Warrior bento preview should be visible")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/hunterPreviewBoard") != null, "Hunter bento preview should be visible")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/magePreviewBoard") != null, "Mage bento preview should be visible")
-	_assert(not (editor.get_node("Margin/RootVBox/MainHBox/RightPanel/RightVBox/MarketButtons/BuyButton") as Button).disabled, "Buy button should be enabled on market nodes")
-	_assert(not (editor.get_node("Margin/RootVBox/MainHBox/RightPanel/RightVBox/MarketButtons/RerollButton") as Button).disabled, "Reroll button should be enabled on market nodes")
+	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/WarriorTabButton") != null, "Warrior tab should be visible")
+	_assert(editor.get_node_or_null("Margin/RootVBox/TopMarketPanel/TopMarketStrip") != null, "Top market strip should be visible")
+	_assert(editor.get_node_or_null("Margin/RootVBox/BottomInventoryPanel/InventoryStrip") != null, "Bottom inventory strip should be visible")
 
 	var bought_offer: bool = false
-	for index in range(run_state.current_market_offers.size()):
-		var offer: Dictionary = run_state.current_market_offers[index]
+	for offer in run_state.current_market_offers:
 		if offer["kind"] == &"food" and int(offer["price"]) <= run_state.current_gold:
-			bought_offer = run_state.buy_market_offer(index)
+			var gained_items: Array[Dictionary] = run_state.purchase_market_offer_package(offer["offer_id"])
+			bought_offer = not gained_items.is_empty()
 			break
 	_assert(bought_offer, "Smoke test should be able to buy at least one food offer")
 	_assert(not run_state.shared_inventory.is_empty(), "Inventory should contain purchased food")

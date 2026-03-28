@@ -1,8 +1,12 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://Scripts/UI/main_editor_screen.gd" id="1_editor"]
 [ext_resource type="PackedScene" path="res://Scenes/battle_popup.tscn" id="2_popup"]
 [ext_resource type="Script" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/item_strip.tscn" id="4_strip"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/synergy_panel.tscn" id="5_synergy"]
+[ext_resource type="Texture2D" path="res://Art/UI/背景.png" id="6_bg"]
+[ext_resource type="Script" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
 
 [node name="MainEditorScreen" type="Control"]
 layout_mode = 3
@@ -13,6 +17,17 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_editor")
 
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_bg")
+expand_mode = 1
+stretch_mode = 6
+
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -20,48 +35,70 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
 
 [node name="RootVBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
-[node name="TopPanel" type="PanelContainer" parent="Margin/RootVBox"]
+[node name="StatusPanel" type="PanelContainer" parent="Margin/RootVBox"]
 layout_mode = 2
 
-[node name="TopVBox" type="VBoxContainer" parent="Margin/RootVBox/TopPanel"]
+[node name="StatusHBox" type="HBoxContainer" parent="Margin/RootVBox/StatusPanel"]
 layout_mode = 2
+theme_override_constants/separation = 14
 
-[node name="TopHeader" type="HBoxContainer" parent="Margin/RootVBox/TopPanel/TopVBox"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="GoldLabel" type="Label" parent="Margin/RootVBox/TopPanel/TopVBox/TopHeader"]
+[node name="GoldLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "金币: 0"
 
-[node name="RouteLabel" type="Label" parent="Margin/RootVBox/TopPanel/TopVBox/TopHeader"]
+[node name="RouteLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "路线"
 
-[node name="NodeLabel" type="Label" parent="Margin/RootVBox/TopPanel/TopVBox/TopHeader"]
+[node name="NodeLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "当前节点"
+text = "节点"
 
-[node name="RiskLabel" type="Label" parent="Margin/RootVBox/TopPanel/TopVBox"]
+[node name="RiskLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "危险度评级"
+size_flags_horizontal = 3
+text = "危险度"
+
+[node name="TopMarketPanel" type="PanelContainer" parent="Margin/RootVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 190)
+
+[node name="TopMarketVBox" type="VBoxContainer" parent="Margin/RootVBox/TopMarketPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TopMarketActions" type="HBoxContainer" parent="Margin/RootVBox/TopMarketPanel/TopMarketVBox"]
+layout_mode = 2
+
+[node name="TopMarketSpacer" type="Control" parent="Margin/RootVBox/TopMarketPanel/TopMarketVBox/TopMarketActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarketRefreshButton" type="Button" parent="Margin/RootVBox/TopMarketPanel/TopMarketVBox/TopMarketActions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "刷新市场"
+
+[node name="TopMarketStrip" parent="Margin/RootVBox/TopMarketPanel/TopMarketVBox" instance=ExtResource("4_strip")]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="MainHBox" type="HBoxContainer" parent="Margin/RootVBox"]
 layout_mode = 2
@@ -73,42 +110,40 @@ layout_mode = 2
 custom_minimum_size = Vector2(220, 0)
 size_flags_vertical = 3
 
-[node name="LeftVBox" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/LeftPanel"]
+[node name="LeftCenter" type="CenterContainer" parent="Margin/RootVBox/MainHBox/LeftPanel"]
 layout_mode = 2
-theme_override_constants/separation = 10
 
-[node name="RoleTitle" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+[node name="LeftVBox" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="RoleTitle" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 layout_mode = 2
 text = "角色标签"
 
-[node name="SelectedRoleLabel" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+[node name="SelectedRoleLabel" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "当前编辑"
+text = "当前角色"
 
-[node name="WarriorTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+[node name="WarriorTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+custom_minimum_size = Vector2(160, 72)
 text = "战士"
 
-[node name="HunterTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+[node name="HunterTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+custom_minimum_size = Vector2(160, 72)
 text = "猎人"
 
-[node name="MageTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+[node name="MageTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+custom_minimum_size = Vector2(160, 72)
 text = "法师"
-
-[node name="PendingExpansionTitle" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
-layout_mode = 2
-text = "待放置饭盒拓展"
-
-[node name="PendingExpansionList" type="ItemList" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
 
 [node name="CenterPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox"]
 layout_mode = 2
@@ -121,16 +156,19 @@ theme_override_constants/separation = 10
 
 [node name="BoardTitle" type="Label" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
 layout_mode = 2
-text = "饭盒编辑区"
+horizontal_alignment = 1
+text = "桌面编辑区"
 
 [node name="SelectedItemLabel" type="Label" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+horizontal_alignment = 1
 text = "未选择物品"
 
 [node name="BoardControls" type="HBoxContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
+alignment = 1
 
 [node name="RotateButton" type="Button" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardControls"]
 unique_name_in_owner = true
@@ -142,70 +180,93 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "清除选择"
 
-[node name="RestoreButton" type="Button" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardControls"]
-unique_name_in_owner = true
+[node name="BoardFrame" type="PanelContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
 layout_mode = 2
-text = "恢复上次战前方案"
+size_flags_horizontal = 4
+size_flags_vertical = 4
 
-[node name="BentoBoardView" type="GridContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
+[node name="BoardCenter" type="CenterContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardFrame"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="BentoBoardView" type="Control" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardFrame/BoardCenter"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 script = ExtResource("3_board")
-
-[node name="InventoryPanel" type="PanelContainer" parent="Margin/RootVBox"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 170)
-
-[node name="InventoryVBox" type="VBoxContainer" parent="Margin/RootVBox/InventoryPanel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="InventoryTitle" type="Label" parent="Margin/RootVBox/InventoryPanel/InventoryVBox"]
-layout_mode = 2
-text = "共享仓库"
-
-[node name="InventoryList" type="ItemList" parent="Margin/RootVBox/InventoryPanel/InventoryVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
+cell_pixel_size = 88
 
 [node name="RightPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(300, 0)
+custom_minimum_size = Vector2(330, 0)
 size_flags_vertical = 3
 
 [node name="RightVBox" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/RightPanel"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="MarketTitle" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
+[node name="NextMonsterPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
 layout_mode = 2
-text = "市场栏"
 
-[node name="MarketList" type="ItemList" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
+[node name="NextMonsterVBox" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="NextMonsterTitle" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel/NextMonsterVBox"]
+layout_mode = 2
+text = "下一个怪物"
+
+[node name="NextMonsterNameLabel" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel/NextMonsterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "-"
+
+[node name="NextMonsterStatsLabel" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel/NextMonsterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+text = "-"
+
+[node name="NextMonsterSkillLabel" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel/NextMonsterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+text = "-"
+
+[node name="SynergyPanel" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox" instance=ExtResource("5_synergy")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarketButtons" type="HBoxContainer" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
+[node name="RightButtons" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
-[node name="BuyButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/MarketButtons"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "购买选中商品"
-
-[node name="RerollButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/MarketButtons"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "刷新商店"
-
-[node name="ActionButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
+[node name="ActionButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/RightButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "继续"
+
+[node name="RestoreButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/RightButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "恢复上次战前方案"
+
+[node name="BottomInventoryPanel" type="PanelContainer" parent="Margin/RootVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 190)
+
+[node name="InventoryDropZone" type="PanelContainer" parent="Margin/RootVBox/BottomInventoryPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("7_drop_zone")
+
+[node name="InventoryStrip" parent="Margin/RootVBox/BottomInventoryPanel/InventoryDropZone" instance=ExtResource("4_strip")]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="BattlePopup" parent="." instance=ExtResource("2_popup")]

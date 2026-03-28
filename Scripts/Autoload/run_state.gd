@@ -12,12 +12,37 @@ const MONSTER_DATA_PATH := "res://Data/Monsters/monster_roster.tres"
 const MARKET_CONFIG_PATH := "res://Data/Configs/market_config.tres"
 const STAGE_FLOW_CONFIG_PATH := "res://Data/Configs/stage_flow_config.tres"
 
-const GRID_WIDTH := 6
-const GRID_HEIGHT := 8
+const GRID_WIDTH := 8
+const GRID_HEIGHT := 6
 const NODE_MARKET: StringName = &"market"
 const NODE_BATTLE: StringName = &"battle"
 const NODE_REST: StringName = &"rest"
 const NODE_BOSS_BATTLE: StringName = &"boss_battle"
+const CATEGORY_ORDER: Array[StringName] = [&"fruit", &"dessert", &"meat", &"drink", &"staple", &"spice"]
+const CATEGORY_DISPLAY_NAMES := {
+	&"fruit": "蔬果",
+	&"dessert": "甜品",
+	&"meat": "肉类",
+	&"drink": "饮品",
+	&"staple": "主食",
+	&"spice": "香料",
+}
+const CATEGORY_SYNERGY_NAMES := {
+	&"fruit": "果酸反伤",
+	&"dessert": "周期回复",
+	&"meat": "血怒状态",
+	&"drink": "冻结降速",
+	&"staple": "血线斩杀",
+	&"spice": "附加伤害",
+}
+const CATEGORY_SYNERGY_EFFECTS := {
+	&"fruit": "腐蚀接触的敌怪",
+	&"dessert": "按周期回复生命",
+	&"meat": "血越低伤害越高",
+	&"drink": "降低敌方攻速",
+	&"staple": "低于门槛直接秒杀",
+	&"spice": "每次攻击附带额外伤害",
+}
 
 var character_roster: CharacterRoster
 var food_catalog: FoodCatalog
@@ -101,13 +126,16 @@ func start_new_run() -> void:
 
 func _init_character_states() -> void:
 	for definition in character_roster.characters:
-		var base_cells: Array[Vector2i] = []
+		var base_shape: Array[Vector2i] = []
 		for y in 3:
 			for x in 3:
-				base_cells.append(Vector2i(x, y))
+				base_shape.append(Vector2i(x, y))
+		var base_anchor := Vector2i(0, 0)
 		character_states[definition.id] = {
 			"id": definition.id,
-			"active_cells": base_cells,
+			"base_shape": base_shape,
+			"base_anchor": base_anchor,
+			"active_cells": ShapeUtils.translate_cells(base_shape, base_anchor),
 			"placed_foods": [],
 			"pending_expansions": [],
 			"placed_expansions": [],
@@ -203,6 +231,17 @@ func get_board_expansion_cells(character_id: StringName) -> Array[Vector2i]:
 			result.append(cell)
 	return result
 
+func get_base_cells(character_id: StringName) -> Array[Vector2i]:
+	var state: Dictionary = get_character_state(character_id)
+	return ShapeUtils.translate_cells(_clone_cells(state.get("base_shape", [])), state.get("base_anchor", Vector2i.ZERO))
+
+func _rebuild_active_cells(state: Dictionary) -> void:
+	var active_cells: Array[Vector2i] = ShapeUtils.translate_cells(_clone_cells(state.get("base_shape", [])), state.get("base_anchor", Vector2i.ZERO))
+	for expansion in state.get("placed_expansions", []):
+		for cell_variant in expansion.get("cells", []):
+			active_cells.append(cell_variant)
+	state["active_cells"] = active_cells
+
 func _next_instance_id(prefix: String) -> StringName:
 	var value: String = "%s_%d" % [prefix, _instance_counter]
 	_instance_counter += 1
@@ -229,6 +268,16 @@ func get_inventory_counts() -> Dictionary:
 		counts[food_id] = counts.get(food_id, 0) + 1
 	return counts
 
+func get_food_categories(definition: FoodDefinition) -> Array[StringName]:
+	var categories: Array[StringName] = []
+	if definition == null:
+		return categories
+	categories.append(definition.category)
+	for category_id in definition.hybrid_categories:
+		if not categories.has(category_id):
+			categories.append(category_id)
+	return categories
+
 func get_current_market_tier() -> int:
 	return clamp(current_market_index, 1, 4)
 
@@ -238,11 +287,12 @@ func _generate_market_offers() -> void:
 	if get_current_node_type() != NODE_MARKET:
 		state_changed.emit()
 		return
+	var used_food_ids: Dictionary = {}
 	for slot_index in market_config.slot_count:
 		if _rng.randf() < market_config.expansion_slot_chance:
 			current_market_offers.append(_roll_expansion_offer(slot_index))
 		else:
-			current_market_offers.append(_roll_food_offer(slot_index))
+			current_market_offers.append(_roll_food_offer(slot_index, used_food_ids))
 	state_changed.emit()
 
 func refresh_market_offers() -> bool:
@@ -256,11 +306,12 @@ func refresh_market_offers() -> bool:
 	current_reroll_count += 1
 	_increment_cellar_vintage_bonuses()
 	current_market_offers.clear()
+	var used_food_ids: Dictionary = {}
 	for slot_index in market_config.slot_count:
 		if _rng.randf() < market_config.expansion_slot_chance:
 			current_market_offers.append(_roll_expansion_offer(slot_index))
 		else:
-			current_market_offers.append(_roll_food_offer(slot_index))
+			current_market_offers.append(_roll_food_offer(slot_index, used_food_ids))
 	state_changed.emit()
 	return true
 
@@ -290,19 +341,26 @@ func _get_rarity_weights_for_market() -> Dictionary:
 			return entry
 	return market_config.rarity_weights_by_market[0]
 
-func _roll_food_offer(slot_index: int) -> Dictionary:
+func _roll_food_offer(slot_index: int, used_food_ids: Dictionary = {}) -> Dictionary:
 	var weights: Dictionary = _get_rarity_weights_for_market()
 	var rarity: StringName = _pick_rarity(weights)
 	var candidates: Array[FoodDefinition] = []
 	for definition in food_catalog.foods:
-		if definition.rarity == rarity:
+		if definition.rarity == rarity and not used_food_ids.has(definition.id):
 			candidates.append(definition)
+	if candidates.is_empty():
+		for definition in food_catalog.foods:
+			if not used_food_ids.has(definition.id):
+				candidates.append(definition)
 	if candidates.is_empty():
 		candidates = food_catalog.foods
 	var definition: FoodDefinition = candidates[_rng.randi_range(0, candidates.size() - 1)]
 	var range: Vector2i = market_config.quantity_ranges.get(String(rarity), Vector2i.ONE)
 	var quantity: int = _rng.randi_range(range.x, range.y)
+	if rarity == &"epic":
+		quantity = 1
 	var discount: float = _roll_discount()
+	used_food_ids[definition.id] = true
 	return {
 		"offer_id": _next_instance_id("offer"),
 		"slot_index": slot_index,
@@ -355,15 +413,42 @@ func buy_market_offer(index: int) -> bool:
 		var character_state: Dictionary = get_character_state(offer["target_character_id"])
 		character_state["pending_expansions"].append(expansion)
 	current_market_offers.remove_at(index)
-	if get_current_node_type() == NODE_MARKET:
-		while current_market_offers.size() < market_config.slot_count:
-			var slot_index: int = current_market_offers.size()
-			if _rng.randf() < market_config.expansion_slot_chance:
-				current_market_offers.append(_roll_expansion_offer(slot_index))
-			else:
-				current_market_offers.append(_roll_food_offer(slot_index))
 	state_changed.emit()
 	return true
+
+func purchase_market_offer_package(offer_id: StringName) -> Array[Dictionary]:
+	var index: int = resolve_offer_index_by_id(offer_id)
+	if index < 0 or index >= current_market_offers.size():
+		return []
+	var offer: Dictionary = current_market_offers[index]
+	var gained_items: Array[Dictionary] = []
+	var price: int = int(offer["price"])
+	if offer["kind"] == &"food" and free_food_purchase_count > 0:
+		price = 0
+		free_food_purchase_count -= 1
+	if current_gold < price:
+		return []
+	current_gold -= price
+	if offer["kind"] == &"food":
+		for _i in int(offer["quantity"]):
+			var instance: Dictionary = generate_item_instance(offer["definition_id"])
+			shared_inventory.append(instance)
+			gained_items.append(instance)
+			_apply_food_purchase_side_effects(instance)
+	else:
+		var expansion: Dictionary = {
+			"instance_id": _next_instance_id("expansion"),
+			"label": offer["label"],
+			"shape_cells": _clone_cells(offer["shape_cells"]),
+			"rotation": 0,
+			"target_character_id": offer["target_character_id"],
+		}
+		var character_state: Dictionary = get_character_state(offer["target_character_id"])
+		character_state["pending_expansions"].append(expansion)
+		gained_items.append(expansion)
+	current_market_offers.remove_at(index)
+	state_changed.emit()
+	return gained_items
 
 func _apply_food_purchase_side_effects(instance: Dictionary) -> void:
 	var definition: FoodDefinition = get_food_definition(instance["definition_id"])
@@ -401,6 +486,54 @@ func select_inventory_item(instance_id: StringName) -> void:
 			selected_item_changed.emit()
 			state_changed.emit()
 			return
+
+func pick_inventory_instance(group_key: StringName) -> Dictionary:
+	for item in shared_inventory:
+		if item.get("definition_id", &"") == group_key:
+			selected_item = {
+				"source": &"inventory",
+				"instance_id": item["instance_id"],
+				"rotation": int(item.get("rotation", 0)),
+			}
+			selected_item_changed.emit()
+			state_changed.emit()
+			return selected_item.duplicate(true)
+	return {}
+
+func store_placed_food(from_cell: Vector2i) -> bool:
+	return remove_item_at_cell(from_cell)
+
+func move_base_board(to_anchor: Vector2i) -> bool:
+	var state: Dictionary = get_selected_character_state()
+	var current_anchor: Vector2i = state.get("base_anchor", Vector2i.ZERO)
+	var delta: Vector2i = to_anchor - current_anchor
+	if delta == Vector2i.ZERO:
+		return true
+	var new_base_cells: Array[Vector2i] = ShapeUtils.translate_cells(_clone_cells(state.get("base_shape", [])), to_anchor)
+	if not ShapeUtils.within_bounds(new_base_cells, GRID_WIDTH, GRID_HEIGHT):
+		return false
+	var shifted_expansions: Array[Dictionary] = []
+	for expansion_variant in state.get("placed_expansions", []):
+		var expansion: Dictionary = expansion_variant.duplicate(true)
+		expansion["anchor"] = expansion["anchor"] + delta
+		expansion["cells"] = ShapeUtils.translate_cells(_clone_cells(expansion["cells"]), delta)
+		if not ShapeUtils.within_bounds(expansion["cells"], GRID_WIDTH, GRID_HEIGHT):
+			return false
+		shifted_expansions.append(expansion)
+	var shifted_foods: Array[Dictionary] = []
+	for food_variant in state.get("placed_foods", []):
+		var food: Dictionary = food_variant.duplicate(true)
+		food["anchor"] = food["anchor"] + delta
+		food["cells"] = ShapeUtils.translate_cells(_clone_cells(food["cells"]), delta)
+		if not ShapeUtils.within_bounds(food["cells"], GRID_WIDTH, GRID_HEIGHT):
+			return false
+		shifted_foods.append(food)
+	state["base_anchor"] = to_anchor
+	state["placed_expansions"] = shifted_expansions
+	state["placed_foods"] = shifted_foods
+	_rebuild_active_cells(state)
+	state_changed.emit()
+	return true
 
 func select_pending_expansion(instance_id: StringName) -> void:
 	var state: Dictionary = get_selected_character_state()
@@ -498,9 +631,8 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 			"anchor": anchor,
 			"cells": placed_cells,
 		})
-		for cell in placed_cells:
-			state["active_cells"].append(cell)
 		_remove_pending_expansion(selected_character_id, pending["instance_id"])
+		_rebuild_active_cells(state)
 	state_changed.emit()
 	clear_selection()
 	return true
@@ -537,8 +669,6 @@ func remove_item_at_cell(cell: Vector2i) -> bool:
 		if ShapeUtils.cells_to_lookup(item["cells"]).has("%d:%d" % [cell.x, cell.y]):
 			if _has_food_on_cells(selected_character_id, item["cells"]):
 				return false
-			for placed_cell in item["cells"]:
-				_remove_active_cell(state["active_cells"], placed_cell)
 			state["pending_expansions"].append({
 				"instance_id": item["instance_id"],
 				"label": item["label"],
@@ -547,8 +677,67 @@ func remove_item_at_cell(cell: Vector2i) -> bool:
 				"target_character_id": selected_character_id,
 			})
 			state["placed_expansions"].remove_at(index)
+			_rebuild_active_cells(state)
 			state_changed.emit()
 			return true
+	return false
+
+func move_placed_food(from_cell: Vector2i, to_anchor: Vector2i) -> bool:
+	var state: Dictionary = get_selected_character_state()
+	for index in range(state["placed_foods"].size()):
+		var item: Dictionary = state["placed_foods"][index]
+		if not ShapeUtils.cells_to_lookup(item["cells"]).has("%d:%d" % [from_cell.x, from_cell.y]):
+			continue
+		var definition: FoodDefinition = get_food_definition(item["definition_id"])
+		if definition == null:
+			return false
+		var rotated_cells: Array[Vector2i] = ShapeUtils.rotate_cells(definition.shape_cells, int(item.get("rotation", 0)))
+		var placed_cells: Array[Vector2i] = ShapeUtils.translate_cells(rotated_cells, to_anchor)
+		if not ShapeUtils.within_bounds(placed_cells, GRID_WIDTH, GRID_HEIGHT):
+			return false
+		if not ShapeUtils.contains_all(state["active_cells"], placed_cells):
+			return false
+		var occupied_by_others: Array[Vector2i] = []
+		for other_index in range(state["placed_foods"].size()):
+			if other_index == index:
+				continue
+			for other_cell in state["placed_foods"][other_index]["cells"]:
+				occupied_by_others.append(other_cell)
+		if ShapeUtils.overlaps(occupied_by_others, placed_cells):
+			return false
+		item["anchor"] = to_anchor
+		item["cells"] = placed_cells
+		state["placed_foods"][index] = item
+		state_changed.emit()
+		return true
+	return false
+
+func move_placed_expansion(from_cell: Vector2i, to_anchor: Vector2i) -> bool:
+	var state: Dictionary = get_selected_character_state()
+	for index in range(state["placed_expansions"].size()):
+		var item: Dictionary = state["placed_expansions"][index]
+		if not ShapeUtils.cells_to_lookup(item["cells"]).has("%d:%d" % [from_cell.x, from_cell.y]):
+			continue
+		if _has_food_on_cells(selected_character_id, item["cells"]):
+			return false
+		var shape_cells: Array[Vector2i] = _derive_shape_from_placed_cells(item["cells"], item["anchor"])
+		var rotated_cells: Array[Vector2i] = ShapeUtils.rotate_cells(shape_cells, int(item.get("rotation", 0)))
+		var placed_cells: Array[Vector2i] = ShapeUtils.translate_cells(rotated_cells, to_anchor)
+		if not ShapeUtils.within_bounds(placed_cells, GRID_WIDTH, GRID_HEIGHT):
+			return false
+		var active_without_self: Array[Vector2i] = _clone_cells(state["active_cells"])
+		for owned_cell in item["cells"]:
+			_remove_active_cell(active_without_self, owned_cell)
+		if ShapeUtils.overlaps(active_without_self, placed_cells):
+			return false
+		if not ShapeUtils.shares_edge(placed_cells, active_without_self):
+			return false
+		item["anchor"] = to_anchor
+		item["cells"] = placed_cells
+		state["placed_expansions"][index] = item
+		_rebuild_active_cells(state)
+		state_changed.emit()
+		return true
 	return false
 
 func _derive_shape_from_placed_cells(cells: Array[Vector2i], anchor: Vector2i) -> Array[Vector2i]:
@@ -596,6 +785,51 @@ func get_inventory_display_entries() -> Array[Dictionary]:
 		})
 	return entries
 
+func get_grouped_inventory_entries() -> Array[Dictionary]:
+	var grouped: Dictionary = {}
+	for item in shared_inventory:
+		var definition: FoodDefinition = get_food_definition(item["definition_id"])
+		if definition == null:
+			continue
+		var key: StringName = definition.id
+		if not grouped.has(key):
+			grouped[key] = {
+				"group_key": key,
+				"definition_id": definition.id,
+				"display_name": definition.display_name,
+				"count": 0,
+				"category": definition.category,
+				"rarity": definition.rarity,
+			}
+		grouped[key]["count"] = int(grouped[key]["count"]) + 1
+	var entries: Array[Dictionary] = []
+	for category_id in CATEGORY_ORDER:
+		for group_key in grouped.keys():
+			var entry: Dictionary = grouped[group_key]
+			if entry.get("category", &"") == category_id:
+				entries.append(entry)
+	for group_key in grouped.keys():
+		var unmatched: Dictionary = grouped[group_key]
+		if not entries.has(unmatched):
+			entries.append(unmatched)
+	for character_id in character_states.keys():
+		for pending_variant in character_states[character_id].get("pending_expansions", []):
+			var pending: Dictionary = pending_variant
+			entries.append({
+				"group_key": pending["instance_id"],
+				"instance_id": pending["instance_id"],
+				"definition_id": &"",
+				"display_name": "%s 拓展 %s" % [get_character_display_names().get(character_id, String(character_id)), pending["label"]],
+				"count": 1,
+				"category": &"expansion",
+				"rarity": &"rare",
+				"entry_kind": &"expansion",
+				"target_character_id": character_id,
+				"shape_cells": _clone_cells(pending.get("shape_cells", [])),
+				"rotation": int(pending.get("rotation", 0)),
+			})
+	return entries
+
 func get_pending_expansion_entries(character_id: StringName) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	for item in get_character_state(character_id).get("pending_expansions", []):
@@ -621,6 +855,81 @@ func get_market_display_entries() -> Array[Dictionary]:
 				"label": "%s 给 %s - %d金" % [offer["label"], names.get(offer["target_character_id"], String(offer["target_character_id"])), offer["price"]],
 			})
 	return entries
+
+func get_market_package_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	for offer in current_market_offers:
+		if offer.get("kind", &"") == &"food":
+			var definition: FoodDefinition = get_food_definition(offer["definition_id"])
+			if definition == null:
+				continue
+			entries.append({
+				"group_key": offer["offer_id"],
+				"offer_id": offer["offer_id"],
+				"kind": &"food",
+				"definition_id": definition.id,
+				"display_name": definition.display_name,
+				"count": int(offer.get("quantity", 0)),
+				"category": definition.category,
+				"rarity": definition.rarity,
+				"unit_price": int(offer["price"]),
+			})
+		else:
+			var names: Dictionary = get_character_display_names()
+			entries.append({
+				"group_key": offer["offer_id"],
+				"offer_id": offer["offer_id"],
+				"kind": &"expansion",
+				"display_name": "拓展 %s" % offer["label"],
+				"count": 1,
+				"category": &"expansion",
+				"rarity": &"rare",
+				"unit_price": int(offer["price"]),
+				"target_character_id": offer["target_character_id"],
+				"target_name": names.get(offer["target_character_id"], String(offer["target_character_id"])),
+				"shape_cells": _clone_cells(offer["shape_cells"]),
+			})
+	return entries
+
+func get_next_monster_summary() -> Dictionary:
+	var monster: MonsterDefinition = get_current_monster_definition()
+	if monster == null:
+		return {}
+	return {
+		"id": monster.id,
+		"display_name": monster.display_name,
+		"category": monster.category,
+		"category_name": CATEGORY_DISPLAY_NAMES.get(monster.category, String(monster.category)),
+		"hp": monster.base_hp,
+		"attack": monster.base_attack,
+		"attack_interval": monster.attack_interval,
+		"skill_summary": monster.skill_summary,
+	}
+
+func get_synergy_summary(character_id: StringName) -> Dictionary:
+	var counts: Dictionary = {}
+	for category_id in CATEGORY_ORDER:
+		counts[category_id] = 0
+	var state: Dictionary = get_character_state(character_id)
+	for item in state.get("placed_foods", []):
+		var definition: FoodDefinition = get_food_definition(item["definition_id"])
+		for category_id in get_food_categories(definition):
+			counts[category_id] = int(counts.get(category_id, 0)) + 1
+	var entries: Array[Dictionary] = []
+	for category_id in CATEGORY_ORDER:
+		var count: int = int(counts.get(category_id, 0))
+		entries.append({
+			"category_id": category_id,
+			"category_name": CATEGORY_DISPLAY_NAMES.get(category_id, String(category_id)),
+			"synergy_name": CATEGORY_SYNERGY_NAMES.get(category_id, ""),
+			"effect_text": CATEGORY_SYNERGY_EFFECTS.get(category_id, ""),
+			"count": count,
+			"active": count > 0,
+		})
+	return {
+		"character_id": character_id,
+		"entries": entries,
+	}
 
 func resolve_offer_index_by_id(offer_id: StringName) -> int:
 	for index in current_market_offers.size():
