@@ -27,6 +27,10 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 		return
 	drop_received.emit(data)
 
+func handle_forwarded_drop(data: Dictionary) -> void:
+	modulate = NORMAL_MODULATE
+	drop_received.emit(data)
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_END:
 		modulate = NORMAL_MODULATE

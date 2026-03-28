@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/item_strip.tscn" id="4_strip"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/synergy_panel.tscn" id="5_synergy"]
-[ext_resource type="Texture2D" path="res://Art/UI/背景.png" id="6_bg"]
+[ext_resource type="Texture2D" path="res://Art/UI/鑳屾櫙.png" id="6_bg"]
 [ext_resource type="Script" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
 
 [node name="MainEditorScreen" type="Control"]
@@ -62,13 +62,13 @@ text = "金币: 0"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "路线"
+text = "NODE"
 
 [node name="NodeLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "节点"
+text = "当前节点"
 
 [node name="RiskLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
 unique_name_in_owner = true
@@ -152,6 +152,7 @@ size_flags_vertical = 3
 
 [node name="CenterVBox" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/CenterPanel"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 10
 
 [node name="BoardTitle" type="Label" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
@@ -169,11 +170,6 @@ text = "未选择物品"
 layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 1
-
-[node name="RotateButton" type="Button" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardControls"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "旋转"
 
 [node name="ClearSelectionButton" type="Button" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardControls"]
 unique_name_in_owner = true
@@ -196,7 +192,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 script = ExtResource("3_board")
-cell_pixel_size = 88
+cell_pixel_size = 112
 
 [node name="RightPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox"]
 layout_mode = 2

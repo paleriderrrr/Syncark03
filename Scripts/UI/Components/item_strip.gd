@@ -2,7 +2,6 @@ extends PanelContainer
 class_name ItemStrip
 
 signal entry_clicked(entry: Dictionary)
-signal strip_drop_requested(drag_data: Dictionary)
 
 const CARD_SCENE := preload("res://Scenes/Components/item_icon_card.tscn")
 
@@ -10,7 +9,11 @@ const CARD_SCENE := preload("res://Scenes/Components/item_icon_card.tscn")
 @onready var card_row: HBoxContainer = %CardRow
 
 var _entry_count: int = 0
-var accepted_sources: Array[StringName] = []
+var card_drop_sources: Array[StringName] = []
+var card_drop_target: Node = null
+
+func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_PASS
 
 func set_title(text_value: String) -> void:
 	title_label.text = text_value
@@ -23,7 +26,7 @@ func set_entries(entries: Array[Dictionary], texture_lookup: Dictionary) -> void
 		var card: ItemIconCard = CARD_SCENE.instantiate() as ItemIconCard
 		var texture: Texture2D = texture_lookup.get(entry.get("definition_id", &""), null) as Texture2D
 		card_row.add_child(card)
-		card.configure(entry, texture, entry.get("drag_payload", {}))
+		card.configure(entry, texture, entry.get("drag_payload", {}), card_drop_sources, card_drop_target)
 		card.clicked.connect(_on_card_clicked)
 
 func get_entry_count() -> int:
