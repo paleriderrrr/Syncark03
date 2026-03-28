@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://d1pedyybflfek"
+path="res://.godot/imported/SFX_VO_Stickman_Cheer_1.wav-b087da8809f1da64d9eb5e9d126c3175.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Voice/Stickman/Cheer/SFX_VO_Stickman_Cheer_1.wav"
+dest_files=["res://.godot/imported/SFX_VO_Stickman_Cheer_1.wav-b087da8809f1da64d9eb5e9d126c3175.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

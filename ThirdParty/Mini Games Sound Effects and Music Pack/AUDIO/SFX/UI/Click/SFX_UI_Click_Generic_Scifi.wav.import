@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://6kjgl1hsqt44"
+path="res://.godot/imported/SFX_UI_Click_Generic_Scifi.wav-00b836b2850e725cfa098dffa3296264.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/UI/Click/SFX_UI_Click_Generic_Scifi.wav"
+dest_files=["res://.godot/imported/SFX_UI_Click_Generic_Scifi.wav-00b836b2850e725cfa098dffa3296264.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

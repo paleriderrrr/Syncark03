@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cf7tcb5x6rghc"
+path="res://.godot/imported/SFX_UI_Swipe_Screen_1.wav-3028eedd72fbaa76ccaaaa66cadbbbd7.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/UI/Swipe/SFX_UI_Swipe_Screen_1.wav"
+dest_files=["res://.godot/imported/SFX_UI_Swipe_Screen_1.wav-3028eedd72fbaa76ccaaaa66cadbbbd7.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

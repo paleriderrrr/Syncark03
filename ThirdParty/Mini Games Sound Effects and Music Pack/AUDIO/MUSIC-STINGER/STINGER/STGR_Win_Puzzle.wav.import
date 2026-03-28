@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://by2lm03h1137y"
+path="res://.godot/imported/STGR_Win_Puzzle.wav-431d998cd2b4366fc60a11ea59b9dea0.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/STINGER/STGR_Win_Puzzle.wav"
+dest_files=["res://.godot/imported/STGR_Win_Puzzle.wav-431d998cd2b4366fc60a11ea59b9dea0.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

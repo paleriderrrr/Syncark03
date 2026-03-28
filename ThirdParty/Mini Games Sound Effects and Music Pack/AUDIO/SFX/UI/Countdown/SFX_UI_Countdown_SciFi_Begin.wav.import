@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dhsl38t7ceipf"
+path="res://.godot/imported/SFX_UI_Countdown_SciFi_Begin.wav-df7b6719231fb49bf268c01f546ca283.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/UI/Countdown/SFX_UI_Countdown_SciFi_Begin.wav"
+dest_files=["res://.godot/imported/SFX_UI_Countdown_SciFi_Begin.wav-df7b6719231fb49bf268c01f546ca283.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

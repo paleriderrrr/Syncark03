@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c42ueaud21177"
+path="res://.godot/imported/SFX_Drop_Retro_3.wav-7930833ea7a7a0bb74db5f6b4dbb2cec.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Object Hit-Pick up-Drop-Collect/Drop/SFX_Drop_Retro_3.wav"
+dest_files=["res://.godot/imported/SFX_Drop_Retro_3.wav-7930833ea7a7a0bb74db5f6b4dbb2cec.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

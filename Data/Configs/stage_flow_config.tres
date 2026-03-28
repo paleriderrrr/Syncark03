@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StageFlowConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Data/stage_flow_config.gd" id="1_stage_flow"]
+
+[resource]
+script = ExtResource("1_stage_flow")
+route_nodes = [&"market", &"battle", &"rest", &"battle", &"market", &"battle", &"rest", &"battle", &"market", &"battle", &"rest", &"battle", &"market", &"boss_battle"]
+normal_battle_reward_gold = [12, 16, 22, 30, 40, 55]
+normal_drop_value_curve = [8, 10, 14, 18, 24, 30]
+initial_gold = 30
+

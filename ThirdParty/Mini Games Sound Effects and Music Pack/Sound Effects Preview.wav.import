@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cpfr4dsa5iq2d"
+path="res://.godot/imported/Sound Effects Preview.wav-d7d5ee22ebbd4bf1221ea99b6f51722a.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/Sound Effects Preview.wav"
+dest_files=["res://.godot/imported/Sound Effects Preview.wav-d7d5ee22ebbd4bf1221ea99b6f51722a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

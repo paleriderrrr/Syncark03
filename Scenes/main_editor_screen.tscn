@@ -1,0 +1,211 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/main_editor_screen.gd" id="1_editor"]
+[ext_resource type="PackedScene" path="res://Scenes/battle_popup.tscn" id="2_popup"]
+[ext_resource type="Script" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
+
+[node name="MainEditorScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_editor")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="RootVBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="TopPanel" type="PanelContainer" parent="Margin/RootVBox"]
+layout_mode = 2
+
+[node name="TopVBox" type="VBoxContainer" parent="Margin/RootVBox/TopPanel"]
+layout_mode = 2
+
+[node name="TopHeader" type="HBoxContainer" parent="Margin/RootVBox/TopPanel/TopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="GoldLabel" type="Label" parent="Margin/RootVBox/TopPanel/TopVBox/TopHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "金币: 0"
+
+[node name="RouteLabel" type="Label" parent="Margin/RootVBox/TopPanel/TopVBox/TopHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "路线"
+
+[node name="NodeLabel" type="Label" parent="Margin/RootVBox/TopPanel/TopVBox/TopHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "当前节点"
+
+[node name="RiskLabel" type="Label" parent="Margin/RootVBox/TopPanel/TopVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "危险度评级"
+
+[node name="MainHBox" type="HBoxContainer" parent="Margin/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="LeftPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(220, 0)
+size_flags_vertical = 3
+
+[node name="LeftVBox" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/LeftPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RoleTitle" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+layout_mode = 2
+text = "角色标签"
+
+[node name="SelectedRoleLabel" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "当前编辑"
+
+[node name="WarriorTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "战士"
+
+[node name="HunterTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "猎人"
+
+[node name="MageTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "法师"
+
+[node name="PendingExpansionTitle" type="Label" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+layout_mode = 2
+text = "待放置饭盒拓展"
+
+[node name="PendingExpansionList" type="ItemList" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CenterPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CenterVBox" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/CenterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BoardTitle" type="Label" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
+layout_mode = 2
+text = "饭盒编辑区"
+
+[node name="SelectedItemLabel" type="Label" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "未选择物品"
+
+[node name="BoardControls" type="HBoxContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RotateButton" type="Button" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardControls"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "旋转"
+
+[node name="ClearSelectionButton" type="Button" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardControls"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "清除选择"
+
+[node name="RestoreButton" type="Button" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardControls"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "恢复上次战前方案"
+
+[node name="BentoBoardView" type="GridContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("3_board")
+
+[node name="InventoryPanel" type="PanelContainer" parent="Margin/RootVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 170)
+
+[node name="InventoryVBox" type="VBoxContainer" parent="Margin/RootVBox/InventoryPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="InventoryTitle" type="Label" parent="Margin/RootVBox/InventoryPanel/InventoryVBox"]
+layout_mode = 2
+text = "共享仓库"
+
+[node name="InventoryList" type="ItemList" parent="Margin/RootVBox/InventoryPanel/InventoryVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RightPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(300, 0)
+size_flags_vertical = 3
+
+[node name="RightVBox" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/RightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MarketTitle" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
+layout_mode = 2
+text = "市场栏"
+
+[node name="MarketList" type="ItemList" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarketButtons" type="HBoxContainer" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BuyButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/MarketButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "购买选中商品"
+
+[node name="RerollButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/MarketButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "刷新商店"
+
+[node name="ActionButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "继续"
+
+[node name="BattlePopup" parent="." instance=ExtResource("2_popup")]

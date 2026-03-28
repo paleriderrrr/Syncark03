@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://b0f4wnkc0dkfq"
+path="res://.godot/imported/SFX_VO_Stickman_Cry_2.wav-7302d96e81aef882d1226d73db7a35b3.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Voice/Stickman/Cry/SFX_VO_Stickman_Cry_2.wav"
+dest_files=["res://.godot/imported/SFX_VO_Stickman_Cry_2.wav-7302d96e81aef882d1226d73db7a35b3.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

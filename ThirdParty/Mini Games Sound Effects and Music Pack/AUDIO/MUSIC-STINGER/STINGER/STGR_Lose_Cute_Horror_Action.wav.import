@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://drbdmlyp62cmt"
+path="res://.godot/imported/STGR_Lose_Cute_Horror_Action.wav-7cf3747dc7f2fcf106bb00041013d657.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/STINGER/STGR_Lose_Cute_Horror_Action.wav"
+dest_files=["res://.godot/imported/STGR_Lose_Cute_Horror_Action.wav-7cf3747dc7f2fcf106bb00041013d657.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

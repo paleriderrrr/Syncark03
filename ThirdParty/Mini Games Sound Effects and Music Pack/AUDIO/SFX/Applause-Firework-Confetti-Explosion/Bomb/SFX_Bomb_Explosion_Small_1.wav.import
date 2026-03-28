@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://df7qecq8ovsbs"
+path="res://.godot/imported/SFX_Bomb_Explosion_Small_1.wav-4dbe832d37c6eccd6278bf9f3657bf8f.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Applause-Firework-Confetti-Explosion/Bomb/SFX_Bomb_Explosion_Small_1.wav"
+dest_files=["res://.godot/imported/SFX_Bomb_Explosion_Small_1.wav-4dbe832d37c6eccd6278bf9f3657bf8f.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

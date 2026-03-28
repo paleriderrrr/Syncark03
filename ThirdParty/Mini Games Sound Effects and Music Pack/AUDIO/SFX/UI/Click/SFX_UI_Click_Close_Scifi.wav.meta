@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: a1f45962c9e52df4d99087ad6cbb8e07
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 6
+  defaultSettings:
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  preloadAudioData: 1
+  loadInBackground: 0
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 257416
+  packageName: Mini Games Sound Effects and Music Pack
+  packageVersion: 1.0
+  assetPath: Assets/Mini Games Sound Effects and Music Pack/AUDIO/SFX/UI/Click/SFX_UI_Click_Close_Scifi.wav
+  uploadId: 591508

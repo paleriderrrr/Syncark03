@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://b483k80mdi8hp"
+path="res://.godot/imported/SFX_UI_Fillup_Star_1.wav-501b36322d3756c17553482e9c03d4bc.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/UI/Fillup/SFX_UI_Fillup_Star_1.wav"
+dest_files=["res://.godot/imported/SFX_UI_Fillup_Star_1.wav-501b36322d3756c17553482e9c03d4bc.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

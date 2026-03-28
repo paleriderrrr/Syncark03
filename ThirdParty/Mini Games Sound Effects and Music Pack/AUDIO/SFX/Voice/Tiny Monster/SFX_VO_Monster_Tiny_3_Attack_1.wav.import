@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://2i2reaw1kslf"
+path="res://.godot/imported/SFX_VO_Monster_Tiny_3_Attack_1.wav-ded242724f16e07d5799158da4c44c08.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Voice/Tiny Monster/SFX_VO_Monster_Tiny_3_Attack_1.wav"
+dest_files=["res://.godot/imported/SFX_VO_Monster_Tiny_3_Attack_1.wav-ded242724f16e07d5799158da4c44c08.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

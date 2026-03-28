@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bo0uw2nepdftp"
+path="res://.godot/imported/SFX_VO_Monster_Tiny_3_Die_1.wav-6a783012986e98e53f5b318f22ce0736.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Voice/Tiny Monster/SFX_VO_Monster_Tiny_3_Die_1.wav"
+dest_files=["res://.godot/imported/SFX_VO_Monster_Tiny_3_Die_1.wav-6a783012986e98e53f5b318f22ce0736.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

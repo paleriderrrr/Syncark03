@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://trv5xwhxtp1q"
+path="res://.godot/imported/STGR_Lose_Retro.wav-0813ac569fbe1457ac0b35ad19dbda16.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/STINGER/STGR_Lose_Retro.wav"
+dest_files=["res://.godot/imported/STGR_Lose_Retro.wav-0813ac569fbe1457ac0b35ad19dbda16.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

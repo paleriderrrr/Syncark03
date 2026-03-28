@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CharacterRoster" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Data/character_roster.gd" id="1_roster"]
+[ext_resource type="Script" path="res://Scripts/Data/character_definition.gd" id="2_definition"]
+
+[sub_resource type="Resource" id="CharacterDefinition_warrior"]
+script = ExtResource("2_definition")
+id = &"warrior"
+display_name = "战士"
+base_hp = 180
+base_attack = 12.0
+attack_interval = 1.8
+
+[sub_resource type="Resource" id="CharacterDefinition_hunter"]
+script = ExtResource("2_definition")
+id = &"hunter"
+display_name = "猎人"
+base_hp = 90
+base_attack = 8.0
+attack_interval = 0.8
+
+[sub_resource type="Resource" id="CharacterDefinition_mage"]
+script = ExtResource("2_definition")
+id = &"mage"
+display_name = "法师"
+base_hp = 70
+base_attack = 28.0
+attack_interval = 2.5
+
+[resource]
+script = ExtResource("1_roster")
+characters = [SubResource("CharacterDefinition_warrior"), SubResource("CharacterDefinition_hunter"), SubResource("CharacterDefinition_mage")]
+

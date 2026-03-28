@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bsswoq1lppwps"
+path="res://.godot/imported/SFX_UI_Countdown_Cute_Loop.wav-beddfcc6402336f8dc309cddc644e7f9.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/UI/Countdown/SFX_UI_Countdown_Cute_Loop.wav"
+dest_files=["res://.godot/imported/SFX_UI_Countdown_Cute_Loop.wav-beddfcc6402336f8dc309cddc644e7f9.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

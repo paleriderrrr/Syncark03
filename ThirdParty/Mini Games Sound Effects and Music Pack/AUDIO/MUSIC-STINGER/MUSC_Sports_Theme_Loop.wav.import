@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dapc57gdo1cdb"
+path="res://.godot/imported/MUSC_Sports_Theme_Loop.wav-5c99cd8d16a154a164f1ccc8fe54f61a.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/MUSC_Sports_Theme_Loop.wav"
+dest_files=["res://.godot/imported/MUSC_Sports_Theme_Loop.wav-5c99cd8d16a154a164f1ccc8fe54f61a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

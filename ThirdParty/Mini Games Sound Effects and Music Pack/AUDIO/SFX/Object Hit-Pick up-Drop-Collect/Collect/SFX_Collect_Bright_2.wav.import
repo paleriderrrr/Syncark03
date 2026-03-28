@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://b4ktdnsd0wwex"
+path="res://.godot/imported/SFX_Collect_Bright_2.wav-6097fefbe6fa18dac294c59b761993c8.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Object Hit-Pick up-Drop-Collect/Collect/SFX_Collect_Bright_2.wav"
+dest_files=["res://.godot/imported/SFX_Collect_Bright_2.wav-6097fefbe6fa18dac294c59b761993c8.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

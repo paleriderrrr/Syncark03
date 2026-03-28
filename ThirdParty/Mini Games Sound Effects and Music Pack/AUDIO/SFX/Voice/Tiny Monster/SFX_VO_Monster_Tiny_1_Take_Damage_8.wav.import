@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://b4yp1mskigrvm"
+path="res://.godot/imported/SFX_VO_Monster_Tiny_1_Take_Damage_8.wav-2a213e54b9463b927abd0b47e66c7d40.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Voice/Tiny Monster/SFX_VO_Monster_Tiny_1_Take_Damage_8.wav"
+dest_files=["res://.godot/imported/SFX_VO_Monster_Tiny_1_Take_Damage_8.wav-2a213e54b9463b927abd0b47e66c7d40.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

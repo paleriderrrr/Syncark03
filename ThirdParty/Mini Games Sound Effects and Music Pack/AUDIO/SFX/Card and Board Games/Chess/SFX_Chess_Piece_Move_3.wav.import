@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://kuq7ecfgujkq"
+path="res://.godot/imported/SFX_Chess_Piece_Move_3.wav-c5b4d6ec0bb5bd6e76083e69c4fc6ba6.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Card and Board Games/Chess/SFX_Chess_Piece_Move_3.wav"
+dest_files=["res://.godot/imported/SFX_Chess_Piece_Move_3.wav-c5b4d6ec0bb5bd6e76083e69c4fc6ba6.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
