@@ -12,6 +12,8 @@ var entry: Dictionary = {}
 var drag_payload: Dictionary = {}
 var accepted_drop_sources: Array[StringName] = []
 var drop_forward_target: Node = null
+var _left_pressed: bool = false
+var _drag_started: bool = false
 
 func configure(new_entry: Dictionary, texture: Texture2D, new_drag_payload: Dictionary, new_accepted_drop_sources: Array[StringName] = [], new_drop_forward_target: Node = null) -> void:
 	entry = new_entry.duplicate(true)
@@ -20,20 +22,29 @@ func configure(new_entry: Dictionary, texture: Texture2D, new_drag_payload: Dict
 	drop_forward_target = new_drop_forward_target
 	name_label.text = String(entry.get("display_name", ""))
 	count_label.text = "x%d" % int(entry.get("count", 0))
-	if entry.has("unit_price"):
-		price_label.text = "%d金" % int(entry["unit_price"])
+	if entry.has("display_price"):
+		price_label.text = "%d G" % int(entry["display_price"])
+	elif entry.has("unit_price"):
+		price_label.text = "%d G" % int(entry["unit_price"])
 	else:
 		price_label.text = ""
 	icon_rect.texture = texture
 	icon_rect.visible = texture != null
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		clicked.emit(entry)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_left_pressed = true
+			_drag_started = false
+		elif _left_pressed and not _drag_started:
+			clicked.emit(entry)
+			_left_pressed = false
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if drag_payload.is_empty():
 		return null
+	_drag_started = true
+	_left_pressed = false
 	var preview: Control = _build_preview()
 	set_drag_preview(preview)
 	return drag_payload.duplicate(true)

@@ -5,10 +5,10 @@ class_name SynergyPanel
 @onready var list_label: RichTextLabel = %ListLabel
 
 func set_summary(summary: Dictionary, role_name: String) -> void:
-	title_label.text = "%s 连携" % role_name
+	title_label.text = "%s Synergy" % role_name
 	var lines: PackedStringArray = []
 	for entry in summary.get("entries", []):
-		var prefix: String = "[激活]" if bool(entry.get("active", false)) else "[未激活]"
+		var prefix: String = "[Active]" if bool(entry.get("active", false)) else "[Inactive]"
 		lines.append("%s %s %d - %s" % [
 			prefix,
 			String(entry.get("category_name", "")),

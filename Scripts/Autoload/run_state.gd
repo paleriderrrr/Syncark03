@@ -139,6 +139,7 @@ func _init_character_states() -> void:
 			"placed_foods": [],
 			"pending_expansions": [],
 			"placed_expansions": [],
+			"hp_ratio": 1.0,
 		}
 
 func _init_normal_monster_order() -> void:
@@ -449,6 +450,13 @@ func purchase_market_offer_package(offer_id: StringName) -> Array[Dictionary]:
 	current_market_offers.remove_at(index)
 	state_changed.emit()
 	return gained_items
+
+func get_effective_offer_price(offer: Dictionary) -> int:
+	if offer.is_empty():
+		return 0
+	if offer.get("kind", &"") == &"food" and free_food_purchase_count > 0:
+		return 0
+	return int(offer.get("price", 0))
 
 func _apply_food_purchase_side_effects(instance: Dictionary) -> void:
 	var definition: FoodDefinition = get_food_definition(instance["definition_id"])
@@ -859,6 +867,7 @@ func get_market_display_entries() -> Array[Dictionary]:
 func get_market_package_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	for offer in current_market_offers:
+		var effective_price: int = get_effective_offer_price(offer)
 		if offer.get("kind", &"") == &"food":
 			var definition: FoodDefinition = get_food_definition(offer["definition_id"])
 			if definition == null:
@@ -872,6 +881,7 @@ func get_market_package_entries() -> Array[Dictionary]:
 				"count": int(offer.get("quantity", 0)),
 				"category": definition.category,
 				"rarity": definition.rarity,
+				"display_price": effective_price,
 				"unit_price": int(offer["price"]),
 			})
 		else:
@@ -884,6 +894,7 @@ func get_market_package_entries() -> Array[Dictionary]:
 				"count": 1,
 				"category": &"expansion",
 				"rarity": &"rare",
+				"display_price": effective_price,
 				"unit_price": int(offer["price"]),
 				"target_character_id": offer["target_character_id"],
 				"target_name": names.get(offer["target_character_id"], String(offer["target_character_id"])),
@@ -995,12 +1006,39 @@ func _capture_snapshot() -> Dictionary:
 
 func apply_battle_report(report: Dictionary) -> void:
 	battle_reports.append(report)
+	_apply_persistent_health(report)
 	if report.get("result", "") == "win":
 		_apply_battle_victory(report)
 	else:
 		run_finished = true
 	state_changed.emit()
 	battle_finished.emit(report)
+
+func _apply_persistent_health(report: Dictionary) -> void:
+	if not report.has("characters"):
+		return
+	for actor_variant in report["characters"]:
+		var actor: Dictionary = actor_variant
+		var character_id: StringName = actor.get("id", &"")
+		if character_id == &"" or not character_states.has(character_id):
+			continue
+		var max_hp: float = maxf(float(actor.get("max_hp", 0.0)), 1.0)
+		var current_hp: float = clampf(float(actor.get("current_hp", 0.0)), 0.0, max_hp)
+		character_states[character_id]["hp_ratio"] = current_hp / max_hp
+
+func get_character_health_display(character_id: StringName) -> Dictionary:
+	var actor: Dictionary = CombatEngine.preview_character_actor(self, character_id)
+	if actor.is_empty():
+		return {
+			"current_hp": 0,
+			"max_hp": 0,
+			"hp_ratio": 0.0,
+		}
+	return {
+		"current_hp": int(round(float(actor.get("current_hp", 0.0)))),
+		"max_hp": int(round(float(actor.get("max_hp", 0.0)))),
+		"hp_ratio": clampf(float(actor.get("current_hp", 0.0)) / maxf(float(actor.get("max_hp", 1.0)), 1.0), 0.0, 1.0),
+	}
 
 func _apply_battle_victory(report: Dictionary) -> void:
 	var battle_index: int = get_completed_battle_count() - 1

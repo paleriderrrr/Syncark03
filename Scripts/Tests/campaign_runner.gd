@@ -18,6 +18,21 @@ func _run() -> void:
 
 	_assert(run_state.current_route_index == 0, "New run should start at route index 0")
 	_assert(run_state.current_gold == 30, "New run should start with 30 gold")
+	run_state.apply_battle_report({
+		"result": "win",
+		"bonus_gold": 0,
+		"log": PackedStringArray(),
+		"characters": [
+			{"id": &"warrior", "current_hp": 90.0, "max_hp": 180.0, "alive": true},
+			{"id": &"hunter", "current_hp": 45.0, "max_hp": 90.0, "alive": true},
+			{"id": &"mage", "current_hp": 35.0, "max_hp": 70.0, "alive": true},
+		],
+	})
+	_assert(absf(float(run_state.get_character_state(&"warrior").get("hp_ratio", 0.0)) - 0.5) < 0.001, "Battle report should persist warrior HP ratio")
+	var warrior_health: Dictionary = run_state.get_character_health_display(&"warrior")
+	_assert(int(warrior_health.get("current_hp", 0)) == 90, "Health display should reflect inherited warrior HP")
+	run_state.start_new_run()
+	await process_frame
 
 	run_state.shared_inventory.append(run_state.generate_item_instance(&"red_berry"))
 	var inventory_item: Dictionary = run_state.shared_inventory[run_state.shared_inventory.size() - 1]
@@ -53,6 +68,11 @@ func _run() -> void:
 				"result": "win",
 				"bonus_gold": 0,
 				"log": PackedStringArray(),
+				"characters": [
+					{"id": &"warrior", "current_hp": 80.0, "max_hp": 160.0, "alive": true},
+					{"id": &"hunter", "current_hp": 30.0, "max_hp": 60.0, "alive": true},
+					{"id": &"mage", "current_hp": 20.0, "max_hp": 40.0, "alive": true},
+				],
 			})
 		await process_frame
 

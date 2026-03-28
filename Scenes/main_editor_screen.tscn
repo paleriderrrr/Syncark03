@@ -48,35 +48,36 @@ theme_override_constants/separation = 10
 [node name="StatusPanel" type="PanelContainer" parent="Margin/RootVBox"]
 layout_mode = 2
 
-[node name="StatusHBox" type="HBoxContainer" parent="Margin/RootVBox/StatusPanel"]
+[node name="StatusGrid" type="GridContainer" parent="Margin/RootVBox/StatusPanel"]
 layout_mode = 2
-theme_override_constants/separation = 14
+columns = 4
 
-[node name="GoldLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
+[node name="GoldLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(180, 0)
 text = "Gold: 0"
 
-[node name="RouteLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
+[node name="RouteLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(240, 0)
 text = "NODE"
 
-[node name="NodeLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
+[node name="NodeLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(220, 0)
 text = "Current Node"
 
-[node name="RiskLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusHBox"]
+[node name="RiskLabel" type="Label" parent="Margin/RootVBox/StatusPanel/StatusGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(180, 0)
 text = "Risk"
 
 [node name="TopMarketPanel" type="PanelContainer" parent="Margin/RootVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(0, 190)
 
@@ -94,7 +95,7 @@ size_flags_horizontal = 3
 [node name="MarketRefreshButton" type="Button" parent="Margin/RootVBox/TopMarketPanel/TopMarketVBox/TopMarketActions"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Refresh Market"
+text = "Refresh"
 
 [node name="TopMarketStrip" parent="Margin/RootVBox/TopMarketPanel/TopMarketVBox" instance=ExtResource("4_strip")]
 unique_name_in_owner = true
@@ -130,19 +131,19 @@ text = "Current Role"
 [node name="WarriorTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(160, 72)
+custom_minimum_size = Vector2(188, 96)
 text = "Warrior"
 
 [node name="HunterTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(160, 72)
+custom_minimum_size = Vector2(188, 96)
 text = "Hunter"
 
 [node name="MageTabButton" type="Button" parent="Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(160, 72)
+custom_minimum_size = Vector2(188, 96)
 text = "Mage"
 
 [node name="CenterPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox"]
@@ -166,17 +167,8 @@ layout_mode = 2
 horizontal_alignment = 1
 text = "No Item Selected"
 
-[node name="BoardControls" type="HBoxContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="ClearSelectionButton" type="Button" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardControls"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Clear Selection"
-
 [node name="BoardFrame" type="PanelContainer" parent="Margin/RootVBox/MainHBox/CenterPanel/CenterVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -195,6 +187,7 @@ script = ExtResource("3_board")
 cell_pixel_size = 112
 
 [node name="RightPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox"]
+unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(330, 0)
 size_flags_vertical = 3
@@ -204,6 +197,7 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="NextMonsterPanel" type="PanelContainer" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="NextMonsterVBox" type="VBoxContainer" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel"]
@@ -213,6 +207,13 @@ theme_override_constants/separation = 4
 [node name="NextMonsterTitle" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel/NextMonsterVBox"]
 layout_mode = 2
 text = "Next Monster"
+
+[node name="WantedPosterRect" type="TextureRect" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel/NextMonsterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(122, 120)
+stretch_mode = 5
+expand_mode = 1
 
 [node name="NextMonsterNameLabel" type="Label" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel/NextMonsterVBox"]
 unique_name_in_owner = true
@@ -243,6 +244,7 @@ theme_override_constants/separation = 8
 [node name="ActionButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/RightButtons"]
 unique_name_in_owner = true
 layout_mode = 2
+custom_minimum_size = Vector2(220, 96)
 text = "Continue"
 
 [node name="RestoreButton" type="Button" parent="Margin/RootVBox/MainHBox/RightPanel/RightVBox/RightButtons"]
@@ -251,6 +253,7 @@ layout_mode = 2
 text = "Restore Previous Loadout"
 
 [node name="BottomInventoryPanel" type="PanelContainer" parent="Margin/RootVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(0, 190)
 

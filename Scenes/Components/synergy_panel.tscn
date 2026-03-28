@@ -19,7 +19,7 @@ theme_override_constants/separation = 6
 [node name="TitleLabel" type="Label" parent="Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "连携"
+text = "Synergy"
 
 [node name="ListLabel" type="RichTextLabel" parent="Margin/VBox"]
 unique_name_in_owner = true

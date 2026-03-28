@@ -18,6 +18,8 @@ func _run() -> void:
 	_assert(editor.get_node_or_null("Margin/RootVBox/TopMarketPanel/TopMarketVBox/TopMarketActions/MarketRefreshButton") != null, "Market refresh button should exist")
 	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox/WarriorTabButton") != null, "Warrior role tab should exist")
 	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox/warriorPreviewBoard") == null, "Legacy warrior preview board should be removed")
+	var warrior_tab: Button = editor.get_node("Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox/WarriorTabButton")
+	_assert(warrior_tab.text.contains("HP "), "Role tab should show inherited HP text")
 	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel") != null, "Next monster panel should exist")
 	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/RightPanel/RightVBox/SynergyPanel") != null, "Synergy panel should exist")
 	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/RightPanel/RightVBox/RightButtons/ActionButton") != null, "Action button should be below the synergy panel")

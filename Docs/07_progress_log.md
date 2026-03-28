@@ -155,3 +155,45 @@
 - Blockers: No automated blocker remains for the reported `ItemStrip` compile errors.
 - Files Touched: Scripts/UI/Components/item_strip.gd, Docs/07_progress_log.md
 - Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup and `editor_dragdrop_runner.gd` after removing the stale `ItemStrip` drop API remnants.
+### 2026-03-29 04:30
+- Completed: Fixed the inventory-card drag interruption by changing shared-inventory cards from press-time click selection to release-time click selection only when no drag has started, which prevents the inventory strip from rebuilding under the cursor before drag can begin; also removed the static top-left board preview that appeared immediately after click selection.
+- In Progress: Manual editor-side confirmation that inventory cards now drag into the board smoothly and no longer spawn a fixed preview in the board's top-left corner when merely selected.
+- Next: Reopen the project in Godot and verify three paths in sequence: click an inventory item without dragging, drag an inventory item into the board, and drag a market item into inventory.
+- Blockers: No automated blocker remains for the reported inventory-click-vs-drag issue.
+- Files Touched: Scripts/UI/Components/item_icon_card.gd, Scripts/UI/main_editor_screen.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup and `editor_dragdrop_runner.gd` after deferring card click selection until mouse release and removing the static board-corner preview.
+### 2026-03-29 05:05
+- Completed: Split the composite UI atlases `Art/UI/UI1.png` and `Art/UI/UI2.png` into reusable transparent component PNGs under `Art/UI/Slices/`, then deployed the main matching pieces onto the editor scene: market banner to the top market panel, inventory banner to the bottom shared-inventory panel, wood board to the central board frame, right-side board to the info panel, wanted poster to the next-monster section, departure sign to the primary action button, refresh plate to the market refresh button, and the three role placards to the left role-tab buttons.
+- In Progress: Manual visual acceptance of the deployed hand-drawn skin inside the Godot editor.
+- Next: Open the editor scene in Godot and visually verify scaling/cropping for the newly sliced panel textures and buttons, especially the top market banner, bottom inventory banner, center wood board, left role tabs, and right-side board/poster composition.
+- Blockers: No automated compile blocker remains for the UI-atlas splitting and deployment round; remaining work is visual tuning if any component needs different margins or scaling.
+- Files Touched: Art/UI/Slices/*.png, Scripts/Tools/slice_ui_assets.py, Scripts/UI/main_editor_screen.gd, Scenes/main_editor_screen.tscn, Scripts/UI/Components/item_strip.gd, Scripts/UI/Components/synergy_panel.gd, Scenes/Components/synergy_panel.tscn, Docs/07_progress_log.md
+- Notes: Plain Godot 4.6.1 headless launch and the existing UI/drag-drop smoke scripts exit cleanly after the atlas slicing and texture deployment changes. This round adds new art assets and runtime texture skinning but does not yet claim final visual tuning without in-editor inspection.
+### 2026-03-29 04:45
+- Completed: Corrected market price presentation so item cards now display the same effective purchase price that the runtime purchase path will actually charge, including zero-cost food purchases when a free-food-buy effect is currently active.
+- In Progress: Manual confirmation that displayed food-package prices now match the gold deducted during market purchases.
+- Next: Reopen the project in Godot and compare one visible market-card price against the actual gold delta after buying that package, then repeat once while a free-food-purchase effect is active if applicable.
+- Blockers: No automated blocker remains for the reported market-price mismatch.
+- Files Touched: Scripts/Autoload/run_state.gd, Scripts/UI/Components/item_icon_card.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup and `editor_dragdrop_runner.gd` after aligning market-card price display with runtime purchase cost.
+### 2026-03-29 05:25
+- Completed: Added inherited-health support to the left role tags by persisting each character's post-battle health ratio in `RunState`, feeding that ratio back into combat actor construction, exposing a character-health display helper, and updating the left-side role labels plus the selected-role label to show current HP against current effective max HP.
+- In Progress: Manual visual acceptance of the role-tag HP text layout on top of the skinned role placards.
+- Next: Open the editor in Godot and verify that each left role tab now shows `HP current/max`, then complete one battle and confirm the displayed HP changes on the next editor state.
+- Blockers: No automated blocker remains for the inherited-HP display feature.
+- Files Touched: Scripts/Core/combat_engine.gd, Scripts/Autoload/run_state.gd, Scripts/UI/main_editor_screen.gd, Scripts/Tests/campaign_runner.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
+- Notes: Godot 4.6.1 headless launch and `editor_dragdrop_runner.gd` pass after the inherited-health changes; the campaign and UI scripts exit cleanly in this environment without new errors.
+### 2026-03-29 05:05
+- Completed: Removed the `Clear Selection` button from the editor layout and script wiring, changed the top status bar from a squeeze-prone horizontal strip into a four-column grid with explicit minimum widths so the gold label no longer gets clipped, and rebuilt the battle popup into a three-zone layout with heroes on the left, a centered event timeline/log area, and monster data on the right.
+- In Progress: Manual layout acceptance for the new editor header spacing and battle-popup readability.
+- Next: Reopen the project in Godot and verify that the gold line is fully visible, the editor no longer shows a clear-selection button, and the battle popup now reads left=heroes, center=event timeline, right=monster.
+- Blockers: No automated blocker remains for the requested button removal, gold-label visibility adjustment, or battle-popup layout update.
+- Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scenes/battle_popup.tscn, Scripts/UI/battle_popup.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `campaign_runner.gd`, and `ui_runner.gd` clean exit after the editor-header and battle-popup restructure.
+### 2026-03-29 05:45
+- Completed: Rebuilt only the start/title page (per the user's second option) into a hand-drawn hero-style landing screen that matches the current game skin, using the sliced UI art for a wood-backed hero card, a large departure-style start button, and smaller skinned settings/quit buttons while keeping the existing scene flow intact.
+- In Progress: Manual visual acceptance of the new title-page composition and button scaling inside the Godot editor.
+- Next: Open the title screen in Godot and visually verify the hero-card proportions, text readability, and button spacing, then click through Start, Settings, and Quit paths once.
+- Blockers: No automated blocker remains for the title-page-only redesign.
+- Files Touched: Scenes/title_screen.tscn, Scripts/UI/title_screen.gd, Scripts/Tests/title_runner.gd, Docs/07_progress_log.md
+- Notes: Godot 4.6.1 headless launch and the dedicated `title_runner.gd` scene-load test pass after the title-page redesign.

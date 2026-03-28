@@ -17,6 +17,7 @@ func _ready() -> void:
 
 func set_title(text_value: String) -> void:
 	title_label.text = text_value
+	title_label.visible = not text_value.is_empty()
 
 func set_entries(entries: Array[Dictionary], texture_lookup: Dictionary) -> void:
 	for child in card_row.get_children():

@@ -9,6 +9,13 @@ static func simulate(run_state: Node) -> Dictionary:
 	var engine: CombatEngine = CombatEngine.new()
 	return engine._simulate_internal(run_state)
 
+static func preview_character_actor(run_state: Node, character_id: StringName) -> Dictionary:
+	var engine: CombatEngine = CombatEngine.new()
+	for actor in engine._build_characters(run_state):
+		if actor.get("id", &"") == character_id:
+			return actor
+	return {}
+
 func _simulate_internal(run_state: Node) -> Dictionary:
 	var report: Dictionary = {
 		"result": "lose",
@@ -77,7 +84,7 @@ func _build_characters(run_state: Node) -> Array[Dictionary]:
 			"id": definition.id,
 			"name": definition.display_name,
 			"max_hp": float(definition.base_hp + evaluation["max_hp_bonus"]),
-			"current_hp": float(definition.base_hp + evaluation["max_hp_bonus"]),
+			"current_hp": float(definition.base_hp + evaluation["max_hp_bonus"]) * clampf(float(board_state.get("hp_ratio", 1.0)), 0.0, 1.0),
 			"base_hp": float(definition.base_hp),
 			"base_attack": float(definition.base_attack),
 			"attack_bonus": float(evaluation["attack_bonus"]),
@@ -752,6 +759,7 @@ func _cleanup_log(report: Dictionary, log: Array[String], characters: Array[Dict
 	var summaries: Array[Dictionary] = []
 	for actor in characters:
 		summaries.append({
+			"id": actor["id"],
 			"name": actor["name"],
 			"current_hp": actor["current_hp"],
 			"max_hp": actor["max_hp"],
