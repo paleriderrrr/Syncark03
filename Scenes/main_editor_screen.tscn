@@ -1,23 +1,23 @@
 [gd_scene format=3 uid="uid://kaye34abgc0x"]
 
 [ext_resource type="Script" uid="uid://d0b7aj2qs8g7t" path="res://Scripts/UI/main_editor_screen.gd" id="1_editor"]
-[ext_resource type="PackedScene" uid="uid://uqipbhpx82be" path="res://Scenes/battle_popup.tscn" id="2_popup"]
+[ext_resource type="PackedScene" path="res://Scenes/battle_popup.tscn" id="2_popup"]
 [ext_resource type="Script" uid="uid://caqumohui2q5b" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
 [ext_resource type="Texture2D" uid="uid://dy6hhm0cxhd6b" path="res://Art/UI/NewUI/ui2_2_panel_top_green.png" id="3_ojex1"]
-[ext_resource type="Texture2D" uid="uid://bxop82ps7gvtv" path="res://Art/UI/NewUI/金币.png" id="4_3wget"]
+[ext_resource type="Texture2D" uid="uid://bk7ef80vtp0rc" path="res://Art/UI/NewUI/ui1_2_coin_marker.png" id="4_1vyjy"]
 [ext_resource type="Texture2D" uid="uid://c15ge3pvw4wc5" path="res://Art/UI/NewUI/ui2_2_badge_small_dark.png" id="4_fwcvo"]
 [ext_resource type="PackedScene" uid="uid://0sdemtp02gb7" path="res://Scenes/Components/item_strip.tscn" id="4_strip"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/synergy_panel.tscn" id="5_synergy"]
 [ext_resource type="Texture2D" uid="uid://dr60km6grv5l7" path="res://Art/UI/Background.png" id="6_bg"]
 [ext_resource type="Script" uid="uid://bmulngcjm5nc" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
+[ext_resource type="Texture2D" uid="uid://bc74ak8pfe8q0" path="res://Art/UI/NewUI/ui1_2_role_tab_mid.png" id="8_tijtm"]
 [ext_resource type="Texture2D" uid="uid://dr4rs7okqcgcf" path="res://Art/UI/NewUI/ui1_2_role_tab_bottom.png" id="9_45gjs"]
 [ext_resource type="Texture2D" uid="uid://b8f04p7jexi2c" path="res://Art/UI/NewUI/ui2_2_panel_bottom_red.png" id="9_fwcvo"]
-[ext_resource type="Texture2D" uid="uid://bc4hee2vrjkbm" path="res://Art/UI/NewUI/战士.png" id="10_3wget"]
 [ext_resource type="Texture2D" uid="uid://cgkifvocrjgpj" path="res://Art/UI/NewUI/ui1_2_role_tab_top.png" id="10_hkonf"]
 [ext_resource type="Texture2D" uid="uid://b3slmqoqlubn2" path="res://Art/UI/NewUI/ui1_2_board_wood.png" id="11_45gjs"]
 [ext_resource type="Texture2D" uid="uid://dup4t101a6e76" path="res://Art/UI/NewUI/ui1_2_settings_icon.png" id="12_1vyjy"]
-[ext_resource type="Texture2D" uid="uid://nwa0115tugbr" path="res://Art/UI/NewUI/告示.png" id="13_3wget"]
 [ext_resource type="Texture2D" uid="uid://se3u2duh8jvu" path="res://Art/UI/NewUI/ui1_2_wanted_poster.png" id="13_hkonf"]
+[ext_resource type="Texture2D" uid="uid://wvm7e3f4indw" path="res://Art/UI/NewUI/ui1_2_right_board.png" id="13_xd7oq"]
 [ext_resource type="Texture2D" uid="uid://bp8upp5fdi2kh" path="res://Art/UI/NewUI/物品商店底图.png" id="14_shop_card"]
 [ext_resource type="Texture2D" uid="uid://c5mrtd0m1b4bd" path="res://Art/UI/NewUI/ui1_2_depart_sign.png" id="15_elv5r"]
 [ext_resource type="Texture2D" uid="uid://o0i6xywajdfm" path="res://Art/UI/NewUI/物品仓库地图.png" id="16_inventory_card"]
@@ -45,6 +45,62 @@ texture = ExtResource("6_bg")
 expand_mode = 1
 stretch_mode = 6
 
+[node name="CenterPanel" type="Control" parent="." unique_id=745002482]
+anchors_preset = 0
+offset_left = 326.0
+offset_top = 268.0
+offset_right = 1320.0
+offset_bottom = 816.0
+
+[node name="SelectedItemLabel" type="Label" parent="CenterPanel" unique_id=1226482005]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 210.0
+offset_top = 28.0
+offset_right = 856.0
+offset_bottom = 58.0
+text = "No Item Selected"
+horizontal_alignment = 1
+
+[node name="BoardBackground" type="TextureRect" parent="CenterPanel" unique_id=507403133]
+layout_mode = 0
+offset_left = -72.99999
+offset_top = -11.0
+offset_right = 1274.2068
+offset_bottom = 836.93164
+scale = Vector2(0.81527585, 0.7188574)
+mouse_filter = 2
+texture = ExtResource("11_45gjs")
+
+[node name="BoardFrame" type="Control" parent="CenterPanel" unique_id=466375146]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = 19.0
+offset_top = 22.0
+offset_right = 1052.0
+offset_bottom = 572.0
+
+[node name="BoardCenter" type="CenterContainer" parent="CenterPanel/BoardFrame" unique_id=672146067]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -266.0
+offset_top = -97.0
+offset_right = -266.0
+offset_bottom = -97.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1.3346756, 1.4285423)
+
+[node name="BentoBoardView" type="Control" parent="CenterPanel/BoardFrame/BoardCenter" unique_id=1617129778]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("3_board")
+cell_pixel_size = 48
+
 [node name="TopMarketPanel" type="Control" parent="." unique_id=187167841]
 anchors_preset = 0
 offset_left = 238.0
@@ -58,10 +114,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 2.0
-offset_top = -44.0
-offset_right = 2.0
-offset_bottom = 100.0
+offset_left = -72.0
+offset_top = -3.0
+offset_right = -72.0
+offset_bottom = 141.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -71,11 +127,11 @@ stretch_mode = 6
 
 [node name="GoldIcon" type="TextureRect" parent="TopMarketPanel" unique_id=1746315528]
 layout_mode = 0
-offset_left = 23.0
-offset_top = 63.0
-offset_right = 103.0
-offset_bottom = 143.0
-texture = ExtResource("4_3wget")
+offset_left = -28.0
+offset_top = 64.0
+offset_right = 52.0
+offset_bottom = 144.0
+texture = ExtResource("4_1vyjy")
 
 [node name="GoldLabel" type="Label" parent="TopMarketPanel/GoldIcon" unique_id=1960790533]
 unique_name_in_owner = true
@@ -153,9 +209,9 @@ grow_vertical = 2
 [node name="TopMarketActions" type="HBoxContainer" parent="TopMarketPanel/TopMarketVBox" unique_id=1575567653]
 layout_mode = 0
 offset_left = 51.0
-offset_top = 157.0
-offset_right = 1187.0
-offset_bottom = 224.0
+offset_top = 190.0
+offset_right = 1124.0
+offset_bottom = 281.0
 
 [node name="TopMarketSpacer" type="Control" parent="TopMarketPanel/TopMarketVBox/TopMarketActions" unique_id=1142158324]
 layout_mode = 2
@@ -177,62 +233,6 @@ offset_top = 68.0
 offset_right = 1110.0
 offset_bottom = 204.0
 card_background_texture = ExtResource("14_shop_card")
-
-[node name="CenterPanel" type="Control" parent="." unique_id=745002482]
-anchors_preset = 0
-offset_left = 326.0
-offset_top = 268.0
-offset_right = 1320.0
-offset_bottom = 816.0
-
-[node name="SelectedItemLabel" type="Label" parent="CenterPanel" unique_id=1226482005]
-unique_name_in_owner = true
-visible = false
-layout_mode = 0
-offset_left = 210.0
-offset_top = 28.0
-offset_right = 856.0
-offset_bottom = 58.0
-text = "No Item Selected"
-horizontal_alignment = 1
-
-[node name="BoardBackground" type="TextureRect" parent="CenterPanel" unique_id=507403133]
-layout_mode = 0
-offset_left = -72.99999
-offset_top = -11.0
-offset_right = 1274.2068
-offset_bottom = 836.93164
-scale = Vector2(0.81527585, 0.7188574)
-mouse_filter = 2
-texture = ExtResource("11_45gjs")
-
-[node name="BoardFrame" type="Control" parent="CenterPanel" unique_id=466375146]
-unique_name_in_owner = true
-anchors_preset = 0
-offset_left = 36.0
-offset_top = 62.0
-offset_right = 1052.0
-offset_bottom = 572.0
-
-[node name="BoardCenter" type="CenterContainer" parent="CenterPanel/BoardFrame" unique_id=672146067]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -266.0
-offset_top = -97.0
-offset_right = -266.0
-offset_bottom = -97.0
-grow_horizontal = 2
-grow_vertical = 2
-scale = Vector2(1.3346756, 1.4285423)
-
-[node name="BentoBoardView" type="Control" parent="CenterPanel/BoardFrame/BoardCenter" unique_id=1617129778]
-unique_name_in_owner = true
-layout_mode = 2
-script = ExtResource("3_board")
-cell_pixel_size = 48
 
 [node name="LeftPanel" type="Control" parent="." unique_id=781811621]
 anchors_preset = 0
@@ -277,6 +277,7 @@ offset_bottom = 59.731644
 
 [node name="SelectedRoleLabel" type="Label" parent="LeftPanel/LeftCenter/LeftVBox" unique_id=1908654062]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 offset_left = 27.960732
 offset_top = 3.4132614
@@ -289,20 +290,20 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 25.487282
-offset_top = 36.034767
-offset_right = 277.83212
-offset_bottom = 169.74207
-icon = ExtResource("10_3wget")
+offset_top = 1.7066422
+offset_right = 325.48727
+offset_bottom = 151.70663
+icon = ExtResource("8_tijtm")
 flat = true
 expand_icon = true
 
 [node name="HunterTabButton" type="Button" parent="LeftPanel/LeftCenter/LeftVBox" unique_id=1168102305]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 26.259583
-offset_top = 179.19492
-offset_right = 272.42572
-offset_bottom = 277.99207
+offset_left = 14.674469
+offset_top = 151.88902
+offset_right = 314.67447
+offset_bottom = 301.88904
 icon = ExtResource("9_45gjs")
 flat = true
 expand_icon = true
@@ -310,10 +311,10 @@ expand_icon = true
 [node name="MageTabButton" type="Button" parent="LeftPanel/LeftCenter/LeftVBox" unique_id=215687389]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 26.311779
-offset_top = 283.27127
-offset_right = 271.35757
-offset_bottom = 388.20682
+offset_left = 21.625534
+offset_top = 285.00522
+offset_right = 321.62555
+offset_bottom = 435.00522
 scale = Vector2(0.9886, 0.8371975)
 icon = ExtResource("10_hkonf")
 flat = true
@@ -321,9 +322,9 @@ expand_icon = true
 
 [node name="RightPanel" type="Control" parent="." unique_id=1766331938]
 anchors_preset = 0
-offset_left = 1510.0
+offset_left = 1536.0
 offset_top = 288.0
-offset_right = 1858.0
+offset_right = 1909.0
 offset_bottom = 884.0
 
 [node name="RightBackground" type="TextureRect" parent="RightPanel" unique_id=1681799263]
@@ -340,7 +341,7 @@ grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.8965447, 1.0213212)
 mouse_filter = 2
-texture = ExtResource("13_3wget")
+texture = ExtResource("13_xd7oq")
 stretch_mode = 2
 
 [node name="NextMonsterPanel" type="Control" parent="RightPanel" unique_id=1046346511]
@@ -440,10 +441,10 @@ autowrap_mode = 3
 [node name="SynergyPanel" parent="RightPanel" unique_id=1134522113 instance=ExtResource("5_synergy")]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = -405.0
-offset_top = 137.0
-offset_right = -279.0
-offset_bottom = 400.0
+offset_left = -324.0
+offset_top = 121.0
+offset_right = -229.0
+offset_bottom = 397.0
 
 [node name="StageInfoPanel" type="Control" parent="RightPanel" unique_id=201420001]
 anchors_preset = 0
@@ -628,13 +629,13 @@ card_background_texture = ExtResource("16_inventory_card")
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 0
-offset_left = 63.000004
-offset_top = 931.99994
-offset_right = 159.0
-offset_bottom = 1028.0
+offset_left = 1786.0001
+offset_top = 26.0
+offset_right = 1912.0001
+offset_bottom = 153.0
 scale = Vector2(0.819768, 0.8305503)
 icon = ExtResource("12_1vyjy")
 flat = true
 
 [node name="BattlePopup" parent="." unique_id=1952828123 instance=ExtResource("2_popup")]
-visible = false
+oversampling_override = 1.0
