@@ -14,16 +14,19 @@ func _run() -> void:
 	root.add_child(editor)
 	await process_frame
 
-	_assert(editor.get_node_or_null("Margin/RootVBox/TopMarketPanel/TopMarketStrip") != null, "Top market strip should exist")
-	_assert(editor.get_node_or_null("Margin/RootVBox/TopMarketPanel/TopMarketVBox/TopMarketActions/MarketRefreshButton") != null, "Market refresh button should exist")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox/WarriorTabButton") != null, "Warrior role tab should exist")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox/warriorPreviewBoard") == null, "Legacy warrior preview board should be removed")
-	var warrior_tab: Button = editor.get_node("Margin/RootVBox/MainHBox/LeftPanel/LeftCenter/LeftVBox/WarriorTabButton")
+	_assert(editor.get_node_or_null("TopMarketPanel/TopMarketVBox/TopMarketStrip") != null, "Top market strip should exist")
+	_assert(editor.get_node_or_null("TopMarketPanel/TopMarketVBox/TopMarketActions/MarketRefreshButton") != null, "Market refresh button should exist")
+	_assert(editor.get_node_or_null("TopMarketPanel/TopMarketVBox/TopMarketStrip/VBox/Scroll") == null, "Top market strip should no longer use a ScrollContainer")
+	_assert(editor.get_node_or_null("TopMarketPanel/TopMarketVBox/TopMarketStrip/VBox/StripHBox/Viewport") != null, "Top market strip should use a fixed viewport")
+	_assert(editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/WarriorTabButton") != null, "Warrior role tab should exist")
+	_assert(editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/warriorPreviewBoard") == null, "Legacy warrior preview board should be removed")
+	var warrior_tab: Button = editor.get_node("LeftPanel/LeftCenter/LeftVBox/WarriorTabButton")
 	_assert(warrior_tab.text.contains("HP "), "Role tab should show inherited HP text")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/RightPanel/RightVBox/NextMonsterPanel") != null, "Next monster panel should exist")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/RightPanel/RightVBox/SynergyPanel") != null, "Synergy panel should exist")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/RightPanel/RightVBox/RightButtons/ActionButton") != null, "Action button should be below the synergy panel")
-	var market_strip: Node = editor.get_node("Margin/RootVBox/TopMarketPanel/TopMarketStrip")
+	_assert(editor.get_node_or_null("RightPanel/NextMonsterPanel") != null, "Next monster panel should exist")
+	_assert(editor.get_node_or_null("RightPanel/MonsterTooltipPanel") != null, "Monster tooltip panel should exist")
+	_assert(editor.get_node_or_null("RightPanel/SynergyPanel") != null, "Synergy panel should exist")
+	_assert(editor.get_node_or_null("RightPanel/ActionButton") != null, "Action button should exist inside the right panel")
+	var market_strip: Node = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip")
 	_assert(market_strip.has_method("get_entry_count"), "Top market strip should expose grouped entries")
 	if market_strip.has_method("get_entry_count"):
 		_assert(int(market_strip.call("get_entry_count")) > 0, "Top market strip should render at least one grouped market entry")
@@ -38,15 +41,17 @@ func _run() -> void:
 			changed_offer_ids = true
 			break
 	_assert(changed_offer_ids, "Reroll should change the market offers")
-	_assert(editor.get_node_or_null("Margin/RootVBox/BottomInventoryPanel/InventoryDropZone") != null, "Inventory drop zone should exist")
-	_assert(editor.get_node_or_null("Margin/RootVBox/BottomInventoryPanel/InventoryDropZone/InventoryStrip") != null, "Bottom inventory strip should exist")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/CenterPanel/CenterVBox/BoardFrame/BoardCenter/BentoBoardView") != null, "Board should be centered inside the editor area")
+	_assert(editor.get_node_or_null("BottomInventoryPanel/InventoryDropZone") != null, "Inventory drop zone should exist")
+	_assert(editor.get_node_or_null("BottomInventoryPanel/InventoryDropZone/InventoryStrip") != null, "Bottom inventory strip should exist")
+	_assert(editor.get_node_or_null("BottomInventoryPanel/InventoryDropZone/InventoryStrip/VBox/Scroll") == null, "Bottom inventory strip should no longer use a ScrollContainer")
+	_assert(editor.get_node_or_null("BottomInventoryPanel/InventoryDropZone/InventoryStrip/VBox/StripHBox/Viewport") != null, "Bottom inventory strip should use a fixed viewport")
+	_assert(editor.get_node_or_null("CenterPanel/BoardFrame/BoardCenter/BentoBoardView") != null, "Board should be centered inside the editor area")
 	await process_frame
 	await process_frame
 	var viewport_rect := Rect2(Vector2.ZERO, editor.get_viewport().get_visible_rect().size)
-	_assert(_rect_inside_viewport(editor.get_node("Margin/RootVBox/StatusPanel").get_global_rect(), viewport_rect), "Status panel should remain inside the viewport")
-	_assert(_rect_inside_viewport(editor.get_node("Margin/RootVBox/TopMarketPanel").get_global_rect(), viewport_rect), "Top market panel should remain inside the viewport")
-	_assert(_rect_inside_viewport(editor.get_node("Margin/RootVBox/BottomInventoryPanel").get_global_rect(), viewport_rect), "Bottom inventory panel should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("StatusPanel").get_global_rect(), viewport_rect), "Status panel should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("TopMarketPanel").get_global_rect(), viewport_rect), "Top market panel should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("BottomInventoryPanel").get_global_rect(), viewport_rect), "Bottom inventory panel should remain inside the viewport")
 	run_state.current_gold = 999
 	run_state.current_market_index = 4
 	for _i in range(10):

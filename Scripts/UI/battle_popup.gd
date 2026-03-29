@@ -4,9 +4,12 @@ class_name BattlePopup
 const PLAYBACK_SPEED := 6.0
 const MAX_EVENT_DELAY := 0.5
 const MAX_VISIBLE_LOG_LINES := 8
+const TEX_STAGE_PLAYBACK := preload("res://Art/UI/Battlepage1.png")
+const TEX_STAGE_RESULT := preload("res://Art/UI/Battlepage2.png")
 
 @onready var title_label: Label = %TitleLabel
 @onready var route_label: Label = %BattleRouteLabel
+@onready var stage_art: TextureRect = %StageArt
 @onready var hero_labels: Array[Label] = [%Hero1Label, %Hero2Label, %Hero3Label]
 @onready var party_meta_label: Label = %PartyMetaLabel
 @onready var playback_time_label: Label = %PlaybackTimeLabel
@@ -43,6 +46,7 @@ func open_battle() -> void:
 	_is_playing = false
 
 func _prepare_playback(report: Dictionary) -> void:
+	stage_art.texture = TEX_STAGE_PLAYBACK
 	title_label.text = "Battle In Progress - %s" % String(report.get("monster_name", "Unknown"))
 	route_label.text = _run_state().get_route_label()
 	playback_time_label.text = "Time 0.0s"
@@ -72,6 +76,7 @@ func _play_report(report: Dictionary) -> void:
 		playback_time_label.text = "Time %.1fs" % float(report.get("duration", 0.0))
 
 func _render_final_report(report: Dictionary) -> void:
+	stage_art.texture = TEX_STAGE_RESULT
 	title_label.text = "%s - %s" % [String(report.get("title", "Battle")), String(report.get("monster_name", "Unknown"))]
 	route_label.text = _run_state().get_route_label()
 	playback_time_label.text = "Time %.1fs" % float(report.get("duration", 0.0))

@@ -232,3 +232,59 @@
 - Blockers: No automated blocker remains for the out-of-frame editor issue after the layout-budget rebuild.
 - Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
 - Notes: Fresh verification passed under Godot 4.6.1 for `ui_runner.gd` and `campaign_runner.gd` after the layout-budget rebuild and dynamic board-size implementation.
+### 2026-03-29 06:30
+- Completed: Fixed the board auto-shrinking regression by stopping layout recalculation on every editor refresh and by computing the `8x6` board cell size from the outer board-frame content area instead of the already-scaled inner center node.
+- In Progress: Manual confirmation that repeated drag-and-drop operations no longer shrink the board.
+- Next: Reopen the editor, drag several foods in a row, and verify the board stays at a stable size while the top and bottom panels remain visible.
+- Blockers: No automated blocker remains for the board auto-shrinking issue.
+- Files Touched: Scripts/UI/main_editor_screen.gd, 07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `ui_runner.gd`, and `campaign_runner.gd` after the board-size recalculation fix.
+### 2026-03-29 06:45
+- Completed: Converted the main editor from the mixed scroll-driven layout to a fixed `16:9` composition by keeping fixed top and bottom bands, removing `ScrollContainer` from the market and inventory strips, and replacing them with fixed viewports plus button-driven horizontal paging.
+- In Progress: Manual confirmation that the market band, board area, and inventory band now keep stable outer sizes while horizontal browsing still works.
+- Next: Reopen the editor at `1920x1080`, verify that the market and inventory remain fully visible, and test the new left/right paging buttons together with drag-and-drop.
+- Blockers: No automated blocker remains for the mixed-layout instability after the fixed-layout strip rebuild.
+- Files Touched: Scenes/Components/item_strip.tscn, Scripts/UI/Components/item_strip.gd, Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `ui_runner.gd`, and `campaign_runner.gd` after replacing the strip ScrollContainers with fixed clipped viewports.
+### 2026-03-29 06:52
+- Completed: Fixed the fixed-layout follow-up compile regression by restoring the `bottom_inventory_panel` and `right_panel` scene references that were still used by the surface-art setup.
+- In Progress: Manual confirmation that the rebuilt fixed layout now opens cleanly in the editor without new parse errors.
+- Next: Reopen the project and verify the editor scene loads, then continue checking the fixed market/inventory bands.
+- Blockers: No automated blocker remains for this compile regression.
+- Files Touched: Scripts/UI/main_editor_screen.gd, 07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup and `ui_runner.gd` after restoring the missing scene references.
+### 2026-03-29 10:55
+- Completed: Installed the newly updated `Art/UI` full-screen assets into their corresponding screens by switching the title page to `Titlepage.png`, the main editor background to `Background.png`, the battle popup window skin to `´óµ¯´°.png`, the battle-stage art to `Battlepage1.png` during playback and `Battlepage2.png` on final result, and the settings panel to `Ð¡µ¯´°.png`.
+- In Progress: Manual visual acceptance of the newly installed full-page UI art across title, editor, settings, and battle popup screens.
+- Next: Open the title page, main editor, settings page, and one battle popup in Godot to confirm the new full-page art scales correctly and feels like the intended screen-specific art replacement.
+- Blockers: No automated compile blocker remains for the updated UI-folder asset installation.
+- Files Touched: Scenes/title_screen.tscn, Scenes/main_editor_screen.tscn, Scenes/settings_screen.tscn, Scenes/battle_popup.tscn, Scripts/UI/battle_popup.gd, Docs/07_progress_log.md
+- Notes: Godot 4.6.1 headless launch passes, `title_runner.gd` passes, and the battle playback script exits cleanly after switching these scenes to the new UI-folder resources.
+### 2026-03-29 07:00
+- Completed: Simplified the right-side synergy display so each category now shows only its trigger state and count, without rendering the detailed effect text.
+- In Progress: Manual confirmation that the compact synergy list is easier to scan in the fixed right-side panel.
+- Next: Reopen the editor and confirm the right-side synergy window now only shows On/Off state plus count for each food category.
+- Blockers: No automated blocker remains for this synergy-panel presentation update.
+- Files Touched: Scripts/UI/Components/synergy_panel.gd, 07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `ui_runner.gd`, and `campaign_runner.gd` after simplifying the synergy display.
+### 2026-03-29 07:20
+- Completed: Rebuilt the main editor into a fixed `1920x1080` absolute-position canvas, removed the top-level auto-layout skeleton, moved every major region to explicit coordinates, and converted the right-side monster detail into an image-hover tooltip panel so long monster text no longer expands the right column.
+- In Progress: Manual confirmation that the absolute-position editor layout feels correct and that the hover tooltip placement is comfortable in the right panel.
+- Next: Reopen the editor, verify the top market, center board, right info panel, and bottom inventory all stay fixed in place, then hover the monster image to check the tooltip.
+- Blockers: No automated blocker remains for the absolute-layout editor conversion.
+- Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scenes/Components/item_strip.tscn, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `ui_runner.gd`, and `campaign_runner.gd` after converting the main editor to absolute positioning.
+### 2026-03-29 07:35
+- Completed: Converted the main editor's major absolute-position regions from container-driven parents to plain `Control` roots with separate background skin layers, so the scene can now be adjusted directly in Godot's 2D editor without parent containers reflowing the child nodes.
+- In Progress: Manual confirmation that the right-side controls now keep their intended positions and that 2D scene editing feels predictable.
+- Next: Open the scene in Godot's 2D view, move one right-side control and one main-region control, then confirm they stay where placed without container interference.
+- Blockers: No automated blocker remains for the container-reflow issue in the absolute-position editor layout.
+- Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `ui_runner.gd`, and `campaign_runner.gd` after replacing the major container parents with `Control` roots and separate background layers.
+### 2026-03-29 07:45
+- Completed: Restored market and inventory item visibility by fixing the fixed-strip viewport height chain; the strip entries were still being created, but the viewport height had collapsed to `0`, clipping every card out of view.
+- In Progress: Manual confirmation that the market row and shared inventory row now both show their item cards again in the 2D-editable layout.
+- Next: Reopen the editor and verify the market cards are visible, then click or drag one market item once to confirm the strip remains visible during interaction.
+- Blockers: No automated blocker remains for the invisible market-card issue.
+- Files Touched: Scenes/Components/item_strip.tscn, 07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for a runtime market-strip probe plus `ui_runner.gd` and `campaign_runner.gd` after restoring the fixed viewport height.

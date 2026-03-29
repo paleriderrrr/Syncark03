@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cph8gpundbiog"
-path="res://.godot/imported/背景.png-ec8ee0411430b3599db99621c31e778f.ctex"
+uid="uid://txfacamo1h0m"
+path="res://.godot/imported/小弹窗.png-ad35c94f0f34e2b806f0941a6f4c3400.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/背景.png"
-dest_files=["res://.godot/imported/背景.png-ec8ee0411430b3599db99621c31e778f.ctex"]
+source_file="res://Art/UI/小弹窗.png"
+dest_files=["res://.godot/imported/小弹窗.png-ad35c94f0f34e2b806f0941a6f4c3400.ctex"]
 
 [params]
 

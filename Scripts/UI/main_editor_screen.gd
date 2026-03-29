@@ -15,28 +15,26 @@ const TEX_WANTED := preload("res://Art/UI/Slices/ui1_wanted_poster.png")
 @onready var route_label: Label = %RouteLabel
 @onready var node_label: Label = %NodeLabel
 @onready var risk_label: Label = %RiskLabel
-@onready var status_panel: PanelContainer = %StatusPanel
+@onready var status_panel: PanelContainer = %StatusBackground
 @onready var selected_role_label: Label = %SelectedRoleLabel
 @onready var selected_item_label: Label = %SelectedItemLabel
 @onready var board_view: BentoBoardView = %BentoBoardView
-@onready var main_hbox: HBoxContainer = %MainHBox
-@onready var top_market_panel: PanelContainer = %TopMarketPanel
+@onready var top_market_panel: PanelContainer = %TopMarketBackground
 @onready var top_market_strip: ItemStrip = %TopMarketStrip
 @onready var market_refresh_button: Button = %MarketRefreshButton
 @onready var inventory_drop_zone: InventoryDropZone = %InventoryDropZone
 @onready var inventory_strip: ItemStrip = %InventoryStrip
-@onready var bottom_inventory_panel: PanelContainer = %BottomInventoryPanel
+@onready var bottom_inventory_panel: PanelContainer = %BottomInventoryBackground
 @onready var board_frame: PanelContainer = %BoardFrame
-@onready var board_center: CenterContainer = %BoardCenter
-@onready var left_panel: PanelContainer = $"Margin/RootVBox/MainHBox/LeftPanel"
-@onready var right_panel: PanelContainer = %RightPanel
+@onready var right_panel: PanelContainer = %RightBackground
 @onready var restore_button: Button = %RestoreButton
 @onready var action_button: Button = %ActionButton
-@onready var next_monster_panel: PanelContainer = %NextMonsterPanel
+@onready var next_monster_panel: PanelContainer = %NextMonsterBackground
 @onready var wanted_poster_rect: TextureRect = %WantedPosterRect
 @onready var next_monster_name_label: Label = %NextMonsterNameLabel
 @onready var next_monster_stats_label: Label = %NextMonsterStatsLabel
 @onready var next_monster_skill_label: Label = %NextMonsterSkillLabel
+@onready var monster_tooltip_panel: PanelContainer = %MonsterTooltipPanel
 @onready var synergy_panel: Control = %SynergyPanel
 @onready var battle_popup: BattlePopup = %BattlePopup
 
@@ -48,7 +46,6 @@ const TEX_WANTED := preload("res://Art/UI/Slices/ui1_wanted_poster.png")
 
 var _food_textures: Dictionary = {}
 var _role_names: Dictionary = {}
-var _layout_refresh_queued: bool = false
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -80,9 +77,11 @@ func _ready() -> void:
 	tab_buttons[&"hunter"].pressed.connect(func() -> void: _run_state().select_character(&"hunter"))
 	tab_buttons[&"mage"].pressed.connect(func() -> void: _run_state().select_character(&"mage"))
 	board_view.set_food_textures(_food_textures)
-	resized.connect(_schedule_layout_refresh)
-	get_viewport().size_changed.connect(_schedule_layout_refresh)
-	_schedule_layout_refresh()
+	board_frame.resized.connect(_schedule_board_size)
+	wanted_poster_rect.mouse_entered.connect(_on_monster_hover_entered)
+	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
+	monster_tooltip_panel.visible = false
+	call_deferred("_apply_board_size")
 	_refresh()
 
 func _apply_static_texts() -> void:
@@ -112,11 +111,12 @@ func _apply_surface_art() -> void:
 	apply_button_texture(tab_buttons[&"hunter"], TEX_ROLE_MID, 30)
 	apply_button_texture(tab_buttons[&"mage"], TEX_ROLE_BOTTOM, 30)
 	wanted_poster_rect.texture = TEX_WANTED
-	market_refresh_button.custom_minimum_size = Vector2(136, 54)
-	action_button.custom_minimum_size = Vector2(190, 78)
+	market_refresh_button.custom_minimum_size = Vector2(140, 56)
+	action_button.custom_minimum_size = Vector2(184, 74)
 	for role_button_variant in tab_buttons.values():
 		var role_button: Button = role_button_variant
 		role_button.custom_minimum_size = Vector2(156, 56)
+	wanted_poster_rect.custom_minimum_size = Vector2(104, 104)
 	_apply_button_font_color(market_refresh_button, Color(0.96, 0.96, 0.96))
 	_apply_button_font_color(action_button, Color(0.46, 0.11, 0.08))
 	_apply_button_font_color(tab_buttons[&"warrior"], Color(0.12, 0.12, 0.12))
@@ -145,45 +145,17 @@ func _apply_status_panel_style() -> void:
 		label.add_theme_color_override("font_color", Color(0.97, 0.93, 0.82))
 		label.add_theme_font_size_override("font_size", 17)
 
-func _schedule_layout_refresh() -> void:
-	if _layout_refresh_queued:
-		return
-	_layout_refresh_queued = true
-	call_deferred("_apply_dynamic_layout")
-
-func _apply_dynamic_layout() -> void:
-	_layout_refresh_queued = false
-	if not is_inside_tree():
-		return
-	var viewport_size: Vector2 = get_viewport_rect().size
-	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
-		return
-	var content_size: Vector2 = $"Margin".size
-	var status_height: int = clampi(int(content_size.y * 0.048), 44, 56)
-	var strip_height: int = clampi(int(content_size.y * 0.13), 118, 146)
-	status_panel.custom_minimum_size = Vector2(0, status_height)
-	top_market_panel.custom_minimum_size = Vector2(0, strip_height)
-	bottom_inventory_panel.custom_minimum_size = Vector2(0, strip_height)
-	left_panel.custom_minimum_size.x = clampi(int(content_size.x * 0.11), 180, 224)
-	right_panel.custom_minimum_size.x = clampi(int(content_size.x * 0.165), 268, 332)
-	var button_height: int = clampi(int(main_hbox.size.y * 0.14), 50, 66)
-	for role_button_variant in tab_buttons.values():
-		var role_button: Button = role_button_variant
-		role_button.custom_minimum_size = Vector2(156, button_height)
-	market_refresh_button.custom_minimum_size = Vector2(clampi(int(content_size.x * 0.075), 124, 154), clampi(int(strip_height * 0.46), 46, 60))
-	action_button.custom_minimum_size = Vector2(clampi(int(content_size.x * 0.104), 176, 220), clampi(int(main_hbox.size.y * 0.16), 66, 84))
-	wanted_poster_rect.custom_minimum_size = Vector2(clampi(int(right_panel.size.x * 0.36), 92, 126), clampi(int(main_hbox.size.y * 0.18), 92, 128))
-	for label in [gold_label, route_label, node_label, risk_label]:
-		label.custom_minimum_size.y = clampi(status_height - 12, 28, 40)
-	_schedule_board_size()
-
 func _schedule_board_size() -> void:
 	call_deferred("_apply_board_size")
 
 func _apply_board_size() -> void:
 	if not is_inside_tree():
 		return
-	var available_size: Vector2 = board_center.size
+	var panel_style: StyleBox = board_frame.get_theme_stylebox("panel")
+	var available_size: Vector2 = board_frame.size
+	if panel_style != null:
+		available_size.x -= panel_style.get_minimum_size().x
+		available_size.y -= panel_style.get_minimum_size().y
 	if available_size.x <= 0.0 or available_size.y <= 0.0:
 		return
 	var horizontal_padding: int = 12
@@ -235,7 +207,6 @@ func _refresh() -> void:
 	_refresh_board()
 	_refresh_next_monster_panel()
 	_refresh_synergy_panel()
-	_schedule_layout_refresh()
 
 func _refresh_selected_role(character_id: StringName) -> void:
 	var run_state: Node = _run_state()
@@ -319,6 +290,7 @@ func _refresh_next_monster_panel() -> void:
 		next_monster_name_label.text = "Unknown"
 		next_monster_stats_label.text = "-"
 		next_monster_skill_label.text = "-"
+		monster_tooltip_panel.visible = false
 		return
 	next_monster_name_label.text = "%s / %s" % [String(summary.get("display_name", "")), String(summary.get("category_name", ""))]
 	next_monster_stats_label.text = "HP %d  ATK %.1f  Interval %.1fs" % [
@@ -327,6 +299,7 @@ func _refresh_next_monster_panel() -> void:
 		float(summary.get("attack_interval", 0.0)),
 	]
 	next_monster_skill_label.text = String(summary.get("skill_summary", ""))
+	monster_tooltip_panel.visible = false
 
 func _build_route_label(run_state: Node) -> String:
 	var total_nodes: int = 0
@@ -429,6 +402,14 @@ func _on_market_refresh_pressed() -> void:
 
 func _on_battle_requested() -> void:
 	battle_popup.open_battle()
+
+func _on_monster_hover_entered() -> void:
+	if next_monster_stats_label.text == "-" and next_monster_skill_label.text == "-":
+		return
+	monster_tooltip_panel.visible = true
+
+func _on_monster_hover_exited() -> void:
+	monster_tooltip_panel.visible = false
 
 func _estimate_risk_label() -> String:
 	var total_power: float = 0.0

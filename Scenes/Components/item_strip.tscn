@@ -4,31 +4,47 @@
 
 [node name="ItemStrip" type="PanelContainer"]
 script = ExtResource("1_script")
+custom_minimum_size = Vector2(0, 112)
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 6
 
 [node name="TitleLabel" type="Label" parent="VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "条目"
+text = "Items"
 
-[node name="Scroll" type="ScrollContainer" parent="VBox"]
+[node name="StripHBox" type="HBoxContainer" parent="VBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-horizontal_scroll_mode = 1
-vertical_scroll_mode = 0
-mouse_filter = 2
+theme_override_constants/separation = 8
 
-[node name="Center" type="CenterContainer" parent="VBox/Scroll"]
+[node name="PrevButton" type="Button" parent="VBox/StripHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(42, 72)
+text = "<"
+
+[node name="Viewport" type="Control" parent="VBox/StripHBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 88)
+clip_contents = true
+mouse_filter = 2
 
-[node name="CardRow" type="HBoxContainer" parent="VBox/Scroll/Center"]
+[node name="CardRow" type="HBoxContainer" parent="VBox/StripHBox/Viewport"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 14
 mouse_filter = 2
-alignment = 1
+
+[node name="NextButton" type="Button" parent="VBox/StripHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(42, 72)
+text = ">"

@@ -8,12 +8,10 @@ func set_summary(summary: Dictionary, role_name: String) -> void:
 	title_label.text = "%s Synergy" % role_name
 	var lines: PackedStringArray = []
 	for entry in summary.get("entries", []):
-		var prefix: String = "[Active]" if bool(entry.get("active", false)) else "[Inactive]"
-		lines.append("%s %s %d - %s" % [
+		var prefix: String = "[On]" if bool(entry.get("active", false)) else "[Off]"
+		lines.append("%s %s x%d" % [
 			prefix,
 			String(entry.get("category_name", "")),
 			int(entry.get("count", 0)),
-			String(entry.get("synergy_name", "")),
 		])
-		lines.append("  %s" % String(entry.get("effect_text", "")))
 	list_label.text = "\n".join(lines)
