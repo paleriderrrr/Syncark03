@@ -3,7 +3,7 @@ class_name BattlePopup
 
 const POPUP_SIZE := Vector2i(1540, 760)
 const ATTACK_ANIMATION_TIME := 0.3
-const ATTACK_JUMP_HEIGHT := 22.0
+const ATTACK_JUMP_HEIGHT := 36.0
 const FLOAT_TEXT_TIME := 0.8
 const FLOAT_TEXT_RISE := 42.0
 const MAX_VISIBLE_LOG_LINES := 8
@@ -23,6 +23,7 @@ const MONSTER_TEXTURE_MUSHROOM := preload("res://Art/PaperEnemies/mushroom.png")
 @onready var title_label: Label = %TitleLabel
 @onready var route_label: Label = %BattleRouteLabel
 @onready var hero_actor_nodes: Array[Control] = [%Hero1Actor, %Hero2Actor, %Hero3Actor]
+@onready var hero_portrait_frames: Array[Control] = [%Hero1PortraitFrame, %Hero2PortraitFrame, %Hero3PortraitFrame]
 @onready var hero_portrait_sprites: Array[TextureRect] = [%Hero1PortraitSprite, %Hero2PortraitSprite, %Hero3PortraitSprite]
 @onready var hero_arena_name_labels: Array[Label] = [%Hero1ArenaNameLabel, %Hero2ArenaNameLabel, %Hero3ArenaNameLabel]
 @onready var hero_arena_hp_labels: Array[Label] = [%Hero1ArenaHpLabel, %Hero2ArenaHpLabel, %Hero3ArenaHpLabel]
@@ -31,6 +32,7 @@ const MONSTER_TEXTURE_MUSHROOM := preload("res://Art/PaperEnemies/mushroom.png")
 @onready var result_label: Label = %ResultLabel
 @onready var battle_float_layer: Control = %BattleFloatLayer
 @onready var monster_actor: Control = %MonsterActor
+@onready var monster_portrait_frame: Control = %MonsterPortraitFrame
 @onready var monster_portrait_sprite: TextureRect = %MonsterPortraitSprite
 @onready var monster_arena_name_label: Label = %MonsterArenaNameLabel
 @onready var monster_arena_hp_label: Label = %MonsterArenaHpLabel
@@ -43,7 +45,7 @@ var _display_monster: Dictionary = {}
 var _name_to_party_index: Dictionary = {}
 var _actor_base_positions: Dictionary = {}
 var _actor_base_scales: Dictionary = {}
-var _actor_tweens: Dictionary = {}
+var _active_attack_animations: Dictionary = {}
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -58,6 +60,7 @@ func _ready() -> void:
 	close_button.text = "Close"
 	close_button.pressed.connect(_on_close_pressed)
 	popup_hide.connect(_on_popup_hidden)
+	set_process(true)
 	_cache_actor_base_positions()
 
 func open_battle() -> void:
@@ -72,22 +75,24 @@ func open_battle() -> void:
 	_display_monster = _capture_initial_monster_state(run_state)
 	_rebuild_name_lookup()
 	var report: Dictionary = CombatEngine.simulate(run_state)
-	_prepare_playback(report)
+	_prepare_playback()
 	popup_centered(POPUP_SIZE)
-	get_tree().process_frame.connect(_normalize_popup_layout, CONNECT_ONE_SHOT)
+	await get_tree().process_frame
+	_normalize_popup_layout()
 	await _play_report(report)
 	run_state.apply_battle_report(report)
 	_render_final_report(report)
 	close_button.disabled = false
 	_is_playing = false
 
-func _prepare_playback(report: Dictionary) -> void:
+func _prepare_playback() -> void:
 	title_label.text = "Battle In Progress"
 	route_label.text = _run_state().get_route_label()
 	playback_time_label.text = "Time 0.0s"
 	result_label.text = ""
 	_recent_lines.clear()
 	battle_log.clear()
+	_reset_all_attack_animations()
 	_refresh_battle_visual_state()
 
 func _play_report(report: Dictionary) -> void:
@@ -100,7 +105,7 @@ func _play_report(report: Dictionary) -> void:
 			await get_tree().create_timer(wait_seconds).timeout
 			playback_time_label.text = "Time %.1fs" % event_time
 			previous_time = event_time
-		_process_battle_event(line)
+		await _process_battle_event(line)
 		if line.contains(" is defeated."):
 			_ui_sfx().play_defeat_mark()
 		_append_recent_log_line(line)
@@ -230,15 +235,15 @@ func _process_battle_event(line: String) -> void:
 	if content.is_empty():
 		return
 	if content.contains(" deals ") and content.contains(" damage to "):
-		_process_damage_event(content)
+		await _process_damage_event(content)
 	elif content.contains(" restores ") and content.ends_with(" HP."):
 		_process_heal_event(content)
 	elif content.contains(" lands a critical hit for "):
-		_process_critical_event(content)
+		await _process_critical_event(content)
 	elif content.contains(" retaliates for "):
-		_process_retaliate_event(content)
+		await _process_retaliate_event(content)
 	elif content.contains(" executes "):
-		_process_execute_event(content)
+		await _process_execute_event(content)
 	elif content.ends_with(" is defeated."):
 		_process_defeat_event(content)
 	elif content.contains(" revives with "):
@@ -265,7 +270,7 @@ func _process_damage_event(content: String) -> void:
 	var source_name: String = first_split[0]
 	var amount: float = float(second_split[0])
 	var target_name: String = String(second_split[1]).trim_suffix(".")
-	_play_attack_animation(_resolve_actor_visual_node(source_name))
+	await _play_attack_animation(source_name)
 	_apply_damage_to_target(target_name, amount)
 	_spawn_floating_text(_resolve_target_node(target_name), "-%.1f" % amount, DAMAGE_COLOR)
 
@@ -278,7 +283,7 @@ func _process_heal_event(content: String) -> void:
 	_apply_heal_to_target(source_name, amount)
 	_spawn_floating_text(_resolve_target_node(source_name), "+%.1f" % amount, HEAL_COLOR)
 	if _is_monster_name(source_name) and content.contains("through Satisfaction"):
-		_spawn_notice_text("%s 技能发动" % source_name)
+		_spawn_notice_text("%s skill" % source_name)
 
 func _process_critical_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" lands a critical hit for ", false, 1)
@@ -286,8 +291,8 @@ func _process_critical_event(content: String) -> void:
 		return
 	var source_name: String = first_split[0]
 	var amount: float = float(String(first_split[1]).trim_suffix("."))
-	_play_attack_animation(_resolve_actor_visual_node(source_name))
-	_spawn_floating_text(_resolve_actor_node(source_name), "暴击 %.1f" % amount, NOTICE_COLOR)
+	await _play_attack_animation(source_name)
+	_spawn_floating_text(_resolve_actor_node(source_name), "CRIT %.1f" % amount, NOTICE_COLOR)
 
 func _process_retaliate_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" retaliates for ", false, 1)
@@ -295,7 +300,7 @@ func _process_retaliate_event(content: String) -> void:
 		return
 	var source_name: String = first_split[0]
 	var amount: float = float(String(first_split[1]).trim_suffix(" damage."))
-	_play_attack_animation(_resolve_actor_visual_node(source_name))
+	await _play_attack_animation(source_name)
 	_apply_damage_to_target(String(_display_monster.get("name", "")), amount)
 	_spawn_floating_text(monster_actor, "-%.1f" % amount, DAMAGE_COLOR)
 
@@ -305,14 +310,14 @@ func _process_execute_event(content: String) -> void:
 		return
 	var source_name: String = first_split[0]
 	var target_name: String = String(first_split[1]).trim_suffix(".")
-	_play_attack_animation(_resolve_actor_visual_node(source_name))
+	await _play_attack_animation(source_name)
 	_set_target_hp(target_name, 0.0, false)
-	_spawn_floating_text(_resolve_target_node(target_name), "斩杀", NOTICE_COLOR)
+	_spawn_floating_text(_resolve_target_node(target_name), "EXEC", NOTICE_COLOR)
 
 func _process_defeat_event(content: String) -> void:
 	var target_name: String = content.trim_suffix(" is defeated.")
 	_set_target_hp(target_name, 0.0, false)
-	_spawn_floating_text(_resolve_target_node(target_name), "倒下", DAMAGE_COLOR)
+	_spawn_floating_text(_resolve_target_node(target_name), "DOWN", DAMAGE_COLOR)
 
 func _process_revive_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" revives with ", false, 1)
@@ -321,7 +326,7 @@ func _process_revive_event(content: String) -> void:
 	var target_name: String = first_split[0]
 	var hp_amount: float = float(String(first_split[1]).trim_suffix(" HP."))
 	_set_target_hp(target_name, hp_amount, true)
-	_spawn_floating_text(_resolve_target_node(target_name), "复活 %.1f" % hp_amount, HEAL_COLOR)
+	_spawn_floating_text(_resolve_target_node(target_name), "REVIVE %.1f" % hp_amount, HEAL_COLOR)
 
 func _process_notice_event(content: String) -> void:
 	var skill_notice: String = _monster_skill_notice(content)
@@ -333,16 +338,16 @@ func _monster_skill_notice(content: String) -> String:
 	if monster_name == "" or not content.begins_with(monster_name + " "):
 		return ""
 	if content.contains("corrosion"):
-		return "%s 施放腐蚀" % monster_name
+		return "%s skill" % monster_name
 	if content.contains("bento effects"):
-		return "%s 封锁饭盒" % monster_name
+		return "%s skill" % monster_name
 	if content.contains("heal reduction"):
-		return "%s 治疗封锁" % monster_name
+		return "%s skill" % monster_name
 	if content.contains("Burst Charge"):
-		return "%s 狂暴冲撞" % monster_name
+		return "%s skill" % monster_name
 	if content.contains("target order"):
-		return "%s 切换仇恨" % monster_name
-	return "%s 技能发动" % monster_name
+		return "%s skill" % monster_name
+	return "%s skill" % monster_name
 
 func _apply_damage_to_target(target_name: String, amount: float) -> void:
 	if _is_monster_name(target_name):
@@ -400,23 +405,26 @@ func _resolve_actor_node(actor_name: String) -> Control:
 
 func _resolve_actor_visual_node(actor_name: String) -> Control:
 	if _is_monster_name(actor_name):
-		return monster_portrait_sprite
+		return monster_portrait_frame
 	var index: int = int(_name_to_party_index.get(actor_name, -1))
-	if index < 0 or index >= hero_portrait_sprites.size():
+	if index < 0 or index >= hero_portrait_frames.size():
 		return null
-	return hero_portrait_sprites[index]
+	return hero_portrait_frames[index]
+
+func _resolve_actor_jump_node(actor_name: String) -> Control:
+	return _resolve_actor_visual_node(actor_name)
 
 func _resolve_target_node(target_name: String) -> Control:
 	return _resolve_actor_node(target_name)
 
 func _cache_actor_base_positions() -> void:
-	for hero_sprite in hero_portrait_sprites:
-		hero_sprite.pivot_offset = hero_sprite.size * 0.5
-		_actor_base_positions[hero_sprite] = hero_sprite.position
-		_actor_base_scales[hero_sprite] = hero_sprite.scale
-	monster_portrait_sprite.pivot_offset = monster_portrait_sprite.size * 0.5
-	_actor_base_positions[monster_portrait_sprite] = monster_portrait_sprite.position
-	_actor_base_scales[monster_portrait_sprite] = monster_portrait_sprite.scale
+	for hero_frame in hero_portrait_frames:
+		hero_frame.pivot_offset = hero_frame.size * 0.5
+		_actor_base_positions[hero_frame] = hero_frame.position
+		_actor_base_scales[hero_frame] = hero_frame.scale
+	monster_portrait_frame.pivot_offset = monster_portrait_frame.size * 0.5
+	_actor_base_positions[monster_portrait_frame] = monster_portrait_frame.position
+	_actor_base_scales[monster_portrait_frame] = monster_portrait_frame.scale
 
 func _monster_texture_for(monster_data: Dictionary) -> Texture2D:
 	var monster_id: StringName = monster_data.get("id", &"")
@@ -434,47 +442,64 @@ func _monster_texture_for(monster_data: Dictionary) -> Texture2D:
 		&"spice_wizard":
 			return MONSTER_TEXTURE_MUSHROOM
 		_:
-			pass
-	var monster_name: String = String(monster_data.get("name", ""))
-	match monster_name:
-		"枝枝树灵王":
-			return MONSTER_TEXTURE_TREE
-		"奶油团团霸":
-			return MONSTER_TEXTURE_CREAM
-		"冲冲牛龙兽":
-			return MONSTER_TEXTURE_COWDRAGON
-		"哗哗水巨人":
-			return MONSTER_TEXTURE_WATER
-		"面饱饱骑士":
-			return MONSTER_TEXTURE_BREAD
-		"高菌菌巫师":
-			return MONSTER_TEXTURE_MUSHROOM
-		_:
 			return null
 
-func _play_attack_animation(actor_node: Control) -> void:
-	if actor_node == null:
+func _play_attack_animation(actor_name: String) -> void:
+	var visual_node: Control = _resolve_actor_visual_node(actor_name)
+	if visual_node == null:
 		return
-	var existing: Tween = _actor_tweens.get(actor_node, null) as Tween
-	if is_instance_valid(existing):
-		existing.kill()
-	var base_position: Vector2 = _actor_base_positions.get(actor_node, actor_node.position)
-	var base_scale: Vector2 = _actor_base_scales.get(actor_node, actor_node.scale)
-	actor_node.position = base_position
-	actor_node.scale = base_scale
-	actor_node.pivot_offset = actor_node.size * 0.5
-	var tween: Tween = create_tween()
-	_actor_tweens[actor_node] = tween
-	tween.set_parallel(true)
-	tween.tween_property(actor_node, "position", Vector2(base_position.x, base_position.y - ATTACK_JUMP_HEIGHT), ATTACK_ANIMATION_TIME * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(actor_node, "scale:x", -base_scale.x, ATTACK_ANIMATION_TIME * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.chain().set_parallel(true)
-	tween.tween_property(actor_node, "position", base_position, ATTACK_ANIMATION_TIME * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	tween.tween_property(actor_node, "scale:x", base_scale.x, ATTACK_ANIMATION_TIME * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	tween.tween_callback(func() -> void:
-		actor_node.position = base_position
-		actor_node.scale = base_scale
-	)
+	var base_position: Vector2 = _actor_base_positions.get(visual_node, visual_node.position)
+	var base_scale: Vector2 = _actor_base_scales.get(visual_node, visual_node.scale)
+	visual_node.pivot_offset = visual_node.size * 0.5
+	visual_node.position = base_position
+	visual_node.scale = base_scale
+	_active_attack_animations[actor_name] = {
+		"node": visual_node,
+		"elapsed": 0.0,
+		"base_position": base_position,
+		"base_scale": base_scale,
+	}
+	await get_tree().create_timer(ATTACK_ANIMATION_TIME).timeout
+
+func _process(delta: float) -> void:
+	if _active_attack_animations.is_empty():
+		return
+	var finished_names: Array[String] = []
+	for actor_name_variant in _active_attack_animations.keys():
+		var actor_name: String = String(actor_name_variant)
+		var animation: Dictionary = _active_attack_animations[actor_name]
+		var node: Control = animation.get("node", null) as Control
+		if node == null:
+			finished_names.append(actor_name)
+			continue
+		var elapsed: float = float(animation.get("elapsed", 0.0)) + delta
+		var progress: float = minf(elapsed / ATTACK_ANIMATION_TIME, 1.0)
+		var base_position: Vector2 = animation.get("base_position", node.position)
+		var base_scale: Vector2 = animation.get("base_scale", node.scale)
+		var jump_offset: float = sin(progress * PI) * ATTACK_JUMP_HEIGHT
+		var flip_factor: float = cos(progress * TAU)
+		node.position = base_position + Vector2(0.0, -jump_offset)
+		node.scale = Vector2(base_scale.x * flip_factor, base_scale.y)
+		if progress >= 1.0:
+			node.position = base_position
+			node.scale = base_scale
+			finished_names.append(actor_name)
+		else:
+			animation["elapsed"] = elapsed
+			_active_attack_animations[actor_name] = animation
+	for actor_name in finished_names:
+		_active_attack_animations.erase(actor_name)
+
+func _reset_all_attack_animations() -> void:
+	for actor_name_variant in _active_attack_animations.keys():
+		var actor_name: String = String(actor_name_variant)
+		var animation: Dictionary = _active_attack_animations[actor_name]
+		var node: Control = animation.get("node", null) as Control
+		if node == null:
+			continue
+		node.position = animation.get("base_position", node.position)
+		node.scale = animation.get("base_scale", node.scale)
+	_active_attack_animations.clear()
 
 func _spawn_floating_text(target_node: Control, text: String, color: Color) -> void:
 	if target_node == null:
@@ -528,4 +553,5 @@ func _on_close_pressed() -> void:
 	hide()
 
 func _on_popup_hidden() -> void:
+	_reset_all_attack_animations()
 	_bgm_player().play_non_battle()

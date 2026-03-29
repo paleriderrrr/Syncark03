@@ -8,8 +8,6 @@
 [ext_resource type="Texture2D" uid="uid://cgy4s55u1ipym" path="res://Art/PaperCharacters/剑盾纸片.png" id="5_dd2x6"]
 [ext_resource type="Texture2D" uid="uid://ck2lqq3tvkopk" path="res://Art/PaperCharacters/猎人纸片.png" id="7_7llj4"]
 [ext_resource type="Texture2D" uid="uid://r3ofrxbuqmhi" path="res://Art/PaperCharacters/法师纸片.png" id="8_kuq81"]
-[ext_resource type="Texture2D" uid="uid://34h6lum4xilv" path="res://Art/UI/NewUI/大弹窗-2.png" id="2_window"]
-[ext_resource type="Texture2D" uid="uid://hm3kr16o3ksp" path="res://Art/UI/Battlepage1.png" id="3_page_one"]
 
 [node name="BattlePopup" type="PopupPanel" unique_id=1367356641]
 unique_name_in_owner = true
@@ -146,6 +144,7 @@ grow_vertical = 2
 texture = ExtResource("5_dd2x6")
 expand_mode = 1
 stretch_mode = 5
+flip_h = true
 
 [node name="Hero1ArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor" unique_id=389206012]
 unique_name_in_owner = true
@@ -190,6 +189,7 @@ grow_vertical = 2
 texture = ExtResource("7_7llj4")
 expand_mode = 1
 stretch_mode = 5
+flip_h = true
 
 [node name="Hero2ArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero2Actor" unique_id=656101168]
 unique_name_in_owner = true
@@ -238,6 +238,7 @@ grow_vertical = 2
 texture = ExtResource("8_kuq81")
 expand_mode = 1
 stretch_mode = 5
+flip_h = true
 
 [node name="Hero3ArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor" unique_id=1095082292]
 unique_name_in_owner = true
