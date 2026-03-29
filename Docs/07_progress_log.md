@@ -467,3 +467,26 @@
 - Blockers: No known compile blocker remains for the distinct-synergy-rule change.
 - Files Touched: Scripts/Autoload/run_state.gd, Scripts/Core/combat_engine.gd, Docs/07_progress_log.md
 - Notes: Category scaling that depends on total occupied cells remains cell-based; only the activation threshold and category-count-dependent checks were changed to distinct-definition counting.
+### 2026-03-29 08:20
+- Completed: Softened the editor board's `8x6` limit overlay by lowering the base/expansion/blocked cell alpha values and removing the cell outline stroke entirely so the board constraint stays readable without visually dominating the desk area.
+- In Progress: Manual confirmation that the lighter board overlay is still readable during editing and drag preview.
+- Next: Open the editor, look at the empty board area, and confirm the `8x6` guidance is now subtle enough not to interfere with the food art.
+- Blockers: No automated blocker remains for this board-overlay presentation update.
+- Files Touched: Scripts/UI/Components/bento_board_view.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup after reducing the board overlay opacity and removing the grid stroke.
+### 2026-03-29 12:50
+- Completed: Exposed the live market reroll cost through `RunState.get_current_refresh_cost()` and updated the editor's `MarketRefreshButton` label to show the exact current refresh price as `Refresh (xG)`.
+- In Progress: Manual visual confirmation that the button text fits the current layout and updates after each reroll.
+- Next: Open the editor, verify the initial refresh cost text, click refresh once, and confirm the displayed cost advances to the next curve value.
+- Blockers: No known compile blocker remains for the refresh-cost label update.
+- Files Touched: Scripts/Autoload/run_state.gd, Scripts/UI/main_editor_screen.gd, Docs/07_progress_log.md
+- Notes: The button now reads from the same runtime source used for actual gold deduction, so displayed cost and deducted cost stay synchronized.
+## 2026-03-29 12:41
+- Phase: Title backdrop fog mask layer.
+- Changes:
+  - Inserted a dedicated full-screen FogMask layer between MainBackdrop and CoverBase1 on the title screen.
+  - Added a procedural white fog shader for a soft backdrop mist effect without moving the cover stack or start button.
+  - Extended the title screen runner to verify FogMask exists and is layered between the backdrop and first cover base.
+- Verification:
+  - Title screen runner PASS.
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).

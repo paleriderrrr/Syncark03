@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://bmkly1pctq7pa" path="res://Art/UI/UI_formal/漂浮物.png" id="8_floating"]
 [ext_resource type="Texture2D" uid="uid://elcmybn32hb4" path="res://Art/UI/UI_formal/开始.png" id="11_start"]
 [ext_resource type="Shader" uid="uid://djnl7b13dimqr" path="res://Shaders/title_cover_edge_glow.gdshader" id="12_glow_shader"]
+[ext_resource type="Shader" path="res://Shaders/title_fog_mask.gdshader" id="13_fog_shader"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glow1"]
 shader = ExtResource("12_glow_shader")
@@ -41,6 +42,14 @@ shader_parameter/glow_color = Color(1, 1, 1, 1)
 shader_parameter/glow_size = 10.0
 shader_parameter/glow_intensity = 5.5
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fog"]
+shader = ExtResource("13_fog_shader")
+shader_parameter/fog_color = Color(1, 1, 1, 1)
+shader_parameter/fog_alpha = 0.22
+shader_parameter/fog_scale = 3.2
+shader_parameter/fog_softness = 0.62
+shader_parameter/lower_bias = 0.75
+
 [node name="TitleScreen" type="Control" unique_id=1535692023]
 layout_mode = 3
 anchors_preset = 15
@@ -62,6 +71,18 @@ mouse_filter = 2
 texture = ExtResource("2_main_bg")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="FogMask" type="ColorRect" parent="." unique_id=584073713]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_fog")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
 
 [node name="CoverBase1" type="TextureRect" parent="." unique_id=1907132110]
 unique_name_in_owner = true

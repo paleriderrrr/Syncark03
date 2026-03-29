@@ -91,6 +91,7 @@ func _refresh() -> void:
 	selected_item_label.text = run_state.get_selected_item_summary()
 	action_button.text = run_state.get_action_button_text()
 	market_refresh_button.disabled = current_node_type != run_state.NODE_MARKET
+	market_refresh_button.text = "Refresh (%dG)" % run_state.get_current_refresh_cost()
 	restore_button.disabled = current_node_type != run_state.NODE_REST
 	_refresh_selected_role(run_state.selected_character_id)
 	_refresh_market_strip()

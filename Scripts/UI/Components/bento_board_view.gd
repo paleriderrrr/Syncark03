@@ -7,10 +7,9 @@ signal board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary)
 
 const GRID_WIDTH := 8
 const GRID_HEIGHT := 6
-const BASE_CELL_COLOR := Color(0.88, 0.78, 0.62, 1.0)
-const EXPANSION_CELL_COLOR := Color(0.62, 0.82, 0.9, 1.0)
-const BLOCKED_CELL_COLOR := Color(0.22, 0.24, 0.28, 1.0)
-const GRID_LINE_COLOR := Color(0.16, 0.16, 0.18, 1.0)
+const BASE_CELL_COLOR := Color(0.88, 0.78, 0.62, 0.18)
+const EXPANSION_CELL_COLOR := Color(0.62, 0.82, 0.9, 0.16)
+const BLOCKED_CELL_COLOR := Color(0.22, 0.24, 0.28, 0.08)
 const VALID_PREVIEW_COLOR := Color(0.44, 0.9, 0.52, 0.55)
 const INVALID_PREVIEW_COLOR := Color(0.92, 0.36, 0.36, 0.55)
 
@@ -68,7 +67,6 @@ func _draw() -> void:
 				if expansion_lookup.has(key):
 					color = EXPANSION_CELL_COLOR
 			draw_rect(cell_rect, color, true)
-			draw_rect(cell_rect, GRID_LINE_COLOR, false, 2.0)
 	for item in _character_state.get("placed_foods", []):
 		_draw_food_item(item)
 	var overlay_color: Color = VALID_PREVIEW_COLOR if _hover_valid else INVALID_PREVIEW_COLOR
