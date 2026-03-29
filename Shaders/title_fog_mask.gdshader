@@ -2,10 +2,10 @@ shader_type canvas_item;
 render_mode unshaded;
 
 uniform vec4 fog_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
-uniform float fog_alpha = 0.22;
-uniform float fog_scale = 3.2;
-uniform float fog_softness = 0.62;
-uniform float lower_bias = 0.75;
+uniform float fog_alpha = 0.55;
+uniform float fog_scale = 3.6;
+uniform float fog_softness = 0.52;
+uniform float lower_bias = 0.82;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -40,6 +40,7 @@ void fragment() {
 	vec2 noise_uv = vec2(uv.x * fog_scale, uv.y * fog_scale * 0.72);
 	float cloud = fbm(noise_uv);
 	float vertical = smoothstep(0.15, 1.0, uv.y + lower_bias - 0.25);
-	float mask = smoothstep(fog_softness, 1.0, cloud) * vertical;
+	float texture_alpha = texture(TEXTURE, uv).a;
+	float mask = smoothstep(fog_softness, 1.0, cloud) * vertical * texture_alpha;
 	COLOR = vec4(fog_color.rgb, mask * fog_alpha);
 }

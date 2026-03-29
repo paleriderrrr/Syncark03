@@ -490,3 +490,19 @@
 - Verification:
   - Title screen runner PASS.
   - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+## 2026-03-29 12:52
+- Phase: Title fog visibility fix.
+- Changes:
+  - Identified the root cause of the invisible fog layer: it was placed below the opaque CoverBase1 layer, so the mist never became visible.
+  - Converted FogMask to a TextureRect that reuses CoverBase1 as its alpha mask source and moved it above CoverBase1 so the white mist sits on the bottom cover layer itself.
+  - Strengthened the fog material instance parameters after the layering fix to make the mist immediately inspectable in-editor.
+- Verification:
+  - Title screen runner PASS.
+  - Godot headless launch PASS.
+### 2026-03-29 13:00
+- Completed: Removed the title-screen runtime icon assignment for the Settings button, so both Settings and Quit now rely purely on scene-authored properties and can be manually edited in Godot without script overrides.
+- In Progress: Manual visual editing of title-screen button textures inside the Godot scene editor.
+- Next: Open `Scenes/title_screen.tscn`, select `SettingsButton` and `QuitButton`, and assign their textures/styles directly in the Inspector.
+- Blockers: No known compile blocker remains for the title-button manual-texture workflow.
+- Files Touched: Scripts/UI/title_screen.gd, Docs/07_progress_log.md
+- Notes: This round only removed the runtime override; it did not assign new manual textures to either button.

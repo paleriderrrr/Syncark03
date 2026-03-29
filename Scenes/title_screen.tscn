@@ -9,8 +9,17 @@
 [ext_resource type="Texture2D" uid="uid://duaio0gatvmx6" path="res://Art/UI/UI_formal/标题.png" id="7_title_art"]
 [ext_resource type="Texture2D" uid="uid://bmkly1pctq7pa" path="res://Art/UI/UI_formal/漂浮物.png" id="8_floating"]
 [ext_resource type="Texture2D" uid="uid://elcmybn32hb4" path="res://Art/UI/UI_formal/开始.png" id="11_start"]
+[ext_resource type="Texture2D" uid="uid://dup4t101a6e76" path="res://Art/UI/NewUI/ui1_2_settings_icon.png" id="11_w5sh6"]
 [ext_resource type="Shader" uid="uid://djnl7b13dimqr" path="res://Shaders/title_cover_edge_glow.gdshader" id="12_glow_shader"]
-[ext_resource type="Shader" path="res://Shaders/title_fog_mask.gdshader" id="13_fog_shader"]
+[ext_resource type="Shader" uid="uid://bmcnstcyo324x" path="res://Shaders/title_fog_mask.gdshader" id="13_fog_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fog"]
+shader = ExtResource("13_fog_shader")
+shader_parameter/fog_color = Color(1, 1, 1, 1)
+shader_parameter/fog_alpha = 0.5
+shader_parameter/fog_scale = 3.2
+shader_parameter/fog_softness = 0.62
+shader_parameter/lower_bias = 0.75
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glow1"]
 shader = ExtResource("12_glow_shader")
@@ -41,14 +50,6 @@ shader = ExtResource("12_glow_shader")
 shader_parameter/glow_color = Color(1, 1, 1, 1)
 shader_parameter/glow_size = 10.0
 shader_parameter/glow_intensity = 5.5
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_fog"]
-shader = ExtResource("13_fog_shader")
-shader_parameter/fog_color = Color(1, 1, 1, 1)
-shader_parameter/fog_alpha = 0.22
-shader_parameter/fog_scale = 3.2
-shader_parameter/fog_softness = 0.62
-shader_parameter/lower_bias = 0.75
 
 [node name="TitleScreen" type="Control" unique_id=1535692023]
 layout_mode = 3
@@ -82,7 +83,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(1, 1, 1, 1)
 
 [node name="CoverBase1" type="TextureRect" parent="." unique_id=1907132110]
 unique_name_in_owner = true
@@ -242,7 +242,7 @@ offset_left = 1608.0
 offset_top = 44.0
 offset_right = 1740.0
 offset_bottom = 108.0
-text = "Settings"
+icon = ExtResource("11_w5sh6")
 
 [node name="QuitButton" type="Button" parent="." unique_id=935186296]
 unique_name_in_owner = true
@@ -251,7 +251,6 @@ offset_left = 1748.0
 offset_top = 44.0
 offset_right = 1880.0
 offset_bottom = 108.0
-text = "Quit"
 
 [node name="StartGlow" type="TextureRect" parent="." unique_id=316654086]
 unique_name_in_owner = true

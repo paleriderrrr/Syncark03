@@ -1,7 +1,5 @@
 extends Control
 
-const TEX_SETTINGS_ICON := preload("res://Art/UI/Slices/ui1_settings_icon.png")
-
 const TRANSITION_STEP := 0.12
 const TRANSITION_DURATION := 0.34
 const LAYER_ALPHA_END := 0.0
@@ -42,7 +40,6 @@ func _ui_sfx() -> Node:
 
 func _ready() -> void:
 	_bgm_player().play_non_battle()
-	_apply_surface_art()
 	_configure_cover_pivots()
 	_cache_ambient_bases()
 	_start_ambient_effects()
@@ -58,12 +55,6 @@ func _process(delta: float) -> void:
 		return
 	_advance_floating_scroll(floating_art, delta)
 	_advance_floating_scroll(floating_art_b, delta)
-
-func _apply_surface_art() -> void:
-	settings_button.icon = TEX_SETTINGS_ICON
-	settings_button.expand_icon = true
-	settings_button.text = ""
-	settings_button.custom_minimum_size = Vector2(84, 64)
 
 func _on_start_pressed() -> void:
 	if _transition_started:
