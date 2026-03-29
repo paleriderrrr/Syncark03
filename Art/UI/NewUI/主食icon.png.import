@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnxfch5a13ns7"
-path="res://.godot/imported/ui1_2_category_dessert.png-d74eb87ae3a6a7baa88299e1b8ee5e6a.ctex"
+uid="uid://c2gbwkwoif3hl"
+path="res://.godot/imported/主食icon.png-5afeab65367475420c25cce40ae217d3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/NewUI/ui1_2_category_dessert.png"
-dest_files=["res://.godot/imported/ui1_2_category_dessert.png-d74eb87ae3a6a7baa88299e1b8ee5e6a.ctex"]
+source_file="res://Art/UI/NewUI/主食icon.png"
+dest_files=["res://.godot/imported/主食icon.png-5afeab65367475420c25cce40ae217d3.ctex"]
 
 [params]
 

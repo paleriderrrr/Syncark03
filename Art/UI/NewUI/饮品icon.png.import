@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cxeqqa2n3ltp6"
-path="res://.godot/imported/ui1_2_category_spice.png-0c60fc8b9d5582561611a5334cd704d0.ctex"
+uid="uid://b0ju2jlco1r7k"
+path="res://.godot/imported/饮品icon.png-4bb636e047845968f3c45698d7b0d3cf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/NewUI/ui1_2_category_spice.png"
-dest_files=["res://.godot/imported/ui1_2_category_spice.png-0c60fc8b9d5582561611a5334cd704d0.ctex"]
+source_file="res://Art/UI/NewUI/饮品icon.png"
+dest_files=["res://.godot/imported/饮品icon.png-4bb636e047845968f3c45698d7b0d3cf.ctex"]
 
 [params]
 

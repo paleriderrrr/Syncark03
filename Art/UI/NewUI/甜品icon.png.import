@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://8bq7xn6c5apv"
-path="res://.godot/imported/ui1_2_category_fruit.png-ccf00975c2ddcb05478ed4ffc61a967b.ctex"
+uid="uid://dnxfch5a13ns7"
+path="res://.godot/imported/甜品icon.png-7969ebec8112b0f408b9777474442e4f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/NewUI/ui1_2_category_fruit.png"
-dest_files=["res://.godot/imported/ui1_2_category_fruit.png-ccf00975c2ddcb05478ed4ffc61a967b.ctex"]
+source_file="res://Art/UI/NewUI/甜品icon.png"
+dest_files=["res://.godot/imported/甜品icon.png-7969ebec8112b0f408b9777474442e4f.ctex"]
 
 [params]
 

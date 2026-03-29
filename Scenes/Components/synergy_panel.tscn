@@ -1,8 +1,15 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://Scripts/UI/Components/synergy_panel.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://Art/UI/NewUI/主食icon.png" id="2_staple"]
+[ext_resource type="Texture2D" path="res://Art/UI/NewUI/肉类icon.png" id="3_meat"]
+[ext_resource type="Texture2D" path="res://Art/UI/NewUI/蔬果icon.png" id="4_fruit"]
+[ext_resource type="Texture2D" path="res://Art/UI/NewUI/甜品icon.png" id="5_dessert"]
+[ext_resource type="Texture2D" path="res://Art/UI/NewUI/饮品icon.png" id="6_drink"]
+[ext_resource type="Texture2D" path="res://Art/UI/NewUI/香料icon.png" id="7_spice"]
 
 [node name="SynergyPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 240)
 script = ExtResource("1_script")
 
 [node name="Background" type="TextureRect" parent="."]
@@ -18,24 +25,131 @@ stretch_mode = 6
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
 
-[node name="TitleLabel" type="Label" parent="Margin/VBox"]
+[node name="RoleLabel" type="Label" parent="Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Synergy"
+text = "Current Role"
+horizontal_alignment = 1
 
-[node name="ListLabel" type="RichTextLabel" parent="Margin/VBox"]
+[node name="StapleRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StapleIcon" type="TextureRect" parent="Margin/VBox/StapleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("2_staple")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StapleCountLabel" type="Label" parent="Margin/VBox/StapleRow"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
-fit_content = true
-scroll_active = false
-bbcode_enabled = false
+size_flags_horizontal = 3
+text = "x0"
+vertical_alignment = 1
+
+[node name="MeatRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MeatIcon" type="TextureRect" parent="Margin/VBox/MeatRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("3_meat")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MeatCountLabel" type="Label" parent="Margin/VBox/MeatRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "x0"
+vertical_alignment = 1
+
+[node name="FruitRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FruitIcon" type="TextureRect" parent="Margin/VBox/FruitRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("4_fruit")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="FruitCountLabel" type="Label" parent="Margin/VBox/FruitRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "x0"
+vertical_alignment = 1
+
+[node name="DessertRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DessertIcon" type="TextureRect" parent="Margin/VBox/DessertRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("5_dessert")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DessertCountLabel" type="Label" parent="Margin/VBox/DessertRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "x0"
+vertical_alignment = 1
+
+[node name="DrinkRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DrinkIcon" type="TextureRect" parent="Margin/VBox/DrinkRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("6_drink")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DrinkCountLabel" type="Label" parent="Margin/VBox/DrinkRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "x0"
+vertical_alignment = 1
+
+[node name="SpiceRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SpiceIcon" type="TextureRect" parent="Margin/VBox/SpiceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("7_spice")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SpiceCountLabel" type="Label" parent="Margin/VBox/SpiceRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "x0"
+vertical_alignment = 1

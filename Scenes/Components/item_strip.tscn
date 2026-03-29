@@ -4,28 +4,21 @@
 [ext_resource type="Texture2D" uid="uid://sq86itat85xt" path="res://Art/UI/Slices/ui2_left_arrow.png" id="2_h8xde"]
 [ext_resource type="Texture2D" uid="uid://pbwebca55eri" path="res://Art/UI/Slices/ui2_right_arrow.png" id="3_w0ove"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_panel"]
+
 [node name="ItemStrip" type="PanelContainer" unique_id=573594463]
 custom_minimum_size = Vector2(0, 136)
 script = ExtResource("1_script")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_panel")
 
 [node name="Background" type="TextureRect" parent="." unique_id=644164612]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
 [node name="VBox" type="VBoxContainer" parent="." unique_id=1993875552]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 theme_override_constants/separation = 6
 
 [node name="TitleLabel" type="Label" parent="VBox" unique_id=1461481487]

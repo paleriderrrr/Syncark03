@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2gbwkwoif3hl"
-path="res://.godot/imported/ui1_2_category_staple.png-e43507abdb8b087d8bf2b7bb537b8b94.ctex"
+uid="uid://8bq7xn6c5apv"
+path="res://.godot/imported/蔬果icon.png-087c1c979781b2b044668e600eebda5d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/NewUI/ui1_2_category_staple.png"
-dest_files=["res://.godot/imported/ui1_2_category_staple.png-e43507abdb8b087d8bf2b7bb537b8b94.ctex"]
+source_file="res://Art/UI/NewUI/蔬果icon.png"
+dest_files=["res://.godot/imported/蔬果icon.png-087c1c979781b2b044668e600eebda5d.ctex"]
 
 [params]
 
