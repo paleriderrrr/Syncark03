@@ -1,8 +1,7 @@
 extends PopupPanel
 class_name BattlePopup
 
-const PLAYBACK_SPEED := 6.0
-const MAX_EVENT_DELAY := 0.5
+const POPUP_SIZE := Vector2i(1500, 620)
 const MAX_VISIBLE_LOG_LINES := 8
 const TEX_STAGE_PLAYBACK := preload("res://Art/UI/Battlepage1.png")
 const TEX_STAGE_RESULT := preload("res://Art/UI/Battlepage2.png")
@@ -47,7 +46,8 @@ func open_battle() -> void:
 	var run_state: Node = _run_state()
 	var report: Dictionary = CombatEngine.simulate(run_state)
 	_prepare_playback(report)
-	popup_centered(Vector2i(1500, 620))
+	popup_centered(POPUP_SIZE)
+	get_tree().process_frame.connect(_normalize_popup_layout, CONNECT_ONE_SHOT)
 	await _play_report(report)
 	run_state.apply_battle_report(report)
 	_render_final_report(report)
@@ -73,7 +73,7 @@ func _play_report(report: Dictionary) -> void:
 	for line in report.get("log", PackedStringArray()):
 		var event_time: float = _extract_log_time(line)
 		if event_time > previous_time:
-			var wait_seconds: float = minf(MAX_EVENT_DELAY, (event_time - previous_time) / PLAYBACK_SPEED)
+			var wait_seconds: float = event_time - previous_time
 			await get_tree().create_timer(wait_seconds).timeout
 			playback_time_label.text = "Time %.1fs" % event_time
 			previous_time = event_time
@@ -136,6 +136,11 @@ func _extract_log_time(line: String) -> float:
 	if not line.begins_with("[") or close_index <= 1:
 		return 0.0
 	return float(line.substr(1, close_index - 1))
+
+func _normalize_popup_layout() -> void:
+	if not visible:
+		return
+	popup_centered(POPUP_SIZE)
 
 func _on_close_pressed() -> void:
 	if _is_playing:

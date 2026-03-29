@@ -4,20 +4,20 @@
 [ext_resource type="PackedScene" path="res://Scenes/battle_popup.tscn" id="2_popup"]
 [ext_resource type="Script" uid="uid://caqumohui2q5b" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
 [ext_resource type="Texture2D" uid="uid://dy6hhm0cxhd6b" path="res://Art/UI/NewUI/ui2_2_panel_top_green.png" id="3_ojex1"]
-[ext_resource type="Texture2D" uid="uid://bk7ef80vtp0rc" path="res://Art/UI/NewUI/ui1_2_coin_marker.png" id="4_1vyjy"]
+[ext_resource type="Texture2D" uid="uid://bxop82ps7gvtv" path="res://Art/UI/NewUI/金币.png" id="4_3wget"]
 [ext_resource type="Texture2D" uid="uid://c15ge3pvw4wc5" path="res://Art/UI/NewUI/ui2_2_badge_small_dark.png" id="4_fwcvo"]
 [ext_resource type="PackedScene" uid="uid://0sdemtp02gb7" path="res://Scenes/Components/item_strip.tscn" id="4_strip"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/synergy_panel.tscn" id="5_synergy"]
 [ext_resource type="Texture2D" uid="uid://dr60km6grv5l7" path="res://Art/UI/Background.png" id="6_bg"]
 [ext_resource type="Script" uid="uid://bmulngcjm5nc" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
-[ext_resource type="Texture2D" uid="uid://bc74ak8pfe8q0" path="res://Art/UI/NewUI/ui1_2_role_tab_mid.png" id="8_tijtm"]
 [ext_resource type="Texture2D" uid="uid://dr4rs7okqcgcf" path="res://Art/UI/NewUI/ui1_2_role_tab_bottom.png" id="9_45gjs"]
 [ext_resource type="Texture2D" uid="uid://b8f04p7jexi2c" path="res://Art/UI/NewUI/ui2_2_panel_bottom_red.png" id="9_fwcvo"]
+[ext_resource type="Texture2D" uid="uid://bc4hee2vrjkbm" path="res://Art/UI/NewUI/战士.png" id="10_3wget"]
 [ext_resource type="Texture2D" uid="uid://cgkifvocrjgpj" path="res://Art/UI/NewUI/ui1_2_role_tab_top.png" id="10_hkonf"]
 [ext_resource type="Texture2D" uid="uid://b3slmqoqlubn2" path="res://Art/UI/NewUI/ui1_2_board_wood.png" id="11_45gjs"]
 [ext_resource type="Texture2D" uid="uid://dup4t101a6e76" path="res://Art/UI/NewUI/ui1_2_settings_icon.png" id="12_1vyjy"]
+[ext_resource type="Texture2D" uid="uid://nwa0115tugbr" path="res://Art/UI/NewUI/告示.png" id="13_3wget"]
 [ext_resource type="Texture2D" uid="uid://se3u2duh8jvu" path="res://Art/UI/NewUI/ui1_2_wanted_poster.png" id="13_hkonf"]
-[ext_resource type="Texture2D" uid="uid://wvm7e3f4indw" path="res://Art/UI/NewUI/ui1_2_right_board.png" id="13_xd7oq"]
 [ext_resource type="Texture2D" uid="uid://bp8upp5fdi2kh" path="res://Art/UI/NewUI/物品商店底图.png" id="14_shop_card"]
 [ext_resource type="Texture2D" uid="uid://c5mrtd0m1b4bd" path="res://Art/UI/NewUI/ui1_2_depart_sign.png" id="15_elv5r"]
 [ext_resource type="Texture2D" uid="uid://o0i6xywajdfm" path="res://Art/UI/NewUI/物品仓库地图.png" id="16_inventory_card"]
@@ -74,7 +74,7 @@ offset_left = 23.0
 offset_top = 63.0
 offset_right = 103.0
 offset_bottom = 143.0
-texture = ExtResource("4_1vyjy")
+texture = ExtResource("4_3wget")
 
 [node name="GoldLabel" type="Label" parent="TopMarketPanel/GoldIcon" unique_id=1960790533]
 unique_name_in_owner = true
@@ -290,7 +290,7 @@ offset_left = 25.487282
 offset_top = 36.034767
 offset_right = 277.83212
 offset_bottom = 169.74207
-icon = ExtResource("8_tijtm")
+icon = ExtResource("10_3wget")
 flat = true
 expand_icon = true
 
@@ -338,7 +338,7 @@ grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.8965447, 1.0213212)
 mouse_filter = 2
-texture = ExtResource("13_xd7oq")
+texture = ExtResource("13_3wget")
 stretch_mode = 2
 
 [node name="NextMonsterPanel" type="Control" parent="RightPanel" unique_id=1046346511]
