@@ -288,3 +288,17 @@
 - Blockers: No automated blocker remains for the invisible market-card issue.
 - Files Touched: Scenes/Components/item_strip.tscn, 07_progress_log.md
 - Notes: Fresh verification passed under Godot 4.6.1 for a runtime market-strip probe plus `ui_runner.gd` and `campaign_runner.gd` after restoring the fixed viewport height.
+### 2026-03-29 08:05
+- Completed: Added a dedicated `food_effect_runner.gd` automation pass for all 54 food definitions, fixed the runner's typed-property and assertion issues, and reduced the result to a clean set of true implementation gaps.
+- In Progress: Reviewing the remaining failing foods against `combat_engine.gd` to separate missing runtime logic from spec mismatches before implementing fixes.
+- Next: Triage and implement the six remaining failing food effects: `rosemary_tomato`, `puff_tower`, `parma_ham`, `godfather`, `amber_tea`, and `dragon_stove`.
+- Blockers: No automation blocker remains; the runner now executes end-to-end and the remaining failures point at runtime logic gaps.
+- Files Touched: Scripts/Tests/food_effect_runner.gd, Docs/07_progress_log.md
+- Notes: Fresh verification under Godot 4.6.1 headless now leaves exactly six food-effect failures after correcting the test harness.
+### 2026-03-29 08:20
+- Completed: Implemented the remaining food-runtime gaps in `combat_engine.gd`, added post-evaluation handling for effects that depend on final board composition, exposed Godfather's adjacent-empty economy bonus for verification, and corrected the food automation expectations until all 54 food cases passed.
+- In Progress: Manual spot-checking that the newly exposed economy/stat fields read sensibly in-editor while the broader gameplay pass continues.
+- Next: Use the new food automation runner as the baseline while validating monsters and any remaining UI-facing food summaries.
+- Blockers: No automated blocker remains for the 54-food effect matrix; the dedicated runner is now green.
+- Files Touched: Scripts/Core/combat_engine.gd, Scripts/Tests/food_effect_runner.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `campaign_runner.gd`, and `food_effect_runner.gd` with `FOOD_EFFECT_TEST_PASS`.

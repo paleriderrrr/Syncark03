@@ -112,6 +112,7 @@ func _build_characters(run_state: Node) -> Array[Dictionary]:
 			"amber_cancel_chance": float(evaluation["amber_cancel_chance"]),
 			"frozen_extra_slow_chance": float(evaluation["frozen_extra_slow_chance"]),
 			"forbidden_attack_reduction": float(evaluation["forbidden_attack_reduction"]),
+			"economy_gold_bonus": float(evaluation["economy_gold_bonus"]),
 			"adjacent_categories": evaluation["adjacent_categories"],
 			"alive": true,
 		}
@@ -188,6 +189,7 @@ func _evaluate_character_board(run_state: Node, definition: CharacterDefinition,
 		"amber_cancel_chance": 0.0,
 		"frozen_extra_slow_chance": 0.0,
 		"forbidden_attack_reduction": 0.0,
+		"economy_gold_bonus": 0.0,
 		"adjacent_categories": {},
 		"team_aura_flags": {},
 	}
@@ -216,6 +218,13 @@ func _evaluate_character_board(run_state: Node, definition: CharacterDefinition,
 		result["heal_per_second"] += food.heal_per_second
 		result["execute_threshold"] += food.execute_threshold_percent
 		_apply_food_passive(run_state, food, item, placed_foods, board_state, result, unique_categories)
+
+	for item_variant in placed_foods:
+		var item: Dictionary = item_variant
+		if disabled_foods.has(item["instance_id"]):
+			continue
+		var definition_post: FoodDefinition = run_state.get_food_definition(item["definition_id"])
+		_apply_food_post_passive(run_state, definition_post, item, placed_foods, board_state, result, category_item_count, unique_categories)
 
 	var active_bonds: int = 0
 	for category in category_item_count.keys():
@@ -277,8 +286,7 @@ func _apply_food_passive(run_state: Node, food: FoodDefinition, item: Dictionary
 		&"rock_melon":
 			result["first_hit_reduction"] = maxf(result["first_hit_reduction"], 0.5)
 		&"rosemary_tomato":
-			if adj.has(&"spice"):
-				result["retaliate_damage"] += float(result["retaliate_damage"])
+			pass
 		&"demon_durian":
 			result["retaliate_damage"] *= 2.0
 		&"tree_fruit":
@@ -297,8 +305,7 @@ func _apply_food_passive(run_state: Node, food: FoodDefinition, item: Dictionary
 		&"caramel_mille":
 			result["team_aura_flags"]["caramel_mille"] = true
 		&"puff_tower":
-			if unique_categories.size() >= 3:
-				result["attack_speed_bonus"] += 50.0
+			pass
 		&"ice_cream_sundae":
 			result["team_aura_flags"]["dessert_multiplier_after_20"] = true
 		&"fairy_candy_castle":
@@ -315,7 +322,7 @@ func _apply_food_passive(run_state: Node, food: FoodDefinition, item: Dictionary
 		&"flame_sausage":
 			result["team_aura_flags"]["flame_sausage"] = true
 		&"parma_ham":
-			result["team_aura_flags"]["parma_ham"] = true
+			pass
 		&"dragon_tail":
 			result["meat_double_below"] = 0.4
 		&"monster_tartare":
@@ -334,7 +341,7 @@ func _apply_food_passive(run_state: Node, food: FoodDefinition, item: Dictionary
 		&"power_coffee":
 			result["team_aura_flags"]["power_coffee"] = true
 		&"amber_tea":
-			result["amber_cancel_chance"] += 0.05 * _count_adjacent_categories(adj, [&"drink"])
+			pass
 		&"cellar_vintage":
 			result["attack_speed_bonus"] += 10.0 * int(item.get("reroll_bonus_count", 0))
 			result["enemy_attack_slow"] += 5.0 * int(item.get("reroll_bonus_count", 0))
@@ -351,17 +358,16 @@ func _apply_food_passive(run_state: Node, food: FoodDefinition, item: Dictionary
 		&"mixed_feast":
 			result["team_aura_flags"]["mixed_feast"] = true
 		&"dragon_stove":
-			var count: int = unique_categories.size()
-			result["max_hp_bonus"] += 8.0 * count
-			result["attack_bonus"] += 1.5 * count
-			result["execute_threshold"] += 5.0 * count
+			pass
+		&"godfather":
+			pass
 		&"salt_pack":
 			if _is_below_category(item, placed_foods, run_state, [&"staple", &"meat"]):
 				result["bonus_damage"] += 5.0
 		&"wasabi":
 			result["bonus_damage"] += 1.0
 		&"soy_sauce":
-			result["bonus_damage"] += _count_adjacent_empty_cells(item, board_state)
+			pass
 		&"cilantro":
 			result["bonus_damage"] += maxf(0.0, 9.0 - 3.0 * _count_adjacent_foods(item, placed_foods))
 		&"pepper_bundle":
@@ -440,12 +446,100 @@ func _count_adjacent_foods(item: Dictionary, placed_foods: Array) -> int:
 			count += 1
 	return count
 
+func _apply_food_post_passive(run_state: Node, food: FoodDefinition, item: Dictionary, placed_foods: Array, board_state: Dictionary, result: Dictionary, category_item_count: Dictionary, unique_categories: Dictionary) -> void:
+	match food.id:
+		&"rosemary_tomato":
+			var adj: Dictionary = _adjacent_food_categories(item, placed_foods, run_state)
+			if adj.has(&"spice"):
+				result["retaliate_damage"] += float(category_item_count.get(&"fruit", 0))
+		&"puff_tower":
+			if unique_categories.size() >= 3:
+				result["attack_speed_bonus"] += 50.0
+		&"parma_ham":
+			if int(category_item_count.get(&"meat", 0)) >= 3:
+				result["max_hp_bonus"] += 40.0
+		&"amber_tea":
+			result["amber_cancel_chance"] += 0.05 * _count_adjacent_items_in_categories(item, placed_foods, run_state, [&"drink"], true)
+		&"dragon_stove":
+			var category_count: int = unique_categories.size()
+			result["max_hp_bonus"] += 8.0 * category_count
+			result["attack_bonus"] += 1.5 * category_count
+			result["execute_threshold"] += 5.0 * category_count
+		&"godfather":
+			result["economy_gold_bonus"] += 2.0 * _count_adjacent_empty_cells_orthogonal(item, board_state)
+		&"soy_sauce":
+			var base_bonus: float = maxf(0.0, result["bonus_damage"] - float(food.bonus_damage))
+			result["bonus_damage"] = float(food.bonus_damage) + base_bonus + _count_adjacent_empty_cells_orthogonal(item, board_state)
+		_:
+			pass
+
 func _flatten_food_cells(placed_foods: Array) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for item in placed_foods:
 		for cell in item["cells"]:
 			result.append(cell)
 	return result
+
+func _count_adjacent_items_in_categories(item: Dictionary, placed_foods: Array, run_state: Node, categories: Array[StringName], include_diagonals: bool) -> int:
+	var count: int = 0
+	for other_variant in placed_foods:
+		var other: Dictionary = other_variant
+		if other["instance_id"] == item["instance_id"]:
+			continue
+		if not _items_touch_mode(item, other, include_diagonals):
+			continue
+		var definition: FoodDefinition = run_state.get_food_definition(other["definition_id"])
+		if definition == null:
+			continue
+		var food_categories: Array[StringName] = run_state.get_food_categories(definition)
+		for category_id in food_categories:
+			if categories.has(category_id):
+				count += 1
+				break
+	return count
+
+func _items_touch_mode(item_a: Dictionary, item_b: Dictionary, include_diagonals: bool) -> bool:
+	var lookup: Dictionary = ShapeUtils.cells_to_lookup(item_b["cells"])
+	for cell_variant in item_a["cells"]:
+		var cell: Vector2i = cell_variant
+		var neighbors: Array[Vector2i] = [
+			Vector2i(cell.x + 1, cell.y),
+			Vector2i(cell.x - 1, cell.y),
+			Vector2i(cell.x, cell.y + 1),
+			Vector2i(cell.x, cell.y - 1),
+		]
+		if include_diagonals:
+			neighbors.append_array([
+				Vector2i(cell.x + 1, cell.y + 1),
+				Vector2i(cell.x - 1, cell.y - 1),
+				Vector2i(cell.x + 1, cell.y - 1),
+				Vector2i(cell.x - 1, cell.y + 1),
+			])
+		for neighbor in neighbors:
+			if lookup.has("%d:%d" % [neighbor.x, neighbor.y]):
+				return true
+	return false
+
+func _count_adjacent_empty_cells_orthogonal(item: Dictionary, board_state: Dictionary) -> int:
+	var active_lookup: Dictionary = ShapeUtils.cells_to_lookup(board_state.get("active_cells", []))
+	var occupied_lookup: Dictionary = ShapeUtils.cells_to_lookup(_flatten_food_cells(board_state.get("placed_foods", [])))
+	var seen: Dictionary = {}
+	var count: int = 0
+	for cell_variant in item["cells"]:
+		var cell: Vector2i = cell_variant
+		for neighbor in [
+			Vector2i(cell.x + 1, cell.y),
+			Vector2i(cell.x - 1, cell.y),
+			Vector2i(cell.x, cell.y + 1),
+			Vector2i(cell.x, cell.y - 1),
+		]:
+			var key: String = "%d:%d" % [neighbor.x, neighbor.y]
+			if seen.has(key):
+				continue
+			seen[key] = true
+			if active_lookup.has(key) and not occupied_lookup.has(key):
+				count += 1
+	return count
 
 func _has_food_above(item: Dictionary, placed_foods: Array) -> bool:
 	var lookup: Dictionary = {}
