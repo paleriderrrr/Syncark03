@@ -165,7 +165,6 @@ flat = true
 
 [node name="TopMarketStrip" parent="TopMarketPanel/TopMarketVBox" unique_id=198158665 instance=ExtResource("4_strip")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 0
 offset_left = -5.0
 offset_top = 30.0
