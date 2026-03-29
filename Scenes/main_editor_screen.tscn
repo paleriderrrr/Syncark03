@@ -19,6 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://se3u2duh8jvu" path="res://Art/UI/NewUI/ui1_2_wanted_poster.png" id="13_hkonf"]
 [ext_resource type="Texture2D" uid="uid://wvm7e3f4indw" path="res://Art/UI/NewUI/ui1_2_right_board.png" id="13_xd7oq"]
 [ext_resource type="Texture2D" uid="uid://bp8upp5fdi2kh" path="res://Art/UI/NewUI/物品商店底图.png" id="14_shop_card"]
+[ext_resource type="FontFile" uid="uid://bgm3gwcogagmy" path="res://Art/Fonts/handwriting.ttf" id="15_80818"]
 [ext_resource type="Texture2D" uid="uid://c5mrtd0m1b4bd" path="res://Art/UI/NewUI/ui1_2_depart_sign.png" id="15_elv5r"]
 [ext_resource type="Texture2D" uid="uid://o0i6xywajdfm" path="res://Art/UI/NewUI/物品仓库地图.png" id="16_inventory_card"]
 [ext_resource type="Texture2D" uid="uid://bfa4r6vv3w305" path="res://Art/UI/NewUI/ui2_2_badge_small_light.png" id="17_3wget"]
@@ -407,10 +408,12 @@ text = "Bounty: -"
 [node name="NextMonsterStageLabel" type="Label" parent="RightPanel/NextMonsterPanel" unique_id=201460002]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 150.0
-offset_top = -12.0
-offset_right = 308.0
-offset_bottom = 11.0
+offset_left = 146.0
+offset_top = -9.0
+offset_right = 321.0
+offset_bottom = 40.0
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 48
 text = "Stage: -"
 
 [node name="MonsterTooltipPanel" type="PanelContainer" parent="RightPanel" unique_id=1842622011]
@@ -638,4 +641,4 @@ icon = ExtResource("12_1vyjy")
 flat = true
 
 [node name="BattlePopup" parent="." unique_id=1952828123 instance=ExtResource("2_popup")]
-oversampling_override = 1.0
+visible = false
