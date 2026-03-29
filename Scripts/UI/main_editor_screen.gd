@@ -1,35 +1,19 @@
 extends Control
 
-const TEX_MARKET_BANNER := preload("res://Art/UI/Slices/ui2_market_banner.png")
-const TEX_INVENTORY_BANNER := preload("res://Art/UI/Slices/ui2_inventory_banner.png")
-const TEX_BOARD_WOOD := preload("res://Art/UI/Slices/ui1_board_wood.png")
-const TEX_RIGHT_BOARD := preload("res://Art/UI/Slices/ui1_right_board.png")
-const TEX_ROLE_TOP := preload("res://Art/UI/Slices/ui1_role_tag_top.png")
-const TEX_ROLE_MID := preload("res://Art/UI/Slices/ui1_role_tag_mid.png")
-const TEX_ROLE_BOTTOM := preload("res://Art/UI/Slices/ui1_role_tag_bottom.png")
-const TEX_DEPART := preload("res://Art/UI/Slices/ui1_depart_sign.png")
-const TEX_REFRESH := preload("res://Art/UI/Slices/ui2_refresh_button.png")
-const TEX_WANTED := preload("res://Art/UI/Slices/ui1_wanted_poster.png")
-
 @onready var gold_label: Label = %GoldLabel
 @onready var route_label: Label = %RouteLabel
 @onready var node_label: Label = %NodeLabel
 @onready var risk_label: Label = %RiskLabel
-@onready var status_panel: PanelContainer = %StatusBackground
 @onready var selected_role_label: Label = %SelectedRoleLabel
 @onready var selected_item_label: Label = %SelectedItemLabel
 @onready var board_view: BentoBoardView = %BentoBoardView
-@onready var top_market_panel: PanelContainer = %TopMarketBackground
 @onready var top_market_strip: ItemStrip = %TopMarketStrip
 @onready var market_refresh_button: Button = %MarketRefreshButton
 @onready var inventory_drop_zone: InventoryDropZone = %InventoryDropZone
 @onready var inventory_strip: ItemStrip = %InventoryStrip
-@onready var bottom_inventory_panel: PanelContainer = %BottomInventoryBackground
-@onready var board_frame: PanelContainer = %BoardFrame
-@onready var right_panel: PanelContainer = %RightBackground
+@onready var settings_button: Button = %SettingsButton
 @onready var restore_button: Button = %RestoreButton
 @onready var action_button: Button = %ActionButton
-@onready var next_monster_panel: PanelContainer = %NextMonsterBackground
 @onready var wanted_poster_rect: TextureRect = %WantedPosterRect
 @onready var next_monster_name_label: Label = %NextMonsterNameLabel
 @onready var next_monster_stats_label: Label = %NextMonsterStatsLabel
@@ -55,8 +39,6 @@ func _ready() -> void:
 	run_state.ensure_initialized()
 	_food_textures = FoodVisuals.build_food_texture_lookup()
 	_role_names = run_state.get_character_display_names()
-	_apply_static_texts()
-	_apply_surface_art()
 	run_state.state_changed.connect(_refresh)
 	run_state.selected_character_changed.connect(_on_selected_character_changed)
 	run_state.selected_item_changed.connect(_refresh)
@@ -71,124 +53,17 @@ func _ready() -> void:
 	inventory_drop_zone.accepted_sources = [&"market_offer", &"board_food", &"market_expansion"]
 	inventory_strip.card_drop_sources = [&"market_offer", &"board_food", &"market_expansion"]
 	inventory_strip.card_drop_target = inventory_drop_zone
+	settings_button.pressed.connect(_on_settings_pressed)
 	restore_button.pressed.connect(_on_restore_pressed)
 	action_button.pressed.connect(_on_action_pressed)
 	tab_buttons[&"warrior"].pressed.connect(func() -> void: _run_state().select_character(&"warrior"))
 	tab_buttons[&"hunter"].pressed.connect(func() -> void: _run_state().select_character(&"hunter"))
 	tab_buttons[&"mage"].pressed.connect(func() -> void: _run_state().select_character(&"mage"))
 	board_view.set_food_textures(_food_textures)
-	board_frame.resized.connect(_schedule_board_size)
 	wanted_poster_rect.mouse_entered.connect(_on_monster_hover_entered)
 	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
 	monster_tooltip_panel.visible = false
-	call_deferred("_apply_board_size")
 	_refresh()
-
-func _apply_static_texts() -> void:
-	top_market_strip.set_title("")
-	inventory_strip.set_title("")
-	market_refresh_button.text = "Refresh"
-	restore_button.text = "Restore Previous Loadout"
-	tab_buttons[&"warrior"].text = "Warrior"
-	tab_buttons[&"hunter"].text = "Hunter"
-	tab_buttons[&"mage"].text = "Mage"
-
-func _apply_surface_art() -> void:
-	var empty_panel := StyleBoxEmpty.new()
-	top_market_strip.add_theme_stylebox_override("panel", empty_panel)
-	inventory_strip.add_theme_stylebox_override("panel", empty_panel)
-	inventory_drop_zone.add_theme_stylebox_override("panel", empty_panel)
-	synergy_panel.add_theme_stylebox_override("panel", empty_panel)
-	apply_panel_texture(top_market_panel, TEX_MARKET_BANNER, 48)
-	apply_panel_texture(bottom_inventory_panel, TEX_INVENTORY_BANNER, 48)
-	apply_panel_texture(board_frame, TEX_BOARD_WOOD, 56)
-	apply_panel_texture(right_panel, TEX_RIGHT_BOARD, 36)
-	apply_panel_texture(next_monster_panel, TEX_RIGHT_BOARD, 36)
-	_apply_status_panel_style()
-	apply_button_texture(market_refresh_button, TEX_REFRESH, 24)
-	apply_button_texture(action_button, TEX_DEPART, 32)
-	apply_button_texture(tab_buttons[&"warrior"], TEX_ROLE_TOP, 30)
-	apply_button_texture(tab_buttons[&"hunter"], TEX_ROLE_MID, 30)
-	apply_button_texture(tab_buttons[&"mage"], TEX_ROLE_BOTTOM, 30)
-	wanted_poster_rect.texture = TEX_WANTED
-	market_refresh_button.custom_minimum_size = Vector2(140, 56)
-	action_button.custom_minimum_size = Vector2(184, 74)
-	for role_button_variant in tab_buttons.values():
-		var role_button: Button = role_button_variant
-		role_button.custom_minimum_size = Vector2(156, 56)
-	wanted_poster_rect.custom_minimum_size = Vector2(104, 104)
-	_apply_button_font_color(market_refresh_button, Color(0.96, 0.96, 0.96))
-	_apply_button_font_color(action_button, Color(0.46, 0.11, 0.08))
-	_apply_button_font_color(tab_buttons[&"warrior"], Color(0.12, 0.12, 0.12))
-	_apply_button_font_color(tab_buttons[&"hunter"], Color(0.12, 0.12, 0.12))
-	_apply_button_font_color(tab_buttons[&"mage"], Color(0.12, 0.12, 0.12))
-
-func _apply_status_panel_style() -> void:
-	status_panel.z_index = 50
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.04, 0.07, 0.1, 0.92)
-	panel_style.corner_radius_top_left = 18
-	panel_style.corner_radius_top_right = 18
-	panel_style.corner_radius_bottom_right = 18
-	panel_style.corner_radius_bottom_left = 18
-	panel_style.border_width_left = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_bottom = 2
-	panel_style.border_color = Color(0.84, 0.78, 0.62, 0.95)
-	panel_style.content_margin_left = 16
-	panel_style.content_margin_top = 6
-	panel_style.content_margin_right = 16
-	panel_style.content_margin_bottom = 6
-	status_panel.add_theme_stylebox_override("panel", panel_style)
-	for label in [gold_label, route_label, node_label, risk_label]:
-		label.add_theme_color_override("font_color", Color(0.97, 0.93, 0.82))
-		label.add_theme_font_size_override("font_size", 17)
-
-func _schedule_board_size() -> void:
-	call_deferred("_apply_board_size")
-
-func _apply_board_size() -> void:
-	if not is_inside_tree():
-		return
-	var panel_style: StyleBox = board_frame.get_theme_stylebox("panel")
-	var available_size: Vector2 = board_frame.size
-	if panel_style != null:
-		available_size.x -= panel_style.get_minimum_size().x
-		available_size.y -= panel_style.get_minimum_size().y
-	if available_size.x <= 0.0 or available_size.y <= 0.0:
-		return
-	var horizontal_padding: int = 12
-	var vertical_padding: int = 12
-	var usable_width: float = maxf(available_size.x - horizontal_padding * 2.0, 0.0)
-	var usable_height: float = maxf(available_size.y - vertical_padding * 2.0, 0.0)
-	var cell_width: int = int(floor(usable_width / float(BentoBoardView.GRID_WIDTH)))
-	var cell_height: int = int(floor(usable_height / float(BentoBoardView.GRID_HEIGHT)))
-	var target_size: int = max(min(cell_width, cell_height), 16)
-	board_view.set_cell_pixel_size(target_size)
-
-func apply_panel_texture(panel: PanelContainer, texture: Texture2D, margin: int) -> void:
-	var style := StyleBoxTexture.new()
-	style.texture = texture
-	style.texture_margin_left = margin
-	style.texture_margin_top = margin
-	style.texture_margin_right = margin
-	style.texture_margin_bottom = margin
-	panel.add_theme_stylebox_override("panel", style)
-
-func apply_button_texture(button: Button, texture: Texture2D, margin: int) -> void:
-	for state_name in ["normal", "hover", "pressed", "disabled", "focus"]:
-		var style := StyleBoxTexture.new()
-		style.texture = texture
-		style.texture_margin_left = margin
-		style.texture_margin_top = margin
-		style.texture_margin_right = margin
-		style.texture_margin_bottom = margin
-		button.add_theme_stylebox_override(state_name, style)
-
-func _apply_button_font_color(button: Button, color: Color) -> void:
-	for color_name in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color", "font_focus_color"]:
-		button.add_theme_color_override(color_name, color)
 
 func _refresh() -> void:
 	var run_state: Node = _run_state()
@@ -393,6 +268,9 @@ func _on_inventory_strip_drop_requested(drag_data: Dictionary) -> void:
 
 func _on_restore_pressed() -> void:
 	_run_state().try_restore_snapshot()
+
+func _on_settings_pressed() -> void:
+	get_tree().change_scene_to_file("res://Scenes/settings_screen.tscn")
 
 func _on_action_pressed() -> void:
 	_run_state().perform_primary_action()
