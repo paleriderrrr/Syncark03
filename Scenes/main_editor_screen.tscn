@@ -48,8 +48,9 @@ stretch_mode = 6
 [node name="TopMarketPanel" type="Control" parent="." unique_id=187167841]
 anchors_preset = 0
 offset_left = 238.0
+offset_top = -50.0
 offset_right = 1670.0
-offset_bottom = 198.0
+offset_bottom = 148.0
 
 [node name="TopMarketBackground" type="TextureRect" parent="TopMarketPanel" unique_id=517598199]
 unique_name_in_owner = true
@@ -186,6 +187,7 @@ offset_bottom = 816.0
 
 [node name="SelectedItemLabel" type="Label" parent="CenterPanel" unique_id=1226482005]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 offset_left = 210.0
 offset_top = 28.0
@@ -196,10 +198,10 @@ horizontal_alignment = 1
 
 [node name="BoardBackground" type="TextureRect" parent="CenterPanel" unique_id=507403133]
 layout_mode = 0
-offset_left = 117.0
-offset_top = 74.0
-offset_right = 1187.0
-offset_bottom = 755.0
+offset_left = -72.99999
+offset_top = -11.0
+offset_right = 1274.2068
+offset_bottom = 836.93164
 scale = Vector2(0.81527585, 0.7188574)
 mouse_filter = 2
 texture = ExtResource("11_45gjs")
@@ -235,8 +237,8 @@ cell_pixel_size = 48
 [node name="LeftPanel" type="Control" parent="." unique_id=781811621]
 anchors_preset = 0
 offset_left = 2.0
-offset_top = 264.0
-offset_right = 196.0
+offset_top = 262.0
+offset_right = 219.73192
 offset_bottom = 854.0
 scale = Vector2(1.5937029, 1)
 

@@ -506,3 +506,58 @@
 - Blockers: No known compile blocker remains for the title-button manual-texture workflow.
 - Files Touched: Scripts/UI/title_screen.gd, Docs/07_progress_log.md
 - Notes: This round only removed the runtime override; it did not assign new manual textures to either button.
+## 2026-03-29 13:07
+- Phase: Title fog visibility implementation.
+- Changes:
+  - Replaced the title FogMask ColorRect with a TextureRect that reuses CoverBase1 as its alpha mask source.
+  - Moved FogMask above CoverBase1 and below CoverGlow1 so the white mist sits visibly on the lowest cover layer.
+  - Added fog_mask to title-screen pivot setup, reset flow, and start-transition layer fade so it exits together with CoverBase1.
+  - Expanded the title screen runner to assert FogMask type, texture source, and exact layering.
+- Verification:
+  - Title screen runner PASS.
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+### 2026-03-29 22:56
+- Completed: Added a one-shot main-editor entrance animation so the top market, left role tabs, center board, right info panel, bottom inventory, and settings button fade in while flying inward from the screen edges.
+- In Progress: Manual confirmation that the intro tween feels smooth and does not conflict with the market open/close state after entering the editor.
+- Next: Open the main editor, watch the first entry animation, and verify it only plays once per scene entry while drag/drop and node refresh still behave normally.
+- Blockers: No known compile blocker remains for this editor intro-animation pass.
+- Files Touched: 07_progress_log.md
+- Notes: The intro tween is isolated from later refreshes by an explicit _intro_animating gate so normal node-state updates resume after the one-shot animation finishes.
+## 2026-03-29 13:19
+- Phase: Title fog style split.
+- Changes:
+  - Replaced the single FogMask approach with two separate fog layers: a back-layer CenterFog for central atmosphere and a front-layer EdgeFog for edge mist.
+  - Added dedicated center-fog and edge-fog shaders instead of forcing one cover-bound mask to serve both visual goals.
+  - Updated title-screen transition wiring so EdgeFog exits with the front decorative layer timing and CenterFog exits with the back cover timing.
+  - Updated the title screen runner to assert CenterFog and EdgeFog existence and exact layering.
+- Verification:
+  - Title screen runner PASS.
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+### 2026-03-29 23:09
+- Completed: Fixed the top-market intro animation target so market entry now animates toward the explicit open position when the current node is market, instead of accidentally tweening to the off-screen closed position.
+- In Progress: Manual confirmation that the top market now visibly flies in on first editor entry and still hides correctly on non-market nodes.
+- Next: Enter the main editor on a market node, verify the top panel visibly flies in, then advance to a non-market node and confirm the normal open/close behavior still works.
+- Blockers: No known compile blocker remains for this top-market intro-target correction.
+- Files Touched: 07_progress_log.md
+- Notes: The root cause was that _play_intro_animation() previously captured 	op_market_panel.position before the market open tween had advanced, so the intro target remained off-screen.
+### 2026-03-29 13:25
+- Completed: Added a standalone `food_effect_lab.tscn` manual test scene plus a lightweight `FoodEffectLabState` that reuses the real data resources and `CombatEngine` preview/simulate logic, enabling free food placement, synergy verification, live stat readout, battle preview, preset loading, and expected-vs-actual numeric comparison without touching the formal run flow.
+- In Progress: Manual in-editor validation of the lab scene's usability, especially drag/drop feel, preset convenience, and readability of the comparison grid.
+- Next: Open `Scenes/food_effect_lab.tscn` in Godot, verify free placement/removal, test the provided presets, use `Fill Expected From Current`, and compare duplicate-food vs distinct-food synergy activation behavior.
+- Blockers: No known compile blocker remains for the food-effect lab scene.
+- Files Touched: Scripts/Tools/food_effect_lab_state.gd, Scripts/UI/food_effect_lab.gd, Scenes/food_effect_lab.tscn, Scripts/Tests/food_effect_lab_runner.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/Core/combat_engine.gd, Docs/07_progress_log.md
+- Notes: The lab reuses formal logic instead of a second formula path; category activation uses the current distinct-food rule, and the lab board accepts a dedicated `lab_catalog` drag source while base-board dragging is disabled for test ergonomics.
+### 2026-03-29 23:16
+- Completed: Fixed the title-screen start-transition type error by widening _queue_layer_transition() from TextureRect to CanvasItem, allowing the shared fade/scale helper to animate both texture layers and fog ColorRect layers.
+- In Progress: Manual confirmation that pressing Start now runs the full cover/fog transition instead of aborting on the first fog layer.
+- Next: Open the title screen, press Start, and verify the layered transition completes cleanly into the main editor.
+- Blockers: No known compile blocker remains for the title transition type mismatch.
+- Files Touched: 07_progress_log.md
+- Notes: The runtime error was triggered specifically by CenterFog/EdgeFog because they are ColorRect nodes passed into a helper that previously demanded TextureRect.
+### 2026-03-29 23:24
+- Completed: Fixed the food-effect lab runtime type mismatch by widening the remaining CombatEngine helper signatures _adjacent_food_categories() and _is_below_category() from Node to Object, so FoodEffectLabState can reuse the formal combat preview logic without violating the expected argument type.
+- In Progress: Manual in-editor validation of the lab scene workflow after the type-chain correction, especially free placement plus live stat refresh.
+- Next: Open Scenes/food_effect_lab.tscn, place foods on the board, and confirm the right-side live summary and battle preview both update without runtime type errors.
+- Blockers: No known compile blocker remains for the food-effect lab type compatibility path.
+- Files Touched: Scripts/Core/combat_engine.gd, Docs/07_progress_log.md
+- Notes: Root cause was that the high-level preview functions had already been widened to Object, but two deeper helper calls still required Node, so the incompatibility only surfaced when adjacency logic was reached from the lab adapter.

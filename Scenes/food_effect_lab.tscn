@@ -1,0 +1,257 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/food_effect_lab.gd" id="1_lab"]
+[ext_resource type="PackedScene" path="res://Scenes/Components/item_strip.tscn" id="2_strip"]
+[ext_resource type="Script" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
+
+[node name="FoodEffectLab" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lab")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="RootVBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="HeaderLabel" type="Label" parent="Margin/RootVBox"]
+layout_mode = 2
+text = "Food Effect Lab"
+
+[node name="TopHBox" type="HBoxContainer" parent="Margin/RootVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="LeftPanel" type="PanelContainer" parent="Margin/RootVBox/TopHBox"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+
+[node name="LeftMargin" type="MarginContainer" parent="Margin/RootVBox/TopHBox/LeftPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="LeftVBox" type="VBoxContainer" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CharacterLabel" type="Label" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+text = "Character"
+
+[node name="CharacterOption" type="OptionButton" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301001]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MonsterLabel" type="Label" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+text = "Monster"
+
+[node name="MonsterOption" type="OptionButton" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301002]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HpRatioLabel" type="Label" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+text = "HP Ratio (%)"
+
+[node name="HpRatioSpin" type="SpinBox" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301003]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.0
+max_value = 100.0
+value = 100.0
+step = 1.0
+
+[node name="PresetLabel" type="Label" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+text = "Preset"
+
+[node name="PresetOption" type="OptionButton" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301004]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PresetActions" type="HBoxContainer" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LoadPresetButton" type="Button" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox/PresetActions" unique_id=301005]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Load Preset"
+
+[node name="ClearBoardButton" type="Button" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox/PresetActions" unique_id=301006]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Clear Board"
+
+[node name="CategoryFilterLabel" type="Label" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox"]
+layout_mode = 2
+text = "Category Filter"
+
+[node name="CategoryFilterOption" type="OptionButton" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301007]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SearchEdit" type="LineEdit" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301008]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Search food name or id"
+
+[node name="SelectedFoodLabel" type="Label" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301009]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Selected Food: None"
+
+[node name="SelectedRotationLabel" type="Label" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301010]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Rotation: 0"
+
+[node name="PassiveTextLabel" type="RichTextLabel" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301011]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = true
+
+[node name="FoodCatalogStrip" parent="Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox" unique_id=301012 instance=ExtResource("2_strip")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 220)
+
+[node name="CenterPanel" type="PanelContainer" parent="Margin/RootVBox/TopHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CenterMargin" type="MarginContainer" parent="Margin/RootVBox/TopHBox/CenterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="CenterVBox" type="VBoxContainer" parent="Margin/RootVBox/TopHBox/CenterPanel/CenterMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BoardHintLabel" type="Label" parent="Margin/RootVBox/TopHBox/CenterPanel/CenterMargin/CenterVBox"]
+layout_mode = 2
+text = "Click selected catalog food to place. Drag from catalog for direct placement. Right click removes. Press R to rotate selected catalog food for click placement."
+autowrap_mode = 3
+
+[node name="BoardCenter" type="CenterContainer" parent="Margin/RootVBox/TopHBox/CenterPanel/CenterMargin/CenterVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BentoBoardView" type="Control" parent="Margin/RootVBox/TopHBox/CenterPanel/CenterMargin/CenterVBox/BoardCenter" unique_id=301013]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(900, 680)
+layout_mode = 2
+script = ExtResource("3_board")
+cell_pixel_size = 84
+
+[node name="RightPanel" type="PanelContainer" parent="Margin/RootVBox/TopHBox"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+
+[node name="RightMargin" type="MarginContainer" parent="Margin/RootVBox/TopHBox/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="RightVBox" type="VBoxContainer" parent="Margin/RootVBox/TopHBox/RightPanel/RightMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="ActualSummary" type="RichTextLabel" parent="Margin/RootVBox/TopHBox/RightPanel/RightMargin/RightVBox" unique_id=301014]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[node name="BattlePreviewButton" type="Button" parent="Margin/RootVBox/TopHBox/RightPanel/RightMargin/RightVBox" unique_id=301015]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Run Battle Preview"
+
+[node name="BattleSummary" type="RichTextLabel" parent="Margin/RootVBox/TopHBox/RightPanel/RightMargin/RightVBox" unique_id=301016]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+bbcode_enabled = true
+
+[node name="ExpectedPanel" type="PanelContainer" parent="Margin/RootVBox"]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ExpectedMargin" type="MarginContainer" parent="Margin/RootVBox/ExpectedPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="ExpectedVBox" type="VBoxContainer" parent="Margin/RootVBox/ExpectedPanel/ExpectedMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="ExpectedActions" type="HBoxContainer" parent="Margin/RootVBox/ExpectedPanel/ExpectedMargin/ExpectedVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FillExpectedButton" type="Button" parent="Margin/RootVBox/ExpectedPanel/ExpectedMargin/ExpectedVBox/ExpectedActions" unique_id=301017]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Fill Expected From Current"
+
+[node name="ClearExpectedButton" type="Button" parent="Margin/RootVBox/ExpectedPanel/ExpectedMargin/ExpectedVBox/ExpectedActions" unique_id=301018]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Clear Expected"
+
+[node name="ExpectedScroll" type="ScrollContainer" parent="Margin/RootVBox/ExpectedPanel/ExpectedMargin/ExpectedVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CompareGrid" type="GridContainer" parent="Margin/RootVBox/ExpectedPanel/ExpectedMargin/ExpectedVBox/ExpectedScroll" unique_id=301019]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 5
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
