@@ -6,6 +6,7 @@ extends Control
 @onready var risk_label: Label = %RiskLabel
 @onready var selected_role_label: Label = %SelectedRoleLabel
 @onready var selected_item_label: Label = %SelectedItemLabel
+@onready var top_market_panel: Control = $TopMarketPanel
 @onready var board_view: BentoBoardView = %BentoBoardView
 @onready var top_market_strip: ItemStrip = %TopMarketStrip
 @onready var market_refresh_button: Button = %MarketRefreshButton
@@ -32,6 +33,10 @@ extends Control
 
 var _food_textures: Dictionary = {}
 var _role_names: Dictionary = {}
+var _market_panel_open_position := Vector2.ZERO
+var _market_panel_closed_position := Vector2.ZERO
+var _market_panel_is_open: bool = false
+var _market_panel_tween: Tween
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -42,6 +47,10 @@ func _bgm_player() -> Node:
 func _ready() -> void:
 	ProjectSettings.set_setting("gui/timers/tooltip_delay_sec", 0.01)
 	_bgm_player().play_non_battle()
+	_market_panel_open_position = top_market_panel.position
+	_market_panel_closed_position = Vector2(_market_panel_open_position.x, -top_market_panel.size.y - 24.0)
+	top_market_panel.position = _market_panel_closed_position
+	top_market_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var run_state: Node = _run_state()
 	run_state.ensure_initialized()
 	_food_textures = FoodVisuals.build_food_texture_lookup()
@@ -75,6 +84,7 @@ func _ready() -> void:
 func _refresh() -> void:
 	var run_state: Node = _run_state()
 	_role_names = run_state.get_character_display_names()
+	_update_market_panel_state(run_state.get_current_node_type() == run_state.NODE_MARKET)
 	gold_label.text = "Gold: %d" % run_state.current_gold
 	route_label.text = _build_route_label(run_state)
 	node_label.text = "Current Node: %s" % _display_name_for_node(run_state.get_current_node_type())
@@ -89,6 +99,22 @@ func _refresh() -> void:
 	_refresh_board()
 	_refresh_next_monster_panel()
 	_refresh_synergy_panel()
+
+func _update_market_panel_state(should_open: bool) -> void:
+	if _market_panel_is_open == should_open and _market_panel_tween == null:
+		return
+	_market_panel_is_open = should_open
+	if is_instance_valid(_market_panel_tween):
+		_market_panel_tween.kill()
+	var target_position: Vector2 = _market_panel_open_position if should_open else _market_panel_closed_position
+	top_market_panel.mouse_filter = Control.MOUSE_FILTER_PASS if should_open else Control.MOUSE_FILTER_IGNORE
+	_market_panel_tween = create_tween()
+	_market_panel_tween.set_trans(Tween.TRANS_CUBIC)
+	_market_panel_tween.set_ease(Tween.EASE_OUT)
+	_market_panel_tween.tween_property(top_market_panel, "position", target_position, 0.28)
+	_market_panel_tween.finished.connect(func() -> void:
+		_market_panel_tween = null
+	)
 
 func _refresh_selected_role(character_id: StringName) -> void:
 	var run_state: Node = _run_state()
