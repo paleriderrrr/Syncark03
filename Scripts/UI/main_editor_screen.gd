@@ -34,7 +34,11 @@ var _role_names: Dictionary = {}
 func _run_state() -> Node:
 	return get_node("/root/RunState")
 
+func _bgm_player() -> Node:
+	return get_node("/root/BgmPlayer")
+
 func _ready() -> void:
+	_bgm_player().play_non_battle()
 	var run_state: Node = _run_state()
 	run_state.ensure_initialized()
 	_food_textures = FoodVisuals.build_food_texture_lookup()

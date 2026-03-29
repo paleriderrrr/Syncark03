@@ -26,15 +26,20 @@ var _recent_lines: Array[String] = []
 func _run_state() -> Node:
 	return get_node("/root/RunState")
 
+func _bgm_player() -> Node:
+	return get_node("/root/BgmPlayer")
+
 func _ready() -> void:
 	close_button.text = "Close"
 	close_button.pressed.connect(_on_close_pressed)
+	popup_hide.connect(_on_popup_hidden)
 
 func open_battle() -> void:
 	if _is_playing:
 		return
 	_is_playing = true
 	close_button.disabled = true
+	_bgm_player().play_battle()
 	var run_state: Node = _run_state()
 	var report: Dictionary = CombatEngine.simulate(run_state)
 	_prepare_playback(report)
@@ -126,3 +131,6 @@ func _on_close_pressed() -> void:
 	if _is_playing:
 		return
 	hide()
+
+func _on_popup_hidden() -> void:
+	_bgm_player().play_non_battle()

@@ -315,3 +315,55 @@
   - CAMPAIGN_TEST_PASS.
 - Notes:
   - Boss 30-hit reaction is implemented as deterministic target-order rotation for stable validation.
+## 2026-03-29 10:10
+- Phase: Title screen formal art integration completed.
+- Changes:
+  - Rebuilt title_screen as a fixed 16:9 layered cover scene using UI_formal art assets.
+  - Replaced the start button art with UI_formal/¿ªÊ¼.png while keeping settings and quit button art unchanged.
+  - Implemented ordered pop-up-book style start transition: FloatingArt -> TitleArt -> CoverBase4 -> CoverBase3 -> CoverBase2 -> CoverBase1, then scene switch to main editor.
+- Verification:
+  - Godot headless launch PASS.
+- Notes:
+  - Main editor background is used as the lowest visible backdrop under the cover stack.
+### 2026-03-29 11:10
+- Completed: Set `ZhengQingKeHuangYouTi-1.ttf` as the project-wide default UI font by creating a shared theme resource and wiring it through project settings, so labels and buttons across the title, editor, battle, and settings screens inherit the same default font unless locally overridden.
+- In Progress: Manual visual acceptance of the new default font rendering across the main screens.
+- Next: Open the title page, main editor, and battle popup in Godot to confirm the new default font reads well at the current sizes.
+- Blockers: No automated blocker remains for the default-font installation.
+- Files Touched: Themes/default_ui_theme.tres, project.godot, Docs/07_progress_log.md
+- Notes: Godot 4.6.1 headless launch and the title-screen load script exit cleanly after applying the new default UI theme.
+## 2026-03-29 10:18
+- Phase: Title screen transition polish updated.
+- Changes:
+  - Adjusted the start transition so layers now disappear toward four sides.
+  - FloatingArt and TitleArt move upward; CoverBase4 and CoverBase3 move to upper-right and upper-left; CoverBase2 and CoverBase1 move downward/outward.
+- Verification:
+  - Godot headless launch PASS.
+## 2026-03-29 10:28
+- Phase: Title screen transition changed to scale-only fade.
+- Changes:
+  - Removed all positional movement from the start transition.
+  - All title cover layers now scale up from center pivot and fade out in sequence.
+- Verification:
+  - Godot headless launch PASS.
+### 2026-03-29 11:40
+- Completed: Added a dedicated `BgmPlayer` autoload, mapped two non-battle music tracks (`rest_bgm`, `rest_bgm_2`) and two battle music tracks (`battle_bgm`, `battle_bgm2`), and wired title, settings, main-editor, and battle-popup scene flow so non-battle screens use the non-battle pool while the battle popup switches to the battle pool and returns to non-battle on close.
+- In Progress: Runtime verification that music switches at the intended scene and popup boundaries inside Godot.
+- Next: Launch the project, confirm non-battle music begins on title/editor/settings screens, then open/close one battle popup to confirm battle music starts there and switches back afterward.
+- Blockers: No known compile blocker remains for BGM playback; final acceptance depends on runtime audio behavior in the local Godot editor/player.
+- Files Touched: project.godot, Scripts/Autoload/bgm_player.gd, Scripts/UI/title_screen.gd, Scripts/UI/settings_screen.gd, Scripts/UI/main_editor_screen.gd, Scripts/UI/battle_popup.gd, Docs/07_progress_log.md
+- Notes: The music manager uses explicit track pools and `AudioStreamPlayer.finished` rotation rather than scene-local ad hoc playback, so each pool loops through its two tracks deterministically.
+## 2026-03-29 10:42
+- Phase: Title screen ambient effects added.
+- Changes:
+  - Added looped ambient breathing to cover layers, subtle floating to title art, stronger idle motion to floating art, and a soft pulse on the start button.
+  - Ambient tweens are now stopped cleanly before start transition and on scene exit.
+- Verification:
+  - Godot headless launch PASS.
+## 2026-03-29 10:55
+- Phase: Title ambient jitter fix.
+- Changes:
+  - Removed persistent scaling/position tweening from full-screen title layers.
+  - Ambient effects now use subtle alpha breathing on cover/title/floating layers, with only the start button keeping a soft pulse.
+- Verification:
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
