@@ -7,6 +7,8 @@ const CARD_SCENE := preload("res://Scenes/Components/item_icon_card.tscn")
 const CARD_WIDTH := 132
 const CARD_GAP := 14
 
+@export var card_background_texture: Texture2D
+
 @onready var title_label: Label = %TitleLabel
 @onready var viewport_control: Control = %Viewport
 @onready var card_row: HBoxContainer = %CardRow
@@ -40,7 +42,7 @@ func set_entries(entries: Array[Dictionary], texture_lookup: Dictionary) -> void
 		var card: ItemIconCard = CARD_SCENE.instantiate() as ItemIconCard
 		var texture: Texture2D = texture_lookup.get(entry.get("definition_id", &""), null) as Texture2D
 		card_row.add_child(card)
-		card.configure(entry, texture, entry.get("drag_payload", {}), card_drop_sources, card_drop_target)
+		card.configure(entry, texture, entry.get("drag_payload", {}), card_drop_sources, card_drop_target, card_background_texture)
 		card.clicked.connect(_on_card_clicked)
 		_cards.append(card)
 	call_deferred("_refresh_page_state")
@@ -75,7 +77,7 @@ func _refresh_page_state() -> void:
 	var page_stride: float = maxf(float(visible_slots * (CARD_WIDTH + CARD_GAP)), 1.0)
 	var target_offset: float = minf(float(_page_index) * page_stride, max_offset)
 	if content_width <= visible_width:
-		card_row.position.x = floor((visible_width - content_width) * 0.5)
+		card_row.position.x = 0.0
 	else:
 		card_row.position.x = -target_offset
 	prev_button.disabled = _page_index <= 0
