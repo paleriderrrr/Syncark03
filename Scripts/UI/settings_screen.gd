@@ -7,7 +7,11 @@ extends Control
 func _run_state() -> Node:
 	return get_node("/root/RunState")
 
+func _bgm_player() -> Node:
+	return get_node("/root/BgmPlayer")
+
 func _ready() -> void:
+	_bgm_player().play_non_battle()
 	restart_button.pressed.connect(_on_restart_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 	volume_slider.value = 100.0

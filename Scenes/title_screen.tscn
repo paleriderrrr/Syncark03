@@ -1,13 +1,41 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3 uid="uid://b2tjwa4uprw53"]
 
-[ext_resource type="Script" path="res://Scripts/UI/title_screen.gd" id="1_title"]
-[ext_resource type="Texture2D" path="res://Art/UI/Titlepage.png" id="2_bg"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/ui1_board_wood.png" id="3_board"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/ui1_depart_sign.png" id="4_depart"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/ui2_buy_button.png" id="5_buy"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/ui2_sell_button.png" id="6_sell"]
+[ext_resource type="Script" uid="uid://cq6r8mjnr6tx1" path="res://Scripts/UI/title_screen.gd" id="1_title"]
+[ext_resource type="Texture2D" uid="uid://dr60km6grv5l7" path="res://Art/UI/Background.png" id="2_main_bg"]
+[ext_resource type="Texture2D" uid="uid://cb8isjh1si55u" path="res://Art/UI/UI_formal/封面底1.png" id="3_cover1"]
+[ext_resource type="Texture2D" uid="uid://bqaseyvgcm8kk" path="res://Art/UI/UI_formal/封面底2.png" id="4_cover2"]
+[ext_resource type="Texture2D" uid="uid://cyb87gxhx6nbs" path="res://Art/UI/UI_formal/封面底3.png" id="5_cover3"]
+[ext_resource type="Texture2D" uid="uid://rnefy2mi22yt" path="res://Art/UI/UI_formal/封面底4.png" id="6_cover4"]
+[ext_resource type="Texture2D" uid="uid://duaio0gatvmx6" path="res://Art/UI/UI_formal/标题.png" id="7_title_art"]
+[ext_resource type="Texture2D" uid="uid://bmkly1pctq7pa" path="res://Art/UI/UI_formal/漂浮物.png" id="8_floating"]
+[ext_resource type="Texture2D" uid="uid://elcmybn32hb4" path="res://Art/UI/UI_formal/开始.png" id="11_start"]
+[ext_resource type="Shader" uid="uid://djnl7b13dimqr" path="res://Shaders/title_cover_edge_glow.gdshader" id="12_glow_shader"]
 
-[node name="TitleScreen" type="Control"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow1"]
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 0.86, 0.62, 1)
+shader_parameter/glow_size = 60.0
+shader_parameter/glow_intensity = 4.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow2"]
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 0.88, 0.66, 1)
+shader_parameter/glow_size = 60.0
+shader_parameter/glow_intensity = 5.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow3"]
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 0.9, 0.7, 1)
+shader_parameter/glow_size = 50.0
+shader_parameter/glow_intensity = 5.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow4"]
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 0.94, 0.76, 1)
+shader_parameter/glow_size = 40.0
+shader_parameter/glow_intensity = 8.0
+
+[node name="TitleScreen" type="Control" unique_id=1535692023]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,7 +44,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_title")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="MainBackdrop" type="TextureRect" parent="." unique_id=584073712]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -24,98 +52,188 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_bg")
+mouse_filter = 2
+texture = ExtResource("2_main_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="CoverBase1" type="TextureRect" parent="." unique_id=1907132110]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 48
-theme_override_constants/margin_top = 32
-theme_override_constants/margin_right = 48
-theme_override_constants/margin_bottom = 32
+mouse_filter = 2
+texture = ExtResource("3_cover1")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="Root" type="VBoxContainer" parent="Margin"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 24
-
-[node name="TopBar" type="HBoxContainer" parent="Margin/Root"]
-layout_mode = 2
-
-[node name="TopSpacer" type="Control" parent="Margin/Root/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="SettingsButton" type="Button" parent="Margin/Root/TopBar"]
+[node name="CoverGlow1" type="TextureRect" parent="." unique_id=65474078]
 unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(132, 64)
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_glow1")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_cover1")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoverBase2" type="TextureRect" parent="." unique_id=1269007133]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_cover2")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoverGlow2" type="TextureRect" parent="." unique_id=794810810]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_glow2")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_cover2")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoverBase3" type="TextureRect" parent="." unique_id=102781665]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_cover3")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoverGlow3" type="TextureRect" parent="." unique_id=697185266]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_glow3")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_cover3")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoverBase4" type="TextureRect" parent="." unique_id=978332702]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_cover4")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoverGlow4" type="TextureRect" parent="." unique_id=1550352599]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_glow4")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_cover4")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TitleArt" type="TextureRect" parent="." unique_id=380022748]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_title_art")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="FloatingArt" type="TextureRect" parent="." unique_id=992108341]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_floating")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="FloatingArtB" type="TextureRect" parent="." unique_id=1612850453]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_floating")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="SettingsButton" type="Button" parent="." unique_id=1157731675]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1608.0
+offset_top = 44.0
+offset_right = 1740.0
+offset_bottom = 108.0
 text = "Settings"
 
-[node name="QuitButton" type="Button" parent="Margin/Root/TopBar"]
+[node name="QuitButton" type="Button" parent="." unique_id=935186296]
 unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(132, 64)
+layout_mode = 0
+offset_left = 1748.0
+offset_top = 44.0
+offset_right = 1880.0
+offset_bottom = 108.0
 text = "Quit"
 
-[node name="Center" type="CenterContainer" parent="Margin/Root"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="HeroCard" type="PanelContainer" parent="Margin/Root/Center"]
+[node name="StartButton" type="TextureButton" parent="." unique_id=316654087]
 unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(1180, 620)
-
-[node name="HeroMargin" type="MarginContainer" parent="Margin/Root/Center/HeroCard"]
-layout_mode = 2
-theme_override_constants/margin_left = 60
-theme_override_constants/margin_top = 56
-theme_override_constants/margin_right = 60
-theme_override_constants/margin_bottom = 56
-
-[node name="HeroVBox" type="VBoxContainer" parent="Margin/Root/Center/HeroCard/HeroMargin"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 24
-
-[node name="TitleLabel" type="Label" parent="Margin/Root/Center/HeroCard/HeroMargin/HeroVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 56
-text = "SYNCARK03"
-horizontal_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="Margin/Root/Center/HeroCard/HeroMargin/HeroVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Kitchen Adventure Run"
-horizontal_alignment = 1
-
-[node name="SummaryLabel" type="Label" parent="Margin/Root/Center/HeroCard/HeroMargin/HeroVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Build lunchbox boards, carry HP through battles, and route your crew through the market."
-horizontal_alignment = 1
-autowrap_mode = 3
-
-[node name="StartButton" type="Button" parent="Margin/Root/Center/HeroCard/HeroMargin/HeroVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(280, 128)
-text = "Start Adventure"
-
-[node name="HintLabel" type="Label" parent="Margin/Root/Center/HeroCard/HeroMargin/HeroVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "Drag food, shape the 8x6 board, and survive the full route."
-horizontal_alignment = 1
+layout_mode = 0
+offset_left = 640.0
+offset_top = 626.0
+offset_right = 1493.0
+offset_bottom = 960.0
+texture_normal = ExtResource("11_start")
+texture_pressed = ExtResource("11_start")
+texture_hover = ExtResource("11_start")
+stretch_mode = 0
