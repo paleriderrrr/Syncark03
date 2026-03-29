@@ -1,4 +1,4 @@
-shader_type canvas_item;
+hader_type canvas_item;
 render_mode unshaded, blend_add;
 
 uniform vec4 glow_color : source_color = vec4(1.0, 0.9, 0.7, 1.0);

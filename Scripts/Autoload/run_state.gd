@@ -18,6 +18,9 @@ const NODE_MARKET: StringName = &"market"
 const NODE_BATTLE: StringName = &"battle"
 const NODE_REST: StringName = &"rest"
 const NODE_BOSS_BATTLE: StringName = &"boss_battle"
+const ACTION_BUTTON_DEPART: StringName = &"depart"
+const ACTION_BUTTON_CONTINUE: StringName = &"continue"
+const ACTION_BUTTON_RESTART: StringName = &"restart"
 const CATEGORY_ORDER: Array[StringName] = [&"fruit", &"dessert", &"meat", &"drink", &"staple", &"spice"]
 const CATEGORY_DISPLAY_NAMES := {
 	&"fruit": "蔬果",
@@ -161,21 +164,21 @@ func get_current_node_type() -> StringName:
 func get_node_display_name(node_type: StringName) -> String:
 	match node_type:
 		NODE_MARKET:
-			return "甯傚満"
+			return "市场"
 		NODE_BATTLE:
-			return "鎴樻枟"
+			return "战斗"
 		NODE_REST:
-			return "浼戞暣"
+			return "休整"
 		NODE_BOSS_BATTLE:
-			return "Boss 鎴樻枟"
+			return "Boss战"
 		_:
 			return String(node_type)
 
 func get_route_label() -> String:
 	if stage_flow_config == null or stage_flow_config.route_nodes.is_empty():
-		return "Route Unavailable"
+		return "路线不可用"
 	var current_label: String = get_node_display_name(get_current_node_type())
-	return "Node %d / %d: %s" % [current_route_index + 1, stage_flow_config.route_nodes.size(), current_label]
+	return "节点 %d / %d：%s" % [current_route_index + 1, stage_flow_config.route_nodes.size(), current_label]
 
 func get_character_display_names() -> Dictionary:
 	var result: Dictionary = {}
@@ -969,6 +972,17 @@ func get_action_button_text() -> String:
 			return "开始战斗"
 		_:
 			return "继续"
+
+func get_action_button_visual_key() -> StringName:
+	if run_finished:
+		return ACTION_BUTTON_RESTART
+	match get_current_node_type():
+		NODE_BATTLE, NODE_BOSS_BATTLE:
+			return ACTION_BUTTON_DEPART
+		NODE_MARKET, NODE_REST:
+			return ACTION_BUTTON_CONTINUE
+		_:
+			return ACTION_BUTTON_CONTINUE
 
 func perform_primary_action() -> bool:
 	if run_finished:

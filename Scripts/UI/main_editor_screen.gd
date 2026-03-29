@@ -1,5 +1,11 @@
 extends Control
 
+const ACTION_BUTTON_TEXT_TEXTURES := {
+	&"depart": preload("res://Art/UI/NewUI/UI1-3_slices/ui13_formal_depart_text.png"),
+	&"continue": preload("res://Art/UI/NewUI/UI1-3_slices/ui13_formal_continue_text.png"),
+	&"restart": preload("res://Art/UI/NewUI/UI1-3_slices/ui13_formal_restart_text.png"),
+}
+
 @onready var gold_label: Label = %GoldLabel
 @onready var route_label: Label = %RouteLabel
 @onready var node_label: Label = %NodeLabel
@@ -19,6 +25,7 @@ extends Control
 @onready var settings_button: Button = %SettingsButton
 @onready var restore_button: Button = %RestoreButton
 @onready var action_button: Button = %ActionButton
+@onready var action_button_text: TextureRect = %ActionButtonText
 @onready var wanted_poster_rect: TextureRect = %WantedPosterRect
 @onready var next_monster_name_label: Label = %NextMonsterNameLabel
 @onready var next_monster_bounty_label: Label = %NextMonsterBountyLabel
@@ -101,14 +108,15 @@ func _refresh() -> void:
 	_last_node_type = current_node_type
 	_role_names = run_state.get_character_display_names()
 	_update_market_panel_state(run_state.get_current_node_type() == run_state.NODE_MARKET)
-	gold_label.text = "Gold: %d" % run_state.current_gold
+	gold_label.text = "金币：%d" % run_state.current_gold
 	route_label.text = _build_route_label(run_state)
-	node_label.text = "Current Node: %s" % _display_name_for_node(current_node_type)
-	risk_label.text = "Risk: %s" % _estimate_risk_label()
+	node_label.text = "当前节点：%s" % _display_name_for_node(current_node_type)
+	risk_label.text = "危险度：%s" % _estimate_risk_label()
 	selected_item_label.text = run_state.get_selected_item_summary()
-	action_button.text = run_state.get_action_button_text()
+	action_button.text = ""
+	_refresh_action_button_visual()
 	market_refresh_button.disabled = current_node_type != run_state.NODE_MARKET
-	market_refresh_button.text = "Refresh (%dG)" % run_state.get_current_refresh_cost()
+	market_refresh_button.text = "刷新（%d金）" % run_state.get_current_refresh_cost()
 	restore_button.disabled = current_node_type != run_state.NODE_REST
 	_refresh_selected_role(run_state.selected_character_id)
 	_refresh_market_strip()
@@ -212,7 +220,7 @@ func _play_intro_animation() -> void:
 func _refresh_selected_role(character_id: StringName) -> void:
 	var run_state: Node = _run_state()
 	var health: Dictionary = run_state.get_character_health_display(character_id)
-	selected_role_label.text = "Current Role: %s  HP %d/%d" % [
+	selected_role_label.text = "当前角色：%s  生命 %d/%d" % [
 		String(_role_names.get(character_id, String(character_id))),
 		int(health.get("current_hp", 0)),
 		int(health.get("max_hp", 0)),
@@ -286,8 +294,8 @@ func _apply_food_tooltip(entry: Dictionary, definition: FoodDefinition) -> void:
 	entry["tooltip_shape_cells"] = definition.shape_cells.duplicate()
 
 func _apply_expansion_tooltip(entry: Dictionary) -> void:
-	entry["tooltip_name"] = String(entry.get("display_name", "拓展"))
-	entry["tooltip_base_bonus"] = "拓展当前角色的可放置区域"
+	entry["tooltip_name"] = String(entry.get("display_name", "拓展块"))
+	entry["tooltip_base_bonus"] = "扩展当前角色的可放置区域"
 	entry["tooltip_special_effect"] = "拖拽到棋盘上，为对应角色增加新的格子。"
 	entry["tooltip_shape_cells"] = entry.get("shape_cells", []).duplicate()
 
@@ -333,17 +341,17 @@ func _refresh_board() -> void:
 func _refresh_next_monster_panel() -> void:
 	var summary: Dictionary = _run_state().get_next_monster_summary()
 	if summary.is_empty():
-		next_monster_name_label.text = "Unknown"
-		next_monster_bounty_label.text = "Bounty: -"
-		next_monster_stage_label.text = "Stage: -"
+		next_monster_name_label.text = "未知"
+		next_monster_bounty_label.text = "赏金：-"
+		next_monster_stage_label.text = "阶段：-"
 		next_monster_stats_label.text = "-"
 		next_monster_skill_label.text = "-"
 		monster_tooltip_panel.visible = false
 		return
 	next_monster_name_label.text = "%s / %s" % [String(summary.get("display_name", "")), String(summary.get("category_name", ""))]
-	next_monster_bounty_label.text = "Bounty: %d G" % _get_next_battle_reward()
-	next_monster_stage_label.text = "Stage: %d / %d" % [_run_state().current_route_index + 1, _get_total_stage_count()]
-	next_monster_stats_label.text = "HP %d  ATK %.1f  Interval %.1fs" % [
+	next_monster_bounty_label.text = "赏金：%d金" % _get_next_battle_reward()
+	next_monster_stage_label.text = "阶段：%d / %d" % [_run_state().current_route_index + 1, _get_total_stage_count()]
+	next_monster_stats_label.text = "生命 %d  攻击 %.1f  间隔 %.1f秒" % [
 		int(summary.get("hp", 0)),
 		float(summary.get("attack", 0.0)),
 		float(summary.get("attack_interval", 0.0)),
@@ -355,7 +363,7 @@ func _build_route_label(run_state: Node) -> String:
 	var total_nodes: int = 0
 	if run_state.stage_flow_config != null:
 		total_nodes = run_state.stage_flow_config.route_nodes.size()
-	return "NODE %d / %d: %s" % [
+	return "节点 %d / %d：%s" % [
 		int(run_state.current_route_index) + 1,
 		total_nodes,
 		_display_name_for_node(run_state.get_current_node_type()),
@@ -379,13 +387,13 @@ func _get_next_battle_reward() -> int:
 func _display_name_for_node(node_type: StringName) -> String:
 	match node_type:
 		&"market":
-			return "Market"
+			return "市场"
 		&"battle":
-			return "Battle"
+			return "战斗"
 		&"rest":
-			return "Rest"
+			return "休整"
 		&"boss_battle":
-			return "Boss Battle"
+			return "Boss战"
 		_:
 			return String(node_type)
 
@@ -507,6 +515,10 @@ func _on_action_pressed() -> void:
 	_ui_sfx().play_button()
 	_run_state().perform_primary_action()
 
+func _refresh_action_button_visual() -> void:
+	var visual_key: StringName = _run_state().get_action_button_visual_key()
+	action_button_text.texture = ACTION_BUTTON_TEXT_TEXTURES.get(visual_key, ACTION_BUTTON_TEXT_TEXTURES[&"continue"])
+
 func _on_market_refresh_pressed() -> void:
 	if _run_state().refresh_market_offers():
 		_ui_sfx().play_button()
@@ -546,18 +558,18 @@ func _estimate_risk_label() -> String:
 			total_power += food.attack_speed_percent / 10.0
 	var monster: MonsterDefinition = run_state.get_current_monster_definition()
 	if monster == null:
-		return "Unknown"
+		return "未知"
 	var monster_power: float = monster.base_attack * 2.0 + monster.base_hp / 6.0
 	var ratio: float = total_power / maxf(monster_power, 1.0)
 	if ratio >= 1.8:
-		return "Crush"
+		return "碾压"
 	if ratio >= 1.2:
-		return "Stable"
+		return "稳定"
 	if ratio >= 0.85:
-		return "Close"
+		return "接近"
 	if ratio >= 0.6:
-		return "Risky"
-	return "Fatal"
+		return "危险"
+	return "致命"
 
 func _on_role_tab_pressed(character_id: StringName) -> void:
 	_ui_sfx().play_button()

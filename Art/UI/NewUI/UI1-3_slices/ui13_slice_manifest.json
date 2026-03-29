@@ -1,0 +1,467 @@
+{
+  "source": "UI1-3.png",
+  "output_dir": "UI1-3_slices",
+  "policy": "expanded transparent safety padding; never hard-crop to the painted edge",
+  "slices": [
+	{
+	  "name": "ui13_formal_settings_icon.png",
+	  "source_bbox": [
+		3,
+		3,
+		120,
+		125
+	  ],
+	  "padding": 16,
+	  "crop_box": [
+		0,
+		0,
+		137,
+		142
+	  ],
+	  "size": [
+		137,
+		142
+	  ]
+	},
+	{
+	  "name": "ui13_formal_help_icon.png",
+	  "source_bbox": [
+		257,
+		3,
+		369,
+		117
+	  ],
+	  "padding": 16,
+	  "crop_box": [
+		241,
+		0,
+		386,
+		134
+	  ],
+	  "size": [
+		145,
+		134
+	  ]
+	},
+	{
+	  "name": "ui13_formal_coin_marker.png",
+	  "source_bbox": [
+		513,
+		2,
+		596,
+		79
+	  ],
+	  "padding": 14,
+	  "crop_box": [
+		499,
+		0,
+		611,
+		94
+	  ],
+	  "size": [
+		112,
+		94
+	  ]
+	},
+	{
+	  "name": "ui13_formal_header_plate_blank.png",
+	  "source_bbox": [
+		771,
+		1,
+		1156,
+		201
+	  ],
+	  "padding": 28,
+	  "crop_box": [
+		743,
+		0,
+		1185,
+		230
+	  ],
+	  "size": [
+		442,
+		230
+	  ]
+	},
+	{
+	  "name": "ui13_formal_board_wood.png",
+	  "source_bbox": [
+		526,
+		266,
+		1631,
+		980
+	  ],
+	  "padding": 36,
+	  "crop_box": [
+		490,
+		230,
+		1668,
+		1017
+	  ],
+	  "size": [
+		1178,
+		787
+	  ]
+	},
+	{
+	  "name": "ui13_formal_right_board.png",
+	  "source_bbox": [
+		1790,
+		10,
+		2365,
+		454
+	  ],
+	  "padding": 28,
+	  "crop_box": [
+		1762,
+		0,
+		2394,
+		483
+	  ],
+	  "size": [
+		632,
+		483
+	  ]
+	},
+	{
+	  "name": "ui13_formal_role_tab_top_green.png",
+	  "source_bbox": [
+		0,
+		316,
+		407,
+		482
+	  ],
+	  "padding": 26,
+	  "crop_box": [
+		0,
+		290,
+		434,
+		509
+	  ],
+	  "size": [
+		434,
+		219
+	  ]
+	},
+	{
+	  "name": "ui13_formal_role_tab_mid_red.png",
+	  "source_bbox": [
+		0,
+		514,
+		432,
+		741
+	  ],
+	  "padding": 26,
+	  "crop_box": [
+		0,
+		488,
+		459,
+		768
+	  ],
+	  "size": [
+		459,
+		280
+	  ]
+	},
+	{
+	  "name": "ui13_formal_role_tab_bottom_purple.png",
+	  "source_bbox": [
+		0,
+		740,
+		419,
+		1018
+	  ],
+	  "padding": 26,
+	  "crop_box": [
+		0,
+		714,
+		446,
+		1045
+	  ],
+	  "size": [
+		446,
+		331
+	  ]
+	},
+	{
+	  "name": "ui13_formal_wanted_poster.png",
+	  "source_bbox": [
+		1794,
+		512,
+		2029,
+		820
+	  ],
+	  "padding": 24,
+	  "crop_box": [
+		1770,
+		488,
+		2054,
+		845
+	  ],
+	  "size": [
+		284,
+		357
+	  ]
+	},
+	{
+	  "name": "ui13_formal_depart_text.png",
+	  "source_bbox": [
+		0,
+		1025,
+		304,
+		1140
+	  ],
+	  "padding": 20,
+	  "crop_box": [
+		0,
+		1005,
+		325,
+		1161
+	  ],
+	  "size": [
+		325,
+		156
+	  ]
+	},
+	{
+	  "name": "ui13_formal_continue_text.png",
+	  "source_bbox": [
+		512,
+		1025,
+		801,
+		1155
+	  ],
+	  "padding": 20,
+	  "crop_box": [
+		492,
+		1005,
+		822,
+		1176
+	  ],
+	  "size": [
+		330,
+		171
+	  ]
+	},
+	{
+	  "name": "ui13_formal_exit_sign_button.png",
+	  "source_bbox": [
+		1024,
+		1025,
+		1273,
+		1141
+	  ],
+	  "padding": 20,
+	  "crop_box": [
+		1004,
+		1005,
+		1294,
+		1162
+	  ],
+	  "size": [
+		290,
+		157
+	  ]
+	},
+	{
+	  "name": "ui13_formal_restart_text.png",
+	  "source_bbox": [
+		0,
+		1281,
+		340,
+		1393
+	  ],
+	  "padding": 20,
+	  "crop_box": [
+		0,
+		1261,
+		361,
+		1414
+	  ],
+	  "size": [
+		361,
+		153
+	  ]
+	},
+	{
+	  "name": "ui13_formal_battle_text.png",
+	  "source_bbox": [
+		512,
+		1282,
+		778,
+		1404
+	  ],
+	  "padding": 20,
+	  "crop_box": [
+		492,
+		1262,
+		799,
+		1425
+	  ],
+	  "size": [
+		307,
+		163
+	  ]
+	},
+	{
+	  "name": "ui13_formal_end_text.png",
+	  "source_bbox": [
+		0,
+		1549,
+		123,
+		1654
+	  ],
+	  "padding": 20,
+	  "crop_box": [
+		0,
+		1529,
+		144,
+		1675
+	  ],
+	  "size": [
+		144,
+		146
+	  ]
+	},
+	{
+	  "name": "ui13_formal_leave_text.png",
+	  "source_bbox": [
+		512,
+		1537,
+		734,
+		1661
+	  ],
+	  "padding": 20,
+	  "crop_box": [
+		492,
+		1517,
+		755,
+		1682
+	  ],
+	  "size": [
+		263,
+		165
+	  ]
+	},
+	{
+	  "name": "ui13_formal_food_icon_veg.png",
+	  "source_bbox": [
+		2304,
+		512,
+		2364,
+		576
+	  ],
+	  "padding": 16,
+	  "crop_box": [
+		2288,
+		496,
+		2381,
+		593
+	  ],
+	  "size": [
+		93,
+		97
+	  ]
+	},
+	{
+	  "name": "ui13_formal_food_icon_dessert.png",
+	  "source_bbox": [
+		2561,
+		513,
+		2632,
+		574
+	  ],
+	  "padding": 16,
+	  "crop_box": [
+		2545,
+		497,
+		2649,
+		591
+	  ],
+	  "size": [
+		104,
+		94
+	  ]
+	},
+	{
+	  "name": "ui13_formal_food_icon_meat.png",
+	  "source_bbox": [
+		2816,
+		513,
+		2889,
+		582
+	  ],
+	  "padding": 16,
+	  "crop_box": [
+		2800,
+		497,
+		2906,
+		599
+	  ],
+	  "size": [
+		106,
+		102
+	  ]
+	},
+	{
+	  "name": "ui13_formal_food_icon_drink.png",
+	  "source_bbox": [
+		2304,
+		768,
+		2372,
+		834
+	  ],
+	  "padding": 16,
+	  "crop_box": [
+		2288,
+		752,
+		2389,
+		851
+	  ],
+	  "size": [
+		101,
+		99
+	  ]
+	},
+	{
+	  "name": "ui13_formal_food_icon_staple.png",
+	  "source_bbox": [
+		2560,
+		768,
+		2625,
+		821
+	  ],
+	  "padding": 16,
+	  "crop_box": [
+		2544,
+		752,
+		2642,
+		838
+	  ],
+	  "size": [
+		98,
+		86
+	  ]
+	},
+	{
+	  "name": "ui13_formal_food_icon_spice.png",
+	  "source_bbox": [
+		2816,
+		768,
+		2889,
+		850
+	  ],
+	  "padding": 16,
+	  "crop_box": [
+		2800,
+		752,
+		2906,
+		867
+	  ],
+	  "size": [
+		106,
+		115
+	  ]
+	}
+  ]
+}

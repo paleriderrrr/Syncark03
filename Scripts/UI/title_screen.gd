@@ -3,6 +3,10 @@ extends Control
 const TRANSITION_STEP := 0.12
 const TRANSITION_DURATION := 0.34
 const LAYER_ALPHA_END := 0.0
+const START_GLOW_IDLE_ALPHA := 0.42
+const START_GLOW_PULSE_ALPHA := 0.78
+const START_BUTTON_IDLE_ALPHA := 1.0
+const START_BUTTON_PULSE_ALPHA := 0.96
 
 @onready var cover_base_1: TextureRect = %CoverBase1
 @onready var cover_base_2: TextureRect = %CoverBase2
@@ -127,8 +131,8 @@ func _stop_ambient_effects() -> void:
 		layer.modulate = Color.WHITE
 	for glow in [cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4]:
 		glow.modulate.a = 0.0
-	start_glow.modulate = Color(1.0, 1.0, 1.0, 0.22)
-	start_button.modulate = Color.WHITE
+	start_glow.modulate = Color(1.0, 1.0, 1.0, START_GLOW_IDLE_ALPHA)
+	start_button.modulate = Color(1.0, 1.0, 1.0, START_BUTTON_IDLE_ALPHA)
 	floating_art.position.y = _floating_a_base_y
 	floating_art_b.position.y = _floating_b_base_y
 
@@ -173,16 +177,16 @@ func _advance_floating_scroll(node: TextureRect, delta: float) -> void:
 func _start_button_pulse() -> void:
 	var tween: Tween = create_tween()
 	tween.set_loops()
-	tween.tween_property(start_glow, "modulate:a", 0.58, 1.8)\
+	tween.tween_property(start_glow, "modulate:a", START_GLOW_PULSE_ALPHA, 1.8)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
-	tween.parallel().tween_property(start_button, "modulate", Color(1.0, 1.0, 1.0, 0.94), 1.8)\
+	tween.parallel().tween_property(start_button, "modulate", Color(1.0, 1.0, 1.0, START_BUTTON_PULSE_ALPHA), 1.8)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(start_glow, "modulate:a", 0.22, 1.8)\
+	tween.tween_property(start_glow, "modulate:a", START_GLOW_IDLE_ALPHA, 1.8)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
-	tween.parallel().tween_property(start_button, "modulate", Color.WHITE, 1.8)\
+	tween.parallel().tween_property(start_button, "modulate", Color(1.0, 1.0, 1.0, START_BUTTON_IDLE_ALPHA), 1.8)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
 	_ambient_tweens.append(tween)

@@ -33,14 +33,16 @@ func _run() -> void:
 		_assert(edge_material != null, "Edge fog should use a shader material")
 	_assert(start_glow != null, "Start glow overlay should exist")
 	if start_glow != null:
-		_assert(start_glow.modulate.a >= 0.15, "Start glow should be visibly present while idle")
+		_assert(start_glow.modulate.a >= 0.35, "Start glow should present a clearly visible idle highlight")
 		var material: ShaderMaterial = start_glow.material as ShaderMaterial
 		_assert(material != null, "Start glow should use a shader material")
 		if material != null:
 			var glow_color: Color = material.get_shader_parameter("glow_color")
 			_assert(glow_color.r == 1.0 and glow_color.g == 1.0 and glow_color.b == 1.0, "Start glow should use a white outline color")
 			var glow_size: float = float(material.get_shader_parameter("glow_size"))
-			_assert(glow_size <= 12.0, "Start glow outline should stay in a tight edge range")
+			_assert(glow_size >= 14.0 and glow_size <= 24.0, "Start glow outline should be broad enough to read as a highlight without flooding the button")
+			var glow_intensity: float = float(material.get_shader_parameter("glow_intensity"))
+			_assert(glow_intensity >= 7.0, "Start glow should be bright enough to read as a white outline highlight")
 
 	screen.queue_free()
 	if _failures.is_empty():

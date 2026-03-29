@@ -2,11 +2,11 @@ extends PanelContainer
 class_name SynergyPanel
 
 const HIGHLIGHT_THRESHOLD := 3
-const DIM_ICON_COLOR := Color(0.55, 0.55, 0.55, 0.9)
+const DIM_ICON_COLOR := Color(0.48, 0.42, 0.36, 0.82)
 const NORMAL_ICON_COLOR := Color(1.0, 1.0, 1.0, 1.0)
-const HIGHLIGHT_ICON_COLOR := Color(1.2, 1.15, 0.7, 1.0)
-const NORMAL_TEXT_COLOR := Color(0.92, 0.92, 0.92, 1.0)
-const HIGHLIGHT_TEXT_COLOR := Color(1.0, 0.88, 0.28, 1.0)
+const HIGHLIGHT_ICON_COLOR := Color(1.12, 0.96, 0.62, 1.0)
+const NORMAL_TEXT_COLOR := Color(0.25, 0.16, 0.1, 1.0)
+const HIGHLIGHT_TEXT_COLOR := Color(0.64, 0.31, 0.08, 1.0)
 
 @onready var role_label: Label = %RoleLabel
 @onready var staple_icon: TextureRect = %StapleIcon

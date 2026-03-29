@@ -4,25 +4,26 @@
 [ext_resource type="PackedScene" path="res://Scenes/battle_popup.tscn" id="2_popup"]
 [ext_resource type="Script" uid="uid://caqumohui2q5b" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
 [ext_resource type="Texture2D" uid="uid://dy6hhm0cxhd6b" path="res://Art/UI/NewUI/ui2_2_panel_top_green.png" id="3_ojex1"]
-[ext_resource type="Texture2D" uid="uid://bk7ef80vtp0rc" path="res://Art/UI/NewUI/ui1_2_coin_marker.png" id="4_1vyjy"]
+[ext_resource type="Texture2D" uid="uid://bxop82ps7gvtv" path="res://Art/UI/NewUI/金币.png" id="4_3wget"]
 [ext_resource type="Texture2D" uid="uid://c15ge3pvw4wc5" path="res://Art/UI/NewUI/ui2_2_badge_small_dark.png" id="4_fwcvo"]
 [ext_resource type="PackedScene" uid="uid://0sdemtp02gb7" path="res://Scenes/Components/item_strip.tscn" id="4_strip"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/synergy_panel.tscn" id="5_synergy"]
 [ext_resource type="Texture2D" uid="uid://dr60km6grv5l7" path="res://Art/UI/Background.png" id="6_bg"]
 [ext_resource type="Script" uid="uid://bmulngcjm5nc" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
 [ext_resource type="Texture2D" uid="uid://bc74ak8pfe8q0" path="res://Art/UI/NewUI/ui1_2_role_tab_mid.png" id="8_tijtm"]
-[ext_resource type="Texture2D" uid="uid://dr4rs7okqcgcf" path="res://Art/UI/NewUI/ui1_2_role_tab_bottom.png" id="9_45gjs"]
 [ext_resource type="Texture2D" uid="uid://b8f04p7jexi2c" path="res://Art/UI/NewUI/ui2_2_panel_bottom_red.png" id="9_fwcvo"]
 [ext_resource type="Texture2D" uid="uid://cgkifvocrjgpj" path="res://Art/UI/NewUI/ui1_2_role_tab_top.png" id="10_hkonf"]
 [ext_resource type="Texture2D" uid="uid://b3slmqoqlubn2" path="res://Art/UI/NewUI/ui1_2_board_wood.png" id="11_45gjs"]
-[ext_resource type="Texture2D" uid="uid://dup4t101a6e76" path="res://Art/UI/NewUI/ui1_2_settings_icon.png" id="12_1vyjy"]
+[ext_resource type="Texture2D" uid="uid://da2qea6expn6s" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_role_tab_bottom_purple.png" id="12_80818"]
+[ext_resource type="Texture2D" uid="uid://nwa0115tugbr" path="res://Art/UI/NewUI/告示.png" id="13_3wget"]
 [ext_resource type="Texture2D" uid="uid://se3u2duh8jvu" path="res://Art/UI/NewUI/ui1_2_wanted_poster.png" id="13_hkonf"]
-[ext_resource type="Texture2D" uid="uid://wvm7e3f4indw" path="res://Art/UI/NewUI/ui1_2_right_board.png" id="13_xd7oq"]
 [ext_resource type="Texture2D" uid="uid://bp8upp5fdi2kh" path="res://Art/UI/NewUI/物品商店底图.png" id="14_shop_card"]
 [ext_resource type="FontFile" uid="uid://bgm3gwcogagmy" path="res://Art/Fonts/handwriting.ttf" id="15_80818"]
-[ext_resource type="Texture2D" uid="uid://c5mrtd0m1b4bd" path="res://Art/UI/NewUI/ui1_2_depart_sign.png" id="15_elv5r"]
+[ext_resource type="Texture2D" uid="uid://7yfxwssbspu7" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_continue_text.png" id="15_action_text"]
 [ext_resource type="Texture2D" uid="uid://o0i6xywajdfm" path="res://Art/UI/NewUI/物品仓库地图.png" id="16_inventory_card"]
 [ext_resource type="Texture2D" uid="uid://bfa4r6vv3w305" path="res://Art/UI/NewUI/ui2_2_badge_small_light.png" id="17_3wget"]
+[ext_resource type="Texture2D" uid="uid://cbplt3be72ft0" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_header_plate_blank.png" id="17_qli1y"]
+[ext_resource type="Texture2D" uid="uid://bqn74j022ftxn" path="res://Art/UI/NewUI/设置.png" id="22_80818"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_inventory_drop_zone"]
 
@@ -61,7 +62,7 @@ offset_left = 210.0
 offset_top = 28.0
 offset_right = 856.0
 offset_bottom = 58.0
-text = "No Item Selected"
+text = "鏈€変腑鐗╁搧"
 horizontal_alignment = 1
 
 [node name="BoardBackground" type="TextureRect" parent="CenterPanel" unique_id=507403133]
@@ -128,21 +129,22 @@ stretch_mode = 6
 
 [node name="GoldIcon" type="TextureRect" parent="TopMarketPanel" unique_id=1746315528]
 layout_mode = 0
-offset_left = -28.0
-offset_top = 64.0
-offset_right = 52.0
-offset_bottom = 144.0
-texture = ExtResource("4_1vyjy")
+offset_left = -46.0
+offset_top = 62.0
+offset_right = 45.0
+offset_bottom = 145.0
+texture = ExtResource("4_3wget")
 
 [node name="GoldLabel" type="Label" parent="TopMarketPanel/GoldIcon" unique_id=1960790533]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 32)
 layout_mode = 0
-offset_left = 86.0
-offset_top = 22.0
-offset_right = 260.0
-offset_bottom = 54.0
-text = "Gold: 0"
+offset_left = 94.0
+offset_top = 18.0
+offset_right = 268.0
+offset_bottom = 61.0
+theme_override_font_sizes/font_size = 36
+text = "閲戝竵锛?"
 
 [node name="MarketSlotGuide" type="HBoxContainer" parent="TopMarketPanel" unique_id=201410001]
 z_index = -1
@@ -200,19 +202,19 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 198.0
-offset_top = -24.0
-offset_right = -98.0
-offset_bottom = -9.0
+offset_left = 175.0
+offset_top = 12.0
+offset_right = -121.0
+offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TopMarketActions" type="HBoxContainer" parent="TopMarketPanel/TopMarketVBox" unique_id=1575567653]
 layout_mode = 0
 offset_left = 51.0
-offset_top = 190.0
-offset_right = 1124.0
-offset_bottom = 281.0
+offset_top = 160.0
+offset_right = 1141.0
+offset_bottom = 257.0
 
 [node name="TopMarketSpacer" type="Control" parent="TopMarketPanel/TopMarketVBox/TopMarketActions" unique_id=1142158324]
 layout_mode = 2
@@ -221,7 +223,9 @@ size_flags_horizontal = 3
 [node name="MarketRefreshButton" type="Button" parent="TopMarketPanel/TopMarketVBox/TopMarketActions" unique_id=1757822635]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Refresh"
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 36
+text = "鍒锋柊"
 icon = ExtResource("4_fwcvo")
 flat = true
 icon_alignment = 1
@@ -229,10 +233,10 @@ icon_alignment = 1
 [node name="TopMarketStrip" parent="TopMarketPanel/TopMarketVBox" unique_id=198158665 instance=ExtResource("4_strip")]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = -26.0
-offset_top = 68.0
-offset_right = 1110.0
-offset_bottom = 204.0
+offset_left = 14.0
+offset_top = 82.0
+offset_right = 954.0
+offset_bottom = 218.0
 card_background_texture = ExtResource("14_shop_card")
 
 [node name="LeftPanel" type="Control" parent="." unique_id=781811621]
@@ -284,16 +288,16 @@ offset_left = 27.960732
 offset_top = 3.4132614
 offset_right = 239.96072
 offset_bottom = 31.413261
-text = "Current Role"
+text = "褰撳墠瑙掕壊"
 horizontal_alignment = 1
 
 [node name="WarriorTabButton" type="Button" parent="LeftPanel/LeftCenter/LeftVBox" unique_id=1582877507]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 25.487282
-offset_top = 1.7066422
-offset_right = 325.48727
-offset_bottom = 151.70663
+offset_left = 25.487244
+offset_top = -11.946328
+offset_right = 325.48724
+offset_bottom = 138.05367
 icon = ExtResource("8_tijtm")
 flat = true
 expand_icon = true
@@ -301,21 +305,21 @@ expand_icon = true
 [node name="HunterTabButton" type="Button" parent="LeftPanel/LeftCenter/LeftVBox" unique_id=1168102305]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 14.674469
-offset_top = 151.88902
-offset_right = 314.67447
-offset_bottom = 301.88904
-icon = ExtResource("9_45gjs")
+offset_left = 26.259584
+offset_top = 94.7173
+offset_right = 323.61087
+offset_bottom = 323.5456
+icon = ExtResource("12_80818")
 flat = true
 expand_icon = true
 
 [node name="MageTabButton" type="Button" parent="LeftPanel/LeftCenter/LeftVBox" unique_id=215687389]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 21.625534
-offset_top = 285.00522
-offset_right = 321.62555
-offset_bottom = 435.00522
+offset_left = 20.853197
+offset_top = 339.617
+offset_right = 320.8532
+offset_bottom = 489.617
 scale = Vector2(0.9886, 0.8371975)
 icon = ExtResource("10_hkonf")
 flat = true
@@ -335,14 +339,15 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -144.0
-offset_top = 23.0
+offset_top = 22.0
 offset_right = 81.0
-offset_bottom = 23.0
+offset_bottom = 22.0
 grow_horizontal = 2
 grow_vertical = 2
+rotation = 0.019487005
 scale = Vector2(0.8965447, 1.0213212)
 mouse_filter = 2
-texture = ExtResource("13_xd7oq")
+texture = ExtResource("13_3wget")
 stretch_mode = 2
 
 [node name="NextMonsterPanel" type="Control" parent="RightPanel" unique_id=1046346511]
@@ -370,29 +375,36 @@ stretch_mode = 6
 
 [node name="NextMonsterTitle" type="Label" parent="RightPanel/NextMonsterPanel" unique_id=386402292]
 layout_mode = 0
-offset_left = 401.0
-offset_top = 23.0
-offset_right = 581.0
-offset_bottom = 46.0
-text = "Next Monster"
+offset_left = 402.0
+offset_top = 31.0
+offset_right = 582.0
+offset_bottom = 58.0
+rotation = -0.023364235
+theme_override_colors/font_color = Color(0.258824, 0.14902, 0.0862745, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 32
+text = "下一个怪物"
 
 [node name="WantedPosterRect" type="TextureRect" parent="RightPanel/NextMonsterPanel" unique_id=45341791]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(104, 104)
 layout_mode = 0
 offset_left = 135.0
-offset_top = 66.0
+offset_top = 80.0
 offset_right = 368.0
-offset_bottom = 374.0
+offset_bottom = 388.0
 texture = ExtResource("13_hkonf")
 
 [node name="NextMonsterNameLabel" type="Label" parent="RightPanel/NextMonsterPanel" unique_id=618440966]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 399.0
-offset_top = 57.0
-offset_right = 559.0
-offset_bottom = 101.0
+offset_left = 401.0
+offset_top = 56.0
+offset_right = 569.0
+offset_bottom = 118.0
+theme_override_colors/font_color = Color(0.184314, 0.121569, 0.0784314, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 28
 text = "-"
 autowrap_mode = 3
 
@@ -400,21 +412,25 @@ autowrap_mode = 3
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 401.0
-offset_top = 113.0
+offset_top = 123.0
 offset_right = 559.0
-offset_bottom = 136.0
-text = "Bounty: -"
+offset_bottom = 146.0
+theme_override_colors/font_color = Color(0.25098, 0.156863, 0.0941176, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 20
+text = "赏金：--"
 
 [node name="NextMonsterStageLabel" type="Label" parent="RightPanel/NextMonsterPanel" unique_id=201460002]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 146.0
-offset_top = -9.0
-offset_right = 321.0
-offset_bottom = 40.0
+offset_left = 149.0
+offset_top = 4.0
+offset_right = 355.0
+offset_bottom = 53.0
+theme_override_colors/font_color = Color(0.403922, 0.215686, 0.0901961, 1)
 theme_override_fonts/font = ExtResource("15_80818")
-theme_override_font_sizes/font_size = 48
-text = "Stage: -"
+theme_override_font_sizes/font_size = 42
+text = "阶段：1/14"
 
 [node name="MonsterTooltipPanel" type="PanelContainer" parent="RightPanel" unique_id=1842622011]
 unique_name_in_owner = true
@@ -432,12 +448,18 @@ theme_override_constants/separation = 4
 [node name="NextMonsterStatsLabel" type="Label" parent="RightPanel/MonsterTooltipPanel/MonsterTooltipVBox" unique_id=788910731]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.211765, 0.137255, 0.0862745, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 18
 text = "-"
 autowrap_mode = 3
 
 [node name="NextMonsterSkillLabel" type="Label" parent="RightPanel/MonsterTooltipPanel/MonsterTooltipVBox" unique_id=1071384364]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.25098, 0.156863, 0.0941176, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 17
 text = "-"
 autowrap_mode = 3
 
@@ -472,8 +494,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 140.0
-offset_top = -149.0
+offset_left = 116.0
+offset_top = -152.0
 offset_right = 112.0
 offset_bottom = -128.0
 grow_horizontal = 2
@@ -482,37 +504,69 @@ theme_override_constants/separation = 4
 
 [node name="StageTitleLabel" type="Label" parent="RightPanel/StageInfoPanel/StageInfoVBox" unique_id=201420004]
 layout_mode = 2
-text = "Stage Info"
+theme_override_colors/font_color = Color(0.258824, 0.14902, 0.0862745, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 32
+text = "阶段信息"
 
 [node name="RouteLabel" type="Label" parent="RightPanel/StageInfoPanel/StageInfoVBox" unique_id=1140219779]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 24)
 layout_mode = 2
-text = "NODE"
+theme_override_colors/font_color = Color(0.184314, 0.121569, 0.0784314, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 20
+text = "鑺傜偣"
 
 [node name="NodeLabel" type="Label" parent="RightPanel/StageInfoPanel/StageInfoVBox" unique_id=1024395844]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 24)
 layout_mode = 2
-text = "Current Node"
+theme_override_colors/font_color = Color(0.184314, 0.121569, 0.0784314, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 20
+text = "当前节点"
 
 [node name="RiskLabel" type="Label" parent="RightPanel/StageInfoPanel/StageInfoVBox" unique_id=908771533]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 24)
 layout_mode = 2
-text = "Risk"
+theme_override_colors/font_color = Color(0.45098, 0.211765, 0.0784314, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 21
+text = "危险度"
 
 [node name="ActionButton" type="Button" parent="RightPanel" unique_id=1247270132]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 74)
 layout_mode = 0
-offset_left = 140.0
-offset_top = 546.0
-offset_right = 532.0
-offset_bottom = 753.0
+offset_left = 129.0
+offset_top = 505.0
+offset_right = 521.0
+offset_bottom = 712.0
 scale = Vector2(0.59268016, 0.5601714)
-icon = ExtResource("15_elv5r")
+icon = ExtResource("17_qli1y")
 flat = true
+expand_icon = true
+
+[node name="ActionButtonText" type="TextureRect" parent="RightPanel/ActionButton" unique_id=1247270134]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -88.0
+offset_top = -33.0
+offset_right = 88.0
+offset_bottom = 33.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("15_action_text")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="RestoreButton" type="Button" parent="RightPanel" unique_id=208933019]
 unique_name_in_owner = true
@@ -540,10 +594,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 6.0
-offset_top = 48.0
-offset_right = 131.0
-offset_bottom = 79.0
+offset_left = -47.0
+offset_top = 37.0
+offset_right = 78.0
+offset_bottom = 97.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.9014568, 0.758023)
@@ -554,7 +608,7 @@ texture = ExtResource("9_fwcvo")
 layout_mode = 0
 offset_left = 104.0
 offset_top = 147.0
-offset_right = 1394.0
+offset_right = 1355.0
 offset_bottom = 283.0
 mouse_filter = 2
 theme_override_constants/separation = 12
@@ -615,9 +669,9 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 104.0
-offset_top = 147.0
-offset_right = -132.0
-offset_bottom = -32.0
+offset_top = 132.5
+offset_right = -198.0
+offset_bottom = -17.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_inventory_drop_zone")
@@ -637,7 +691,7 @@ offset_top = 26.0
 offset_right = 1912.0001
 offset_bottom = 153.0
 scale = Vector2(0.819768, 0.8305503)
-icon = ExtResource("12_1vyjy")
+icon = ExtResource("22_80818")
 flat = true
 
 [node name="BattlePopup" parent="." unique_id=1952828123 instance=ExtResource("2_popup")]
