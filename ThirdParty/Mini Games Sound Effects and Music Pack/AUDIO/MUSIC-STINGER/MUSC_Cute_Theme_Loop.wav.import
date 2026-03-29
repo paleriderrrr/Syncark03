@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cv3ul8ui5f8xj"
+path="res://.godot/imported/MUSC_Cute_Theme_Loop.wav-d94553ab28530d3b556e2ccc97fcc613.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/MUSC_Cute_Theme_Loop.wav"
+dest_files=["res://.godot/imported/MUSC_Cute_Theme_Loop.wav-d94553ab28530d3b556e2ccc97fcc613.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

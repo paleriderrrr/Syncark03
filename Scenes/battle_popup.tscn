@@ -1,0 +1,188 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/battle_popup.gd" id="1_popup"]
+[ext_resource type="Texture2D" path="res://Art/UI/大弹窗.png" id="2_window"]
+[ext_resource type="Texture2D" path="res://Art/UI/Battlepage1.png" id="3_page_one"]
+[ext_resource type="Texture2D" path="res://Art/UI/Battlepage2.png" id="4_page_two"]
+
+[node name="BattlePopup" type="PopupPanel"]
+unique_name_in_owner = true
+initial_position = 1
+size = Vector2i(1500, 620)
+script = ExtResource("1_popup")
+playback_stage_texture = ExtResource("3_page_one")
+result_stage_texture = ExtResource("4_page_two")
+
+[node name="WindowArt" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_window")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+offset_left = 22.0
+offset_top = 48.0
+offset_right = 938.0
+offset_bottom = 482.0
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="StageArt" type="TextureRect" parent="Margin"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_page_one")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="RootVBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Header" type="HBoxContainer" parent="Margin/RootVBox"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Margin/RootVBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Battle"
+
+[node name="CloseBattleButton" type="Button" parent="Margin/RootVBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Close"
+
+[node name="BattleRouteLabel" type="Label" parent="Margin/RootVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "NODE"
+
+[node name="BodyHBox" type="HBoxContainer" parent="Margin/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="PartyPanel" type="PanelContainer" parent="Margin/RootVBox/BodyHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(260, 0)
+size_flags_vertical = 3
+
+[node name="PartyVBox" type="VBoxContainer" parent="Margin/RootVBox/BodyHBox/PartyPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PartyTitle" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Heroes"
+
+[node name="Hero1Label" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+text = "-"
+
+[node name="Hero2Label" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+text = "-"
+
+[node name="Hero3Label" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+text = "-"
+
+[node name="PartyMetaLabel" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+autowrap_mode = 3
+text = "-"
+
+[node name="CenterPanel" type="PanelContainer" parent="Margin/RootVBox/BodyHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CenterVBox" type="VBoxContainer" parent="Margin/RootVBox/BodyHBox/CenterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EventHeader" type="HBoxContainer" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox"]
+layout_mode = 2
+
+[node name="EventTitleLabel" type="Label" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox/EventHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Event Timeline"
+
+[node name="PlaybackTimeLabel" type="Label" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox/EventHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Time 0.0s"
+
+[node name="BattleLog" type="RichTextLabel" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+scroll_following = true
+bbcode_enabled = true
+
+[node name="ResultLabel" type="Label" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+text = "-"
+
+[node name="MonsterPanel" type="PanelContainer" parent="Margin/RootVBox/BodyHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 0)
+size_flags_vertical = 3
+
+[node name="MonsterVBox" type="VBoxContainer" parent="Margin/RootVBox/BodyHBox/MonsterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MonsterTitle" type="Label" parent="Margin/RootVBox/BodyHBox/MonsterPanel/MonsterVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Monster"
+
+[node name="MonsterNameLabel" type="Label" parent="Margin/RootVBox/BodyHBox/MonsterPanel/MonsterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+text = "-"
+
+[node name="MonsterHpLabel" type="Label" parent="Margin/RootVBox/BodyHBox/MonsterPanel/MonsterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+text = "-"
+
+[node name="MonsterMetaLabel" type="Label" parent="Margin/RootVBox/BodyHBox/MonsterPanel/MonsterVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+autowrap_mode = 3
+text = "-"

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bm3csk1b3a2rm"
+path="res://.godot/imported/SFX_Card_Play_3.wav-7c10756df1f3747c27d5488fa84b31aa.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Card and Board Games/Card/SFX_Card_Play_3.wav"
+dest_files=["res://.godot/imported/SFX_Card_Play_3.wav-7c10756df1f3747c27d5488fa84b31aa.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

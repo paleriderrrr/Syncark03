@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c3fkhy0pcw40d"
+path="res://.godot/imported/SFX_Hit_Metal_1.wav-f919c13de9d90023d0e88dac3b251116.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Object Hit-Pick up-Drop-Collect/Hit/SFX_Hit_Metal_1.wav"
+dest_files=["res://.godot/imported/SFX_Hit_Metal_1.wav-f919c13de9d90023d0e88dac3b251116.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

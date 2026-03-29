@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cuq1c4u3pnlgg"
+path="res://.godot/imported/STGR_Action_Lose.wav-a7bb403c73f9dcdb386bd11b62d36961.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/STINGER/STGR_Action_Lose.wav"
+dest_files=["res://.godot/imported/STGR_Action_Lose.wav-a7bb403c73f9dcdb386bd11b62d36961.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

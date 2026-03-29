@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dd4r3o6g1tn1s"
+path="res://.godot/imported/MUSC_Reaction_Theme_Loop.wav-cabd3a27699a39d1696f858e63680a37.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/MUSC_Reaction_Theme_Loop.wav"
+dest_files=["res://.godot/imported/MUSC_Reaction_Theme_Loop.wav-cabd3a27699a39d1696f858e63680a37.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

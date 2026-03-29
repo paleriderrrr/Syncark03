@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cki6o0ofoljkc"
+path="res://.godot/imported/MUSC_Retro_Theme_Loop.wav-f2ae9781c5eb2eeb4942d6a8729823b6.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/MUSC_Retro_Theme_Loop.wav"
+dest_files=["res://.godot/imported/MUSC_Retro_Theme_Loop.wav-f2ae9781c5eb2eeb4942d6a8729823b6.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

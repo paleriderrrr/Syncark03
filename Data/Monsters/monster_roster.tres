@@ -1,0 +1,86 @@
+[gd_resource type="Resource" script_class="MonsterRoster" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Data/monster_roster.gd" id="1_roster"]
+[ext_resource type="Script" path="res://Scripts/Data/monster_definition.gd" id="2_definition"]
+
+[sub_resource type="Resource" id="MonsterDefinition_fruit"]
+script = ExtResource("2_definition")
+id = &"fruit_tree_king"
+display_name = "枝枝树灵王"
+category = &"fruit"
+base_hp = 320
+base_attack = 25.0
+attack_interval = 3.0
+skill_summary = "每次攻击使被攻击者遭到[腐蚀]，额外扣除3点生命。"
+target_rule = &"default_frontline"
+
+[sub_resource type="Resource" id="MonsterDefinition_dessert"]
+script = ExtResource("2_definition")
+id = &"cream_overlord"
+display_name = "奶油团团霸"
+category = &"dessert"
+base_hp = 360
+base_attack = 15.0
+attack_interval = 1.2
+skill_summary = "带有[满足]效果，每5秒恢复过去5秒内所受伤害的一半。"
+target_rule = &"default_frontline"
+
+[sub_resource type="Resource" id="MonsterDefinition_meat"]
+script = ExtResource("2_definition")
+id = &"charging_beast"
+display_name = "冲冲牛龙兽"
+category = &"meat"
+base_hp = 200
+base_attack = 40.0
+attack_interval = 2.0
+skill_summary = "战斗开始时随机使一名角色失去自己的饭盒效果5秒。"
+target_rule = &"random_role"
+
+[sub_resource type="Resource" id="MonsterDefinition_drink"]
+script = ExtResource("2_definition")
+id = &"water_giant"
+display_name = "哗哗水巨人"
+category = &"drink"
+base_hp = 300
+base_attack = 15.0
+attack_interval = 2.0
+skill_summary = "每5秒获得一层[浪花]，持续4秒并记录受到伤害，结束后对全队造成40%记录伤害。"
+target_rule = &"default_frontline"
+
+[sub_resource type="Resource" id="MonsterDefinition_staple"]
+script = ExtResource("2_definition")
+id = &"bread_knight"
+display_name = "面饱饱骑士"
+category = &"staple"
+base_hp = 340
+base_attack = 20.0
+attack_interval = 2.5
+skill_summary = "开局带有10层面包糠，受击时抵消一层伤害并在结算后恢复10生命。"
+target_rule = &"default_frontline"
+
+[sub_resource type="Resource" id="MonsterDefinition_spice"]
+script = ExtResource("2_definition")
+id = &"spice_wizard"
+display_name = "高菌菌巫师"
+category = &"spice"
+base_hp = 290
+base_attack = 22.0
+attack_interval = 1.8
+skill_summary = "战斗开始后每10秒随机指定一个目标。"
+target_rule = &"random_swap"
+
+[sub_resource type="Resource" id="MonsterDefinition_boss"]
+script = ExtResource("2_definition")
+id = &"nc2_auto_cooker"
+display_name = "NC-2 自动烹饪机"
+category = &"boss"
+base_hp = 1000
+base_attack = 60.0
+attack_interval = 5.0
+skill_summary = "最终Boss。"
+target_rule = &"default_frontline"
+
+[resource]
+script = ExtResource("1_roster")
+monsters = [SubResource("MonsterDefinition_fruit"), SubResource("MonsterDefinition_dessert"), SubResource("MonsterDefinition_meat"), SubResource("MonsterDefinition_drink"), SubResource("MonsterDefinition_staple"), SubResource("MonsterDefinition_spice"), SubResource("MonsterDefinition_boss")]
+

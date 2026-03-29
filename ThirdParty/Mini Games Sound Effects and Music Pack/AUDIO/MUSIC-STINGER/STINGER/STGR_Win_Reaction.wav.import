@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cxuobs6xx86c2"
+path="res://.godot/imported/STGR_Win_Reaction.wav-822976e273ff20b9ab64580fd8e661a4.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/STINGER/STGR_Win_Reaction.wav"
+dest_files=["res://.godot/imported/STGR_Win_Reaction.wav-822976e273ff20b9ab64580fd8e661a4.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

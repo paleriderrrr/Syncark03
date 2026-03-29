@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cwr0l4csrbyyn"
+path="res://.godot/imported/SFX_VO_Stickman_Take_Damage_2.wav-514c8ca5a5a9b6c826405ff6b2b2626c.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Voice/Stickman/Take Damage/SFX_VO_Stickman_Take_Damage_2.wav"
+dest_files=["res://.godot/imported/SFX_VO_Stickman_Take_Damage_2.wav-514c8ca5a5a9b6c826405ff6b2b2626c.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

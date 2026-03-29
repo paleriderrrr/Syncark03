@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cb6bpeiok35p8"
+path="res://.godot/imported/SFX_Backgammon_Piece_Move_3.wav-8249972fc78ed35ca26662d3d75d5c61.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Card and Board Games/Backgammon/SFX_Backgammon_Piece_Move_3.wav"
+dest_files=["res://.godot/imported/SFX_Backgammon_Piece_Move_3.wav-8249972fc78ed35ca26662d3d75d5c61.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

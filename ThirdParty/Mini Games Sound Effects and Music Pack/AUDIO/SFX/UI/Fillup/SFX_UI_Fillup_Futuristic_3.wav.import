@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://canbn014ims3r"
+path="res://.godot/imported/SFX_UI_Fillup_Futuristic_3.wav-aaf5e6d13b8e23a27a5dce26b6da556a.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/UI/Fillup/SFX_UI_Fillup_Futuristic_3.wav"
+dest_files=["res://.godot/imported/SFX_UI_Fillup_Futuristic_3.wav-aaf5e6d13b8e23a27a5dce26b6da556a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

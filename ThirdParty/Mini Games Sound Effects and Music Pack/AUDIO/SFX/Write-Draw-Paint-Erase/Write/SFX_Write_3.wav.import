@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dae2xivpwydv7"
+path="res://.godot/imported/SFX_Write_3.wav-fb553aed7acd3d3191be15f703e8e890.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Write-Draw-Paint-Erase/Write/SFX_Write_3.wav"
+dest_files=["res://.godot/imported/SFX_Write_3.wav-fb553aed7acd3d3191be15f703e8e890.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

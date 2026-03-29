@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c08tuyklf6c43"
+path="res://.godot/imported/SFX_VO_Stickman_Happy_1.wav-3897ccaf051b316c5c0999c451ca5740.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Voice/Stickman/Happy/SFX_VO_Stickman_Happy_1.wav"
+dest_files=["res://.godot/imported/SFX_VO_Stickman_Happy_1.wav-3897ccaf051b316c5c0999c451ca5740.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

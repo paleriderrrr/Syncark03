@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://b4veevjdy5vns"
+path="res://.godot/imported/SFX_Footstep_Cartoon_2.wav-f2b8b9d7fe0f630ee6868bcabf7de787.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Footstep-Jump/Footstep/Cartoon/SFX_Footstep_Cartoon_2.wav"
+dest_files=["res://.godot/imported/SFX_Footstep_Cartoon_2.wav-f2b8b9d7fe0f630ee6868bcabf7de787.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

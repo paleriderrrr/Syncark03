@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dcjeak7xknba6"
+path="res://.godot/imported/SFX_Footstep_Robot_2.wav-09432b35e12d215f39ddb90e3e8356f9.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Footstep-Jump/Footstep/Robot/SFX_Footstep_Robot_2.wav"
+dest_files=["res://.godot/imported/SFX_Footstep_Robot_2.wav-09432b35e12d215f39ddb90e3e8356f9.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

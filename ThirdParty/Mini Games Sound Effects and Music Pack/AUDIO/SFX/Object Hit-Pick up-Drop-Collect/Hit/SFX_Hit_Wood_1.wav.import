@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://u73chxal3em2"
+path="res://.godot/imported/SFX_Hit_Wood_1.wav-660e835adba5a0a6962c0dbb0b7e9860.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Object Hit-Pick up-Drop-Collect/Hit/SFX_Hit_Wood_1.wav"
+dest_files=["res://.godot/imported/SFX_Hit_Wood_1.wav-660e835adba5a0a6962c0dbb0b7e9860.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://s417mg51baj6"
+path="res://.godot/imported/SFX_Swoosh_Movement_Generic_1.wav-d010d6a310deb082bbdc67fa48faa3a6.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Generic Swoosh/SFX_Swoosh_Movement_Generic_1.wav"
+dest_files=["res://.godot/imported/SFX_Swoosh_Movement_Generic_1.wav-d010d6a310deb082bbdc67fa48faa3a6.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

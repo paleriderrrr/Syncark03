@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cgsjopei4vkui"
+path="res://.godot/imported/SFX_Pickup_Designed_3.wav-f7550de5df1fe6f5edc4162f66d6bc50.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Object Hit-Pick up-Drop-Collect/Pickup/SFX_Pickup_Designed_3.wav"
+dest_files=["res://.godot/imported/SFX_Pickup_Designed_3.wav-f7550de5df1fe6f5edc4162f66d6bc50.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

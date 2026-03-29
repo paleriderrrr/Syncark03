@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://3044vq7ybqcs"
+path="res://.godot/imported/STGR_Lose_Sports.wav-dd44df71438470c63833a9c428b4f1ec.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/STINGER/STGR_Lose_Sports.wav"
+dest_files=["res://.godot/imported/STGR_Lose_Sports.wav-dd44df71438470c63833a9c428b4f1ec.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

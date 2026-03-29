@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dkuqst2bvosmy"
+path="res://.godot/imported/SFX_UI_Countdown_Retro_End.wav-f19c7536dd0c16459c999ea65c190a7f.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/UI/Countdown/SFX_UI_Countdown_Retro_End.wav"
+dest_files=["res://.godot/imported/SFX_UI_Countdown_Retro_End.wav-f19c7536dd0c16459c999ea65c190a7f.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

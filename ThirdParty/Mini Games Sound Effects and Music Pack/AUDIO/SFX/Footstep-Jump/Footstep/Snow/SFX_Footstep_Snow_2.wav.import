@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://lnig8nu53633"
+path="res://.godot/imported/SFX_Footstep_Snow_2.wav-9d10e70fef1d80cc0158548bb351d702.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Footstep-Jump/Footstep/Snow/SFX_Footstep_Snow_2.wav"
+dest_files=["res://.godot/imported/SFX_Footstep_Snow_2.wav-9d10e70fef1d80cc0158548bb351d702.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

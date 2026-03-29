@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://d1kqsw20bq8wg"
+path="res://.godot/imported/MUSC_Puzzle_Theme_Loop.wav-62f5aa9ad8ddfb98ee468c70e1476fc6.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/MUSC_Puzzle_Theme_Loop.wav"
+dest_files=["res://.godot/imported/MUSC_Puzzle_Theme_Loop.wav-62f5aa9ad8ddfb98ee468c70e1476fc6.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

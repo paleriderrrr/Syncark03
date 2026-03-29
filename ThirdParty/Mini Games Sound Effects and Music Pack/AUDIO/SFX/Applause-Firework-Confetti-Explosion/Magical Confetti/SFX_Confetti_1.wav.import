@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://6sepa5mk5858"
+path="res://.godot/imported/SFX_Confetti_1.wav-f27431767148f3cf532af6d595a74ec6.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Applause-Firework-Confetti-Explosion/Magical Confetti/SFX_Confetti_1.wav"
+dest_files=["res://.godot/imported/SFX_Confetti_1.wav-f27431767148f3cf532af6d595a74ec6.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

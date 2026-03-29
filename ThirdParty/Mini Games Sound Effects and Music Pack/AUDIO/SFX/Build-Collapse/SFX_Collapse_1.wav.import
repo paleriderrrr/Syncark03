@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bfuvj52d2kibp"
+path="res://.godot/imported/SFX_Collapse_1.wav-762c794e25f049dda9e0c6d62272ab68.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Build-Collapse/SFX_Collapse_1.wav"
+dest_files=["res://.godot/imported/SFX_Collapse_1.wav-762c794e25f049dda9e0c6d62272ab68.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://lkm1an8sg67u"
+path="res://.godot/imported/MUSC_Cute_Horror_Action_Loop.wav-cd629b76f84652d8a3213a38dbd1c40d.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/MUSC_Cute_Horror_Action_Loop.wav"
+dest_files=["res://.godot/imported/MUSC_Cute_Horror_Action_Loop.wav-cd629b76f84652d8a3213a38dbd1c40d.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cwuosgryl477p"
+path="res://.godot/imported/STGR_Win_Retro.wav-b5a964a546e5cf66a97e7be1b345ff34.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/MUSIC-STINGER/STINGER/STGR_Win_Retro.wav"
+dest_files=["res://.godot/imported/STGR_Win_Retro.wav-b5a964a546e5cf66a97e7be1b345ff34.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

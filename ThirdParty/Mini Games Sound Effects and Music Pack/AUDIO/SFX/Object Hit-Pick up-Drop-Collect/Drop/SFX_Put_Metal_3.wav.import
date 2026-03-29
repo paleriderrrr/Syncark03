@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bjfiyadmmm566"
+path="res://.godot/imported/SFX_Put_Metal_3.wav-2ac9337f65b1ef0791dc7bf390fec5e1.sample"
+
+[deps]
+
+source_file="res://ThirdParty/Mini Games Sound Effects and Music Pack/AUDIO/SFX/Object Hit-Pick up-Drop-Collect/Drop/SFX_Put_Metal_3.wav"
+dest_files=["res://.godot/imported/SFX_Put_Metal_3.wav-2ac9337f65b1ef0791dc7bf390fec5e1.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
