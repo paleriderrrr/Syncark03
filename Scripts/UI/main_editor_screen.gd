@@ -40,6 +40,7 @@ func _bgm_player() -> Node:
 	return get_node("/root/BgmPlayer")
 
 func _ready() -> void:
+	ProjectSettings.set_setting("gui/timers/tooltip_delay_sec", 0.01)
 	_bgm_player().play_non_battle()
 	var run_state: Node = _run_state()
 	run_state.ensure_initialized()
@@ -108,6 +109,7 @@ func _refresh_market_strip() -> void:
 		var entry: Dictionary = entry_variant.duplicate(true)
 		if entry.get("kind", &"") == &"food":
 			var definition: FoodDefinition = run_state.get_food_definition(entry["definition_id"])
+			_apply_food_tooltip(entry, definition)
 			entry["drag_payload"] = {
 				"source": &"market_offer",
 				"offer_id": entry["offer_id"],
@@ -116,6 +118,7 @@ func _refresh_market_strip() -> void:
 				"rotation": 0,
 			}
 		elif entry.get("kind", &"") == &"expansion":
+			_apply_expansion_tooltip(entry)
 			entry["drag_payload"] = {
 				"source": &"market_expansion",
 				"offer_id": entry["offer_id"],
@@ -134,6 +137,7 @@ func _refresh_inventory_strip() -> void:
 	for entry_variant in run_state.get_grouped_inventory_entries():
 		var entry: Dictionary = entry_variant.duplicate(true)
 		if entry.get("entry_kind", &"food") == &"expansion":
+			_apply_expansion_tooltip(entry)
 			entry["drag_payload"] = {
 				"source": &"pending_expansion",
 				"instance_id": entry["instance_id"],
@@ -143,6 +147,7 @@ func _refresh_inventory_strip() -> void:
 			}
 		else:
 			var definition: FoodDefinition = run_state.get_food_definition(entry["definition_id"])
+			_apply_food_tooltip(entry, definition)
 			entry["drag_payload"] = {
 				"source": &"inventory",
 				"group_key": entry["group_key"],
@@ -152,6 +157,52 @@ func _refresh_inventory_strip() -> void:
 			}
 		entries.append(entry)
 	inventory_strip.set_entries(entries, _food_textures)
+
+func _apply_food_tooltip(entry: Dictionary, definition: FoodDefinition) -> void:
+	if definition == null:
+		return
+	entry["tooltip_name"] = definition.display_name
+	entry["tooltip_base_bonus"] = _build_food_bonus_text(definition)
+	entry["tooltip_special_effect"] = definition.passive_text.strip_edges()
+	entry["tooltip_shape_cells"] = definition.shape_cells.duplicate()
+
+func _apply_expansion_tooltip(entry: Dictionary) -> void:
+	entry["tooltip_name"] = String(entry.get("display_name", "拓展"))
+	entry["tooltip_base_bonus"] = "拓展当前角色的可放置区域"
+	entry["tooltip_special_effect"] = "拖拽到棋盘上，为对应角色增加新的格子。"
+	entry["tooltip_shape_cells"] = entry.get("shape_cells", []).duplicate()
+
+func _build_food_bonus_text(definition: FoodDefinition) -> String:
+	var parts: PackedStringArray = []
+	if definition.hp_bonus != 0:
+		parts.append("生命 %s" % _format_signed_value(float(definition.hp_bonus), 0))
+	if not is_zero_approx(definition.attack_bonus):
+		parts.append("攻击 %s" % _format_signed_value(definition.attack_bonus))
+	if not is_zero_approx(definition.bonus_damage):
+		parts.append("附加伤害 %s" % _format_signed_value(definition.bonus_damage))
+	if not is_zero_approx(definition.attack_speed_percent):
+		parts.append("攻速 %s%%" % _format_signed_value(definition.attack_speed_percent))
+	if not is_zero_approx(definition.heal_per_second):
+		parts.append("每秒回复 %s" % _format_signed_value(definition.heal_per_second))
+	if not is_zero_approx(definition.execute_threshold_percent):
+		parts.append("斩杀线 %s%%" % _format_signed_value(definition.execute_threshold_percent))
+	if parts.is_empty():
+		return "无基础加成"
+	return "，".join(parts)
+
+func _format_signed_value(value: float, decimals: int = 1) -> String:
+	var abs_value: float = absf(value)
+	var text := ""
+	if decimals <= 0 or is_zero_approx(abs_value - round(abs_value)):
+		text = str(int(round(abs_value)))
+	else:
+		text = str(snapped(abs_value, 0.1))
+		if text.contains("."):
+			while text.ends_with("0"):
+				text = text.left(text.length() - 1)
+			if text.ends_with("."):
+				text = text.left(text.length() - 1)
+	return ("+" if value >= 0.0 else "-") + text
 
 func _refresh_board() -> void:
 	var run_state: Node = _run_state()
