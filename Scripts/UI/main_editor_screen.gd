@@ -7,6 +7,10 @@ extends Control
 @onready var selected_role_label: Label = %SelectedRoleLabel
 @onready var selected_item_label: Label = %SelectedItemLabel
 @onready var top_market_panel: Control = $TopMarketPanel
+@onready var left_panel: Control = $LeftPanel
+@onready var center_panel: Control = $CenterPanel
+@onready var right_panel: Control = $RightPanel
+@onready var bottom_inventory_panel: Control = $BottomInventoryPanel
 @onready var board_view: BentoBoardView = %BentoBoardView
 @onready var top_market_strip: ItemStrip = %TopMarketStrip
 @onready var market_refresh_button: Button = %MarketRefreshButton
@@ -37,6 +41,8 @@ var _market_panel_open_position := Vector2.ZERO
 var _market_panel_closed_position := Vector2.ZERO
 var _market_panel_is_open: bool = false
 var _market_panel_tween: Tween
+var _intro_tween: Tween
+var _intro_animating: bool = false
 var _last_node_type: StringName = &""
 var _active_synergy_ids: Dictionary = {}
 
@@ -85,6 +91,7 @@ func _ready() -> void:
 	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
 	monster_tooltip_panel.visible = false
 	_refresh()
+	_play_intro_animation()
 
 func _refresh() -> void:
 	var run_state: Node = _run_state()
@@ -111,6 +118,11 @@ func _refresh() -> void:
 	_refresh_synergy_panel()
 
 func _update_market_panel_state(should_open: bool) -> void:
+	if _intro_animating:
+		_market_panel_is_open = should_open
+		top_market_panel.position = _market_panel_open_position if should_open else _market_panel_closed_position
+		top_market_panel.mouse_filter = Control.MOUSE_FILTER_PASS if should_open else Control.MOUSE_FILTER_IGNORE
+		return
 	if _market_panel_is_open == should_open and _market_panel_tween == null:
 		return
 	_market_panel_is_open = should_open
@@ -124,6 +136,77 @@ func _update_market_panel_state(should_open: bool) -> void:
 	_market_panel_tween.tween_property(top_market_panel, "position", target_position, 0.28)
 	_market_panel_tween.finished.connect(func() -> void:
 		_market_panel_tween = null
+	)
+
+func _play_intro_animation() -> void:
+	if is_instance_valid(_intro_tween):
+		_intro_tween.kill()
+	_intro_animating = true
+	if is_instance_valid(_market_panel_tween):
+		_market_panel_tween.kill()
+		_market_panel_tween = null
+	var run_state: Node = _run_state()
+	var market_should_open: bool = run_state.get_current_node_type() == run_state.NODE_MARKET
+	var market_target_position: Vector2 = _market_panel_open_position if market_should_open else _market_panel_closed_position
+	var panel_entries: Array[Dictionary] = [
+		{
+			"node": top_market_panel,
+			"target": market_target_position,
+			"start": market_target_position + Vector2(0.0, -180.0),
+		},
+		{
+			"node": left_panel,
+			"target": left_panel.position,
+			"start": left_panel.position + Vector2(-220.0, 0.0),
+		},
+		{
+			"node": center_panel,
+			"target": center_panel.position,
+			"start": center_panel.position + Vector2(0.0, 90.0),
+		},
+		{
+			"node": right_panel,
+			"target": right_panel.position,
+			"start": right_panel.position + Vector2(220.0, 0.0),
+		},
+		{
+			"node": bottom_inventory_panel,
+			"target": bottom_inventory_panel.position,
+			"start": bottom_inventory_panel.position + Vector2(0.0, 180.0),
+		},
+		{
+			"node": settings_button,
+			"target": settings_button.position,
+			"start": settings_button.position + Vector2(-120.0, 120.0),
+		},
+	]
+	for entry_variant in panel_entries:
+		var entry: Dictionary = entry_variant
+		var panel: Control = entry["node"]
+		panel.position = entry["start"]
+		panel.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	_intro_tween = create_tween()
+	_intro_tween.set_parallel(true)
+	var step_delay := 0.05
+	var duration := 0.46
+	for index in range(panel_entries.size()):
+		var entry: Dictionary = panel_entries[index]
+		var panel: Control = entry["node"]
+		var target_position: Vector2 = entry["target"]
+		var move_track: PropertyTweener = _intro_tween.tween_property(panel, "position", target_position, duration)
+		move_track.set_delay(index * step_delay)
+		move_track.set_trans(Tween.TRANS_CUBIC)
+		move_track.set_ease(Tween.EASE_OUT)
+		var fade_track: PropertyTweener = _intro_tween.tween_property(panel, "modulate:a", 1.0, duration * 0.85)
+		fade_track.set_delay(index * step_delay)
+		fade_track.set_trans(Tween.TRANS_SINE)
+		fade_track.set_ease(Tween.EASE_OUT)
+	_intro_tween.finished.connect(func() -> void:
+		_market_panel_is_open = market_should_open
+		top_market_panel.position = market_target_position
+		top_market_panel.mouse_filter = Control.MOUSE_FILTER_PASS if market_should_open else Control.MOUSE_FILTER_IGNORE
+		_intro_animating = false
+		_intro_tween = null
 	)
 
 func _refresh_selected_role(character_id: StringName) -> void:

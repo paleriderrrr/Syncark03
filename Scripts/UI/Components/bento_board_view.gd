@@ -15,6 +15,7 @@ const INVALID_PREVIEW_COLOR := Color(0.92, 0.36, 0.36, 0.55)
 
 @export var cell_pixel_size: int = 72
 @export var read_only: bool = false
+@export var allow_base_drag: bool = true
 
 var _character_state: Dictionary = {}
 var _preview_cells: Array[Vector2i] = []
@@ -188,7 +189,7 @@ func _build_drag_payload(cell: Vector2i) -> Dictionary:
 				"grab_offset": cell - item["anchor"],
 			}
 	var base_lookup: Dictionary = ShapeUtils.cells_to_lookup(_typed_cells(_character_state.get("active_cells", [])))
-	if base_lookup.has("%d:%d" % [cell.x, cell.y]):
+	if allow_base_drag and base_lookup.has("%d:%d" % [cell.x, cell.y]):
 		var expansion_cell_lookup: Dictionary = {}
 		for expansion in _character_state.get("placed_expansions", []):
 			for cell_variant in expansion.get("cells", []):
@@ -233,7 +234,7 @@ func _validate_payload_cells(payload: Dictionary, cells: Array[Vector2i]) -> boo
 		return false
 	var active_cells: Array[Vector2i] = _typed_cells(_character_state.get("active_cells", []))
 	match payload.get("source", &""):
-		&"inventory", &"market_offer":
+		&"inventory", &"market_offer", &"lab_catalog":
 			if not ShapeUtils.contains_all(active_cells, cells):
 				return false
 			return not ShapeUtils.overlaps(_occupied_food_cells_except(&""), cells)

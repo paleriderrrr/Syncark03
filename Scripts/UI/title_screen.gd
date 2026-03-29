@@ -8,6 +8,7 @@ const LAYER_ALPHA_END := 0.0
 @onready var cover_base_2: TextureRect = %CoverBase2
 @onready var cover_base_3: TextureRect = %CoverBase3
 @onready var cover_base_4: TextureRect = %CoverBase4
+@onready var center_fog: ColorRect = %CenterFog
 @onready var cover_glow_1: TextureRect = %CoverGlow1
 @onready var cover_glow_2: TextureRect = %CoverGlow2
 @onready var cover_glow_3: TextureRect = %CoverGlow3
@@ -15,6 +16,7 @@ const LAYER_ALPHA_END := 0.0
 @onready var title_art: TextureRect = %TitleArt
 @onready var floating_art: TextureRect = %FloatingArt
 @onready var floating_art_b: TextureRect = %FloatingArtB
+@onready var edge_fog: ColorRect = %EdgeFog
 @onready var start_glow: TextureRect = %StartGlow
 @onready var start_button: TextureButton = %StartButton
 @onready var settings_button: Button = %SettingsButton
@@ -71,11 +73,13 @@ func _play_start_transition() -> void:
 	var layers: Array[Dictionary] = [
 		{"node": floating_art, "scale": Vector2(1.16, 1.16), "delay": 0.00},
 		{"node": floating_art_b, "scale": Vector2(1.16, 1.16), "delay": 0.00},
+		{"node": edge_fog, "scale": Vector2(1.08, 1.08), "delay": 0.00},
 		{"node": title_art, "scale": Vector2(1.13, 1.13), "delay": TRANSITION_STEP},
 		{"node": cover_base_4, "scale": Vector2(1.10, 1.10), "delay": TRANSITION_STEP * 2.0},
 		{"node": cover_base_3, "scale": Vector2(1.09, 1.09), "delay": TRANSITION_STEP * 3.0},
 		{"node": cover_base_2, "scale": Vector2(1.08, 1.08), "delay": TRANSITION_STEP * 4.0},
 		{"node": cover_base_1, "scale": Vector2(1.07, 1.07), "delay": TRANSITION_STEP * 5.0},
+		{"node": center_fog, "scale": Vector2(1.04, 1.04), "delay": TRANSITION_STEP * 5.0},
 	]
 	var tween: Tween = create_tween()
 	tween.set_parallel(true)
@@ -92,7 +96,7 @@ func _play_start_transition() -> void:
 	get_tree().change_scene_to_file("res://Scenes/main_editor_screen.tscn")
 
 func _configure_cover_pivots() -> void:
-	for node in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4, title_art, floating_art, floating_art_b, start_glow]:
+	for node in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, center_fog, cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4, title_art, floating_art, floating_art_b, edge_fog, start_glow]:
 		node.pivot_offset = node.size * 0.5
 	start_button.pivot_offset = start_button.size * 0.5
 
@@ -119,7 +123,7 @@ func _stop_ambient_effects() -> void:
 		if tween != null and tween.is_valid():
 			tween.kill()
 	_ambient_tweens.clear()
-	for layer in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, title_art, floating_art, floating_art_b]:
+	for layer in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, center_fog, title_art, floating_art, floating_art_b, edge_fog]:
 		layer.modulate = Color.WHITE
 	for glow in [cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4]:
 		glow.modulate.a = 0.0
@@ -183,7 +187,7 @@ func _start_button_pulse() -> void:
 		.set_ease(Tween.EASE_IN_OUT)
 	_ambient_tweens.append(tween)
 
-func _queue_layer_transition(tween: Tween, node: TextureRect, delay: float, scale_target: Vector2) -> void:
+func _queue_layer_transition(tween: Tween, node: CanvasItem, delay: float, scale_target: Vector2) -> void:
 	tween.tween_property(node, "scale", scale_target, TRANSITION_DURATION)\
 		.set_delay(delay)\
 		.set_trans(Tween.TRANS_BACK)\

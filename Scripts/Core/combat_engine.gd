@@ -5,18 +5,22 @@ const TICK := 0.25
 const MAX_DURATION := 120.0
 const ATTRITION_DPS := 8.0
 
-static func simulate(run_state: Node) -> Dictionary:
+static func simulate(run_state: Object) -> Dictionary:
 	var engine: CombatEngine = CombatEngine.new()
 	return engine._simulate_internal(run_state)
 
-static func preview_character_actor(run_state: Node, character_id: StringName) -> Dictionary:
+static func preview_character_actor(run_state: Object, character_id: StringName) -> Dictionary:
 	var engine: CombatEngine = CombatEngine.new()
 	for actor in engine._build_characters(run_state):
 		if actor.get("id", &"") == character_id:
 			return actor
 	return {}
 
-func _simulate_internal(run_state: Node) -> Dictionary:
+static func preview_effective_interval(base_interval: float, speed_bonus_pct: float) -> float:
+	var engine: CombatEngine = CombatEngine.new()
+	return engine._effective_interval(base_interval, speed_bonus_pct)
+
+func _simulate_internal(run_state: Object) -> Dictionary:
 	var report: Dictionary = {
 		"result": "lose",
 		"duration": 0.0,
@@ -76,7 +80,7 @@ func _simulate_internal(run_state: Node) -> Dictionary:
 	_cleanup_log(report, log, characters, monster)
 	return report
 
-func _build_characters(run_state: Node) -> Array[Dictionary]:
+func _build_characters(run_state: Object) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for definition in run_state.character_roster.characters:
 		var board_state: Dictionary = run_state.get_character_state(definition.id)
@@ -181,7 +185,7 @@ func _build_monster(definition: MonsterDefinition) -> Dictionary:
 		"attack_count": 0,
 	}
 
-func _evaluate_character_board(run_state: Node, definition: CharacterDefinition, board_state: Dictionary) -> Dictionary:
+func _evaluate_character_board(run_state: Object, definition: CharacterDefinition, board_state: Dictionary) -> Dictionary:
 	var result: Dictionary = {
 		"max_hp_bonus": 0.0,
 		"attack_bonus": 0.0,
@@ -285,7 +289,7 @@ func _compute_durian_disabled_items(placed_foods: Array) -> Dictionary:
 					disabled[item["instance_id"]] = true
 	return disabled
 
-func _apply_food_passive(run_state: Node, food: FoodDefinition, item: Dictionary, placed_foods: Array, board_state: Dictionary, result: Dictionary, unique_categories: Dictionary) -> void:
+func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictionary, placed_foods: Array, board_state: Dictionary, result: Dictionary, unique_categories: Dictionary) -> void:
 	var adj: Dictionary = _adjacent_food_categories(item, placed_foods, run_state)
 	result["adjacent_categories"][food.id] = adj
 	match food.id:
@@ -395,7 +399,7 @@ func _apply_food_passive(run_state: Node, food: FoodDefinition, item: Dictionary
 		_:
 			pass
 
-func _adjacent_food_categories(item: Dictionary, placed_foods: Array, run_state: Node) -> Dictionary:
+func _adjacent_food_categories(item: Dictionary, placed_foods: Array, run_state: Object) -> Dictionary:
 	var categories: Dictionary = {}
 	for other in placed_foods:
 		if other["instance_id"] == item["instance_id"]:
@@ -461,7 +465,7 @@ func _count_adjacent_foods(item: Dictionary, placed_foods: Array) -> int:
 			count += 1
 	return count
 
-func _apply_food_post_passive(run_state: Node, food: FoodDefinition, item: Dictionary, placed_foods: Array, board_state: Dictionary, result: Dictionary, category_distinct_count: Dictionary, unique_categories: Dictionary) -> void:
+func _apply_food_post_passive(run_state: Object, food: FoodDefinition, item: Dictionary, placed_foods: Array, board_state: Dictionary, result: Dictionary, category_distinct_count: Dictionary, unique_categories: Dictionary) -> void:
 	match food.id:
 		&"rosemary_tomato":
 			var adj: Dictionary = _adjacent_food_categories(item, placed_foods, run_state)
@@ -495,7 +499,7 @@ func _flatten_food_cells(placed_foods: Array) -> Array[Vector2i]:
 			result.append(cell)
 	return result
 
-func _count_adjacent_items_in_categories(item: Dictionary, placed_foods: Array, run_state: Node, categories: Array[StringName], include_diagonals: bool) -> int:
+func _count_adjacent_items_in_categories(item: Dictionary, placed_foods: Array, run_state: Object, categories: Array[StringName], include_diagonals: bool) -> int:
 	var count: int = 0
 	for other_variant in placed_foods:
 		var other: Dictionary = other_variant
@@ -587,7 +591,7 @@ func _donut_center_filled(item: Dictionary, placed_foods: Array) -> bool:
 				return true
 	return false
 
-func _is_below_category(item: Dictionary, placed_foods: Array, run_state: Node, categories: Array[StringName]) -> bool:
+func _is_below_category(item: Dictionary, placed_foods: Array, run_state: Object, categories: Array[StringName]) -> bool:
 	for cell in item["cells"]:
 		var above := Vector2i(cell.x, cell.y - 1)
 		for other in placed_foods:
@@ -910,7 +914,7 @@ func _all_characters_dead(characters: Array[Dictionary]) -> bool:
 			return false
 	return true
 
-func _calculate_bonus_gold(run_state: Node, characters: Array[Dictionary], duration: float) -> int:
+func _calculate_bonus_gold(run_state: Object, characters: Array[Dictionary], duration: float) -> int:
 	var battle_index: int = run_state.get_completed_battle_count()
 	if battle_index < 0 or battle_index >= run_state.stage_flow_config.normal_battle_reward_gold.size():
 		return 0

@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://dm44pib618xpm"]
+[gd_scene format=3 uid="uid://b2tjwa4uprw53"]
 
 [ext_resource type="Script" uid="uid://cq6r8mjnr6tx1" path="res://Scripts/UI/title_screen.gd" id="1_title"]
 [ext_resource type="Texture2D" uid="uid://dr60km6grv5l7" path="res://Art/UI/Background.png" id="2_main_bg"]
@@ -11,23 +11,16 @@
 [ext_resource type="Texture2D" uid="uid://elcmybn32hb4" path="res://Art/UI/UI_formal/开始.png" id="11_start"]
 [ext_resource type="Texture2D" uid="uid://dup4t101a6e76" path="res://Art/UI/NewUI/ui1_2_settings_icon.png" id="11_w5sh6"]
 [ext_resource type="Shader" uid="uid://djnl7b13dimqr" path="res://Shaders/title_cover_edge_glow.gdshader" id="12_glow_shader"]
-[ext_resource type="Shader" uid="uid://bmcnstcyo324x" path="res://Shaders/title_fog_mask.gdshader" id="13_fog_shader"]
+[ext_resource type="Shader" uid="uid://dpbv4qvckqsb7" path="res://Shaders/title_center_fog.gdshader" id="13_center_fog_shader"]
+[ext_resource type="Shader" uid="uid://b5xfan3u8nvwj" path="res://Shaders/title_edge_fog.gdshader" id="14_edge_fog_shader"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_fog"]
-shader = ExtResource("13_fog_shader")
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_center_fog"]
+shader = ExtResource("13_center_fog_shader")
 shader_parameter/fog_color = Color(1, 1, 1, 1)
-shader_parameter/fog_alpha = 0.5
-shader_parameter/fog_scale = 3.2
-shader_parameter/fog_softness = 0.62
-shader_parameter/lower_bias = 0.75
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_fog"]
-shader = ExtResource("13_fog_shader")
-shader_parameter/fog_color = Color(1, 1, 1, 1)
-shader_parameter/fog_alpha = 0.22
-shader_parameter/fog_scale = 3.2
-shader_parameter/fog_softness = 0.62
-shader_parameter/lower_bias = 0.75
+shader_parameter/fog_alpha = 0.42
+shader_parameter/fog_center = Vector2(0.5, 0.52)
+shader_parameter/fog_radius = Vector2(2, 0.25)
+shader_parameter/fog_softness = 0.52
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glow1"]
 shader = ExtResource("12_glow_shader")
@@ -52,6 +45,13 @@ shader = ExtResource("12_glow_shader")
 shader_parameter/glow_color = Color(1, 0.94, 0.76, 1)
 shader_parameter/glow_size = 40.0
 shader_parameter/glow_intensity = 8.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_edge_fog"]
+shader = ExtResource("14_edge_fog_shader")
+shader_parameter/fog_color = Color(1, 1, 1, 1)
+shader_parameter/fog_alpha = 0.4
+shader_parameter/edge_width = 0.05
+shader_parameter/edge_softness = 0.1
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glow_start"]
 shader = ExtResource("12_glow_shader")
@@ -81,9 +81,9 @@ texture = ExtResource("2_main_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="FogMask" type="ColorRect" parent="." unique_id=584073713]
+[node name="CenterFog" type="ColorRect" parent="." unique_id=584073713]
 unique_name_in_owner = true
-material = SubResource("ShaderMaterial_fog")
+material = SubResource("ShaderMaterial_center_fog")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -242,6 +242,17 @@ mouse_filter = 2
 texture = ExtResource("8_floating")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="EdgeFog" type="ColorRect" parent="." unique_id=1612850454]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_edge_fog")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="SettingsButton" type="Button" parent="." unique_id=1157731675]
 unique_name_in_owner = true
