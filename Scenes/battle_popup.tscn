@@ -1,19 +1,22 @@
 [gd_scene format=3 uid="uid://uqipbhpx82be"]
 
 [ext_resource type="Script" uid="uid://bo7fqs2u0n8c3" path="res://Scripts/UI/battle_popup.gd" id="1_popup"]
-[ext_resource type="Texture2D" uid="uid://cnayki8067he5" path="res://Art/UI/大弹窗.png" id="2_window"]
-[ext_resource type="Texture2D" uid="uid://hm3kr16o3ksp" path="res://Art/UI/Battlepage1.png" id="3_page_one"]
+[ext_resource type="Texture2D" uid="uid://bw43og74rivm0" path="res://Art/BattleBackground/大弹窗.png" id="2_2gaqe"]
+[ext_resource type="Texture2D" uid="uid://dymqwi5kxusei" path="res://Art/BattleBackground/大弹窗关闭按钮.png" id="3_dd2x6"]
+[ext_resource type="Texture2D" uid="uid://b7g71tsboelu0" path="res://Art/BattleBackground/战斗背景白天版（.png" id="3_yba81"]
+[ext_resource type="Texture2D" uid="uid://dc331bikrmge1" path="res://Art/BattleBackground/战斗幕布.png" id="4_2gaqe"]
+[ext_resource type="Texture2D" uid="uid://cgy4s55u1ipym" path="res://Art/PaperCharacters/剑盾纸片.png" id="5_dd2x6"]
+[ext_resource type="Texture2D" uid="uid://ck2lqq3tvkopk" path="res://Art/PaperCharacters/猎人纸片.png" id="7_7llj4"]
+[ext_resource type="Texture2D" uid="uid://r3ofrxbuqmhi" path="res://Art/PaperCharacters/法师纸片.png" id="8_kuq81"]
 
-[node name="BattlePopup" type="PopupPanel" unique_id=1264643699]
+[node name="BattlePopup" type="PopupPanel" unique_id=1367356641]
 unique_name_in_owner = true
 oversampling_override = 1.0
-initial_position = 1
-size = Vector2i(1500, 620)
+size = Vector2i(1540, 780)
 visible = true
 script = ExtResource("1_popup")
 
-[node name="WindowArt" type="TextureRect" parent="." unique_id=2077326189]
-unique_name_in_owner = true
+[node name="WindowArt" type="TextureRect" parent="." unique_id=1956742066]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -24,11 +27,11 @@ offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_window")
+texture = ExtResource("2_2gaqe")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
 
-[node name="Margin" type="MarginContainer" parent="." unique_id=557165992]
+[node name="Margin" type="MarginContainer" parent="." unique_id=2021056431]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -38,152 +41,315 @@ offset_right = -4.0
 offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.94102347, 0.9262602)
 theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
+theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_bottom = 20
 
-[node name="StageArt" type="TextureRect" parent="Margin" unique_id=89878073]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("3_page_one")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="RootVBox" type="VBoxContainer" parent="Margin" unique_id=1429885789]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="Header" type="HBoxContainer" parent="Margin/RootVBox" unique_id=420330189]
+[node name="RootVBox" type="Control" parent="Margin" unique_id=1870600151]
 layout_mode = 2
 
-[node name="TitleLabel" type="Label" parent="Margin/RootVBox/Header" unique_id=121654620]
+[node name="Header" type="HBoxContainer" parent="Margin/RootVBox" unique_id=1635835044]
+layout_mode = 0
+offset_left = 96.082016
+offset_top = -22.15922
+offset_right = 1580.082
+offset_bottom = 77.84078
+
+[node name="TitleLabel" type="Label" parent="Margin/RootVBox/Header" unique_id=644301821]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 26
 text = "Battle"
 
-[node name="CloseBattleButton" type="Button" parent="Margin/RootVBox/Header" unique_id=2145464874]
+[node name="BattleRouteLabel" type="Label" parent="Margin/RootVBox/Header" unique_id=763195884]
 unique_name_in_owner = true
-layout_mode = 2
-text = "Close"
-
-[node name="BattleRouteLabel" type="Label" parent="Margin/RootVBox" unique_id=1407779966]
-unique_name_in_owner = true
+visible = false
 layout_mode = 2
 text = "NODE"
 
-[node name="BodyHBox" type="HBoxContainer" parent="Margin/RootVBox" unique_id=164647873]
+[node name="CloseBattleButton" type="Button" parent="Margin/RootVBox/Header" unique_id=1570596535]
+unique_name_in_owner = true
 layout_mode = 2
+icon = ExtResource("3_dd2x6")
+flat = true
+
+[node name="ArenaPanel" type="PanelContainer" parent="Margin/RootVBox" unique_id=1474463065]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 520)
+layout_mode = 0
+offset_left = 37.635017
+offset_top = 124.66777
+offset_right = 1521.635
+offset_bottom = 648.6678
 size_flags_vertical = 3
-theme_override_constants/separation = 14
 
-[node name="PartyPanel" type="PanelContainer" parent="Margin/RootVBox/BodyHBox" unique_id=1153711285]
-custom_minimum_size = Vector2(260, 0)
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="PartyVBox" type="VBoxContainer" parent="Margin/RootVBox/BodyHBox/PartyPanel" unique_id=1271247761]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="PartyTitle" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox" unique_id=1478993621]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Heroes"
-
-[node name="Hero1Label" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox" unique_id=2115274048]
+[node name="ArenaStage" type="Control" parent="Margin/RootVBox/ArenaPanel" unique_id=718533906]
 unique_name_in_owner = true
 layout_mode = 2
-text = "-"
-autowrap_mode = 3
+mouse_filter = 2
 
-[node name="Hero2Label" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox" unique_id=2115567590]
+[node name="StageArt" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1693998587]
 unique_name_in_owner = true
-layout_mode = 2
-text = "-"
-autowrap_mode = 3
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_yba81")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="Hero3Label" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox" unique_id=2003339403]
+[node name="StageOverlay" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1139290500]
 unique_name_in_owner = true
-layout_mode = 2
-text = "-"
-autowrap_mode = 3
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_2gaqe")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="PartyMetaLabel" type="Label" parent="Margin/RootVBox/BodyHBox/PartyPanel/PartyVBox" unique_id=1546670350]
+[node name="Hero1Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=77219137]
 unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-text = "-"
-autowrap_mode = 3
+anchors_preset = 0
+offset_left = 426.13177
+offset_top = 69.09506
+offset_right = 626.13184
+offset_bottom = 381.09506
+scale = Vector2(1.8932682, 1.7647917)
 
-[node name="CenterPanel" type="PanelContainer" parent="Margin/RootVBox/BodyHBox" unique_id=742421422]
+[node name="Hero1PortraitFrame" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor" unique_id=216216529]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_right = 200.0
+offset_bottom = 240.0
+
+[node name="Hero1PortraitSprite" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor/Hero1PortraitFrame" unique_id=1753115536]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_dd2x6")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Hero1ArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor" unique_id=389206012]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 248.0
+offset_right = 200.0
+offset_bottom = 276.0
+horizontal_alignment = 1
+
+[node name="Hero1ArenaHpLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor" unique_id=343357928]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 280.0
+offset_right = 200.0
+offset_bottom = 308.0
+horizontal_alignment = 1
+
+[node name="Hero2Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1686591380]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = 182.77972
+offset_top = 62.617386
+offset_right = 382.77972
+offset_bottom = 374.61737
+scale = Vector2(1.8932682, 1.7647917)
+
+[node name="Hero2PortraitFrame" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero2Actor" unique_id=1136600272]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_right = 200.0
+offset_bottom = 240.0
+
+[node name="Hero2PortraitSprite" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero2Actor/Hero2PortraitFrame" unique_id=1019931116]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("7_7llj4")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Hero2ArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero2Actor" unique_id=656101168]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 248.0
+offset_right = 200.0
+offset_bottom = 276.0
+horizontal_alignment = 1
+
+[node name="Hero2ArenaHpLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero2Actor" unique_id=287392192]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 280.0
+offset_right = 200.0
+offset_bottom = 308.0
+horizontal_alignment = 1
+
+[node name="Hero3Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1911396048]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = -37.193546
+offset_top = 62.617386
+offset_right = 162.80646
+offset_bottom = 374.61737
+scale = Vector2(1.8932682, 1.7647917)
+
+[node name="Hero3PortraitFrame" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor" unique_id=897562087]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_right = 200.0
+offset_bottom = 240.0
+
+[node name="Hero3PortraitSprite" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor/Hero3PortraitFrame" unique_id=1779467619]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7.8580613
+offset_top = 9.78799
+offset_right = -7.8580627
+offset_bottom = 9.787994
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("8_kuq81")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Hero3ArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor" unique_id=1095082292]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 248.0
+offset_right = 200.0
+offset_bottom = 276.0
+horizontal_alignment = 1
+
+[node name="Hero3ArenaHpLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor" unique_id=639391590]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 280.0
+offset_right = 200.0
+offset_bottom = 308.0
+horizontal_alignment = 1
+
+[node name="MonsterActor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1409564179]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = 964.90686
+offset_top = 23.751425
+offset_right = 1264.907
+offset_bottom = 393.75143
+scale = Vector2(1.5849091, 1.6770225)
+
+[node name="MonsterPortraitFrame" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage/MonsterActor" unique_id=1196077034]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = 30.0
+offset_right = 270.0
+offset_bottom = 280.0
+
+[node name="MonsterPortraitSprite" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage/MonsterActor/MonsterPortraitFrame" unique_id=913555857]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MonsterArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/MonsterActor" unique_id=2126076361]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 286.0
+offset_right = 300.0
+offset_bottom = 314.0
+horizontal_alignment = 1
+
+[node name="MonsterArenaHpLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/MonsterActor" unique_id=430761775]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 318.0
+offset_right = 300.0
+offset_bottom = 346.0
+horizontal_alignment = 1
+
+[node name="BattleFloatLayer" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=511132240]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TimelinePanel" type="PanelContainer" parent="Margin/RootVBox" unique_id=976345216]
+custom_minimum_size = Vector2(0, 132)
+layout_mode = 0
+offset_left = 47.199074
+offset_top = 665.55255
+offset_right = 1531.1991
+offset_bottom = 797.55255
+
+[node name="TimelineMargin" type="MarginContainer" parent="Margin/RootVBox/TimelinePanel" unique_id=417045836]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="TimelineVBox" type="VBoxContainer" parent="Margin/RootVBox/TimelinePanel/TimelineMargin" unique_id=1173437648]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EventHeader" type="HBoxContainer" parent="Margin/RootVBox/TimelinePanel/TimelineMargin/TimelineVBox" unique_id=56604367]
+layout_mode = 2
+
+[node name="EventTitleLabel" type="Label" parent="Margin/RootVBox/TimelinePanel/TimelineMargin/TimelineVBox/EventHeader" unique_id=1860043151]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
+theme_override_font_sizes/font_size = 18
+text = "Timeline"
 
-[node name="CenterVBox" type="VBoxContainer" parent="Margin/RootVBox/BodyHBox/CenterPanel" unique_id=744665691]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="EventHeader" type="HBoxContainer" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox" unique_id=260720146]
-layout_mode = 2
-
-[node name="EventTitleLabel" type="Label" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox/EventHeader" unique_id=265999346]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "Event Timeline"
-
-[node name="PlaybackTimeLabel" type="Label" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox/EventHeader" unique_id=1538913431]
+[node name="PlaybackTimeLabel" type="Label" parent="Margin/RootVBox/TimelinePanel/TimelineMargin/TimelineVBox/EventHeader" unique_id=475470284]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Time 0.0s"
 
-[node name="BattleLog" type="RichTextLabel" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox" unique_id=1222291110]
+[node name="BattleLog" type="RichTextLabel" parent="Margin/RootVBox/TimelinePanel/TimelineMargin/TimelineVBox" unique_id=1990560618]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
 scroll_following = true
 
-[node name="ResultLabel" type="Label" parent="Margin/RootVBox/BodyHBox/CenterPanel/CenterVBox" unique_id=360331823]
+[node name="ResultLabel" type="Label" parent="Margin/RootVBox/TimelinePanel/TimelineMargin/TimelineVBox" unique_id=1444484394]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
-text = "-"
-autowrap_mode = 3
-
-[node name="MonsterPanel" type="PanelContainer" parent="Margin/RootVBox/BodyHBox" unique_id=2122647272]
-custom_minimum_size = Vector2(280, 0)
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="MonsterVBox" type="VBoxContainer" parent="Margin/RootVBox/BodyHBox/MonsterPanel" unique_id=1413305204]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="MonsterTitle" type="Label" parent="Margin/RootVBox/BodyHBox/MonsterPanel/MonsterVBox" unique_id=1990558544]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Monster"
-
-[node name="MonsterNameLabel" type="Label" parent="Margin/RootVBox/BodyHBox/MonsterPanel/MonsterVBox" unique_id=1482905528]
-unique_name_in_owner = true
-layout_mode = 2
-text = "-"
-autowrap_mode = 3
-
-[node name="MonsterHpLabel" type="Label" parent="Margin/RootVBox/BodyHBox/MonsterPanel/MonsterVBox" unique_id=1166109715]
-unique_name_in_owner = true
-layout_mode = 2
-text = "-"
-autowrap_mode = 3
-
-[node name="MonsterMetaLabel" type="Label" parent="Margin/RootVBox/BodyHBox/MonsterPanel/MonsterVBox" unique_id=874443972]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
 text = "-"
 autowrap_mode = 3

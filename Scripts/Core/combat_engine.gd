@@ -2,8 +2,8 @@
 class_name CombatEngine
 
 const TICK := 0.25
-const MAX_DURATION := 120.0
-const ATTRITION_DPS := 8.0
+const ATTRITION_START_TIME := 60.0
+const ATTRITION_DPS := 7.0
 
 static func simulate(run_state: Object) -> Dictionary:
 	var engine: CombatEngine = CombatEngine.new()
@@ -26,6 +26,7 @@ func _simulate_internal(run_state: Object) -> Dictionary:
 		"duration": 0.0,
 		"log": PackedStringArray(),
 		"bonus_gold": 0,
+		"monster_id": &"",
 		"monster_name": "",
 		"title": "",
 	}
@@ -36,6 +37,7 @@ func _simulate_internal(run_state: Object) -> Dictionary:
 	if monster.is_empty():
 		report["title"] = "鎴樻枟閰嶇疆缂哄け"
 		return report
+	report["monster_id"] = monster["id"]
 	report["monster_name"] = monster["name"]
 
 	var time: float = 0.0
@@ -45,16 +47,16 @@ func _simulate_internal(run_state: Object) -> Dictionary:
 	_apply_monster_opening_skill(monster, characters, log)
 	_apply_character_opening_effects(characters, team_effects, log)
 
-	while time <= MAX_DURATION + 30.0:
+	while true:
 		_process_timed_team_effects(time, characters, team_effects, monster, log)
 		_process_monster_timed_effects(time, monster, characters, log)
 		_process_character_status_effects(time, characters, log)
 		_apply_regeneration(TICK, time, characters, team_effects, log)
 
-		if time >= MAX_DURATION:
+		if time >= ATTRITION_START_TIME:
 			if not attrition_started:
 				attrition_started = true
-				log.append("[120.0s] Battle enters attrition mode.")
+				log.append("[60.0s] Battle enters attrition mode.")
 			_apply_attrition(TICK, monster, characters, log)
 
 		_process_character_attacks(time, characters, monster, team_effects, log)
@@ -697,7 +699,7 @@ func _apply_attrition(delta: float, monster: Dictionary, characters: Array[Dicti
 		if actor["alive"]:
 			actor["current_hp"] -= ATTRITION_DPS * delta
 			if actor["current_hp"] <= 0.0:
-				_handle_actor_death(actor, log, MAX_DURATION)
+				_handle_actor_death(actor, log, ATTRITION_START_TIME)
 
 func _process_character_attacks(time: float, characters: Array[Dictionary], monster: Dictionary, team_effects: Dictionary, log: Array[String]) -> void:
 	for actor in characters:
@@ -830,6 +832,7 @@ func _handle_monster_hit_by_character(monster: Dictionary, attacker: Dictionary,
 				if not living.is_empty():
 					var target: Dictionary = living[randi() % living.size()]
 					monster["half_hp_burst_used"] = true
+					log.append("[%.1fs] %s unleashes Burst Charge." % [time, monster["name"]])
 					_apply_damage_to_actor(target, 50.0, log, time, monster["name"])
 		&"nc2_auto_cooker":
 			monster["received_hit_count"] = int(monster.get("received_hit_count", 0)) + 1
@@ -840,6 +843,7 @@ func _handle_monster_hit_by_character(monster: Dictionary, attacker: Dictionary,
 					rotated = order.slice(1, order.size())
 					rotated.append(order[0])
 					monster["target_order"] = rotated
+					log.append("[%.1fs] %s shifts target order." % [time, monster["name"]])
 		_:
 			pass
 
@@ -923,7 +927,7 @@ func _calculate_bonus_gold(run_state: Object, characters: Array[Dictionary], dur
 	for actor in characters:
 		hp_ratio += actor["current_hp"] / maxf(actor["max_hp"], 1.0)
 	hp_ratio /= maxf(float(characters.size()), 1.0)
-	var time_score: float = clampf(1.0 - duration / MAX_DURATION, 0.0, 1.0)
+	var time_score: float = clampf(1.0 - duration / ATTRITION_START_TIME, 0.0, 1.0)
 	return int(round(base_gold * 0.5 * ((hp_ratio + time_score) * 0.5)))
 
 func _cleanup_log(report: Dictionary, log: Array[String], characters: Array[Dictionary], monster: Dictionary) -> void:
@@ -941,5 +945,6 @@ func _cleanup_log(report: Dictionary, log: Array[String], characters: Array[Dict
 			"alive": actor["alive"],
 		})
 	report["characters"] = summaries
+	report["monster_id"] = monster["id"]
 	report["monster_hp"] = monster["current_hp"]
 	report["monster_max_hp"] = monster["max_hp"]

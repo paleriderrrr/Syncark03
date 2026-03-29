@@ -1055,6 +1055,7 @@ func _apply_battle_victory(report: Dictionary) -> void:
 		current_gold += stage_flow_config.normal_battle_reward_gold[battle_index]
 		current_gold += int(report.get("bonus_gold", 0))
 	grant_battle_drops(get_current_monster_definition(), battle_index)
+	_restore_defeated_characters_to_victory_floor(report)
 	for character_id in character_states.keys():
 		character_states[character_id]["placed_foods"].clear()
 	if current_route_index >= stage_flow_config.route_nodes.size() - 1:
@@ -1065,6 +1066,18 @@ func _apply_battle_victory(report: Dictionary) -> void:
 			current_market_index = min(current_market_index + 1, 4)
 			current_reroll_count = 0
 			_generate_market_offers()
+
+func _restore_defeated_characters_to_victory_floor(report: Dictionary) -> void:
+	if not report.has("characters"):
+		return
+	for actor_variant in report["characters"]:
+		var actor: Dictionary = actor_variant
+		var character_id: StringName = actor.get("id", &"")
+		if character_id == &"" or not character_states.has(character_id):
+			continue
+		if bool(actor.get("alive", false)):
+			continue
+		character_states[character_id]["hp_ratio"] = 0.25
 
 func grant_battle_drops(monster: MonsterDefinition, battle_index: int) -> void:
 	if monster == null:

@@ -81,10 +81,11 @@ texture = ExtResource("4_3wget")
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 32)
 layout_mode = 0
-offset_left = 86.0
-offset_top = 22.0
-offset_right = 260.0
-offset_bottom = 54.0
+offset_left = 94.0
+offset_top = 33.0
+offset_right = 234.0
+offset_bottom = 65.0
+scale = Vector2(1.154923, 1.3604071)
 text = "Gold: 0"
 
 [node name="MarketSlotGuide" type="HBoxContainer" parent="TopMarketPanel" unique_id=201410001]
