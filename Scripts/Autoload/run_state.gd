@@ -299,8 +299,7 @@ func _generate_market_offers() -> void:
 func refresh_market_offers() -> bool:
 	if get_current_node_type() != NODE_MARKET:
 		return false
-	var curve: PackedInt32Array = market_config.reroll_cost_curve
-	var cost: int = curve[min(current_reroll_count, curve.size() - 1)]
+	var cost: int = get_current_refresh_cost()
 	if current_gold < cost:
 		return false
 	current_gold -= cost
@@ -315,6 +314,14 @@ func refresh_market_offers() -> bool:
 			current_market_offers.append(_roll_food_offer(slot_index, used_food_ids))
 	state_changed.emit()
 	return true
+
+func get_current_refresh_cost() -> int:
+	if market_config == null:
+		return 0
+	var curve: PackedInt32Array = market_config.reroll_cost_curve
+	if curve.is_empty():
+		return 0
+	return int(curve[min(current_reroll_count, curve.size() - 1)])
 
 func _roll_expansion_offer(slot_index: int) -> Dictionary:
 	var roll: float = _rng.randf()
@@ -918,24 +925,26 @@ func get_next_monster_summary() -> Dictionary:
 	}
 
 func get_synergy_summary(character_id: StringName) -> Dictionary:
-	var counts: Dictionary = {}
+	var category_definition_sets: Dictionary = {}
 	for category_id in CATEGORY_ORDER:
-		counts[category_id] = 0
+		category_definition_sets[category_id] = {}
 	var state: Dictionary = get_character_state(character_id)
 	for item in state.get("placed_foods", []):
 		var definition: FoodDefinition = get_food_definition(item["definition_id"])
 		for category_id in get_food_categories(definition):
-			counts[category_id] = int(counts.get(category_id, 0)) + 1
+			var definition_set: Dictionary = category_definition_sets.get(category_id, {})
+			definition_set[definition.id] = true
+			category_definition_sets[category_id] = definition_set
 	var entries: Array[Dictionary] = []
 	for category_id in CATEGORY_ORDER:
-		var count: int = int(counts.get(category_id, 0))
+		var count: int = int(category_definition_sets.get(category_id, {}).size())
 		entries.append({
 			"category_id": category_id,
 			"category_name": CATEGORY_DISPLAY_NAMES.get(category_id, String(category_id)),
 			"synergy_name": CATEGORY_SYNERGY_NAMES.get(category_id, ""),
 			"effect_text": CATEGORY_SYNERGY_EFFECTS.get(category_id, ""),
 			"count": count,
-			"active": count > 0,
+			"active": count >= 3,
 		})
 	return {
 		"character_id": character_id,

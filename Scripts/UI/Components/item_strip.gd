@@ -54,6 +54,7 @@ func _show_previous_page() -> void:
 	if _page_index <= 0:
 		return
 	_page_index -= 1
+	_ui_sfx().play_strip_slide()
 	_refresh_page_state()
 
 func _show_next_page() -> void:
@@ -61,6 +62,7 @@ func _show_next_page() -> void:
 	if _page_index >= max_page:
 		return
 	_page_index += 1
+	_ui_sfx().play_strip_slide()
 	_refresh_page_state()
 
 func _refresh_page_state() -> void:
@@ -99,3 +101,6 @@ func _get_max_page_index_for_slots(visible_slots: int) -> int:
 
 func _on_card_clicked(entry: Dictionary) -> void:
 	entry_clicked.emit(entry)
+
+func _ui_sfx() -> Node:
+	return get_node("/root/UiSfxPlayer")

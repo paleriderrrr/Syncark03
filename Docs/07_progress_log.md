@@ -409,3 +409,84 @@
   - Increased CoverBase1 and CoverBase3 peak glow alpha to improve visibility while keeping CoverBase2 and CoverBase4 unchanged.
 - Verification:
   - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+### 2026-03-29 12:05
+- Completed: Added a dedicated `UiSfxPlayer` autoload for UI and editor interaction sounds, mapped button, purchase success, purchase denied, pickup, placement, and strip-slide audio from `Audio/SFXver01`, and wired the title screen, settings screen, main editor, battle popup, item strips, item cards, and board drag flow to those semantic sound hooks.
+- In Progress: Manual runtime confirmation of actual sound feel and volume balance inside the Godot editor/player.
+- Next: Open the project and verify button clicks, market buy success/failure, strip paging, drag pickup, and successful placement/storage all emit the intended sounds exactly once.
+- Blockers: No known compile blocker remains for the UI sound integration; only in-editor listening remains for final acceptance.
+- Files Touched: project.godot, Scripts/Autoload/ui_sfx_player.gd, Scripts/UI/title_screen.gd, Scripts/UI/settings_screen.gd, Scripts/UI/main_editor_screen.gd, Scripts/UI/battle_popup.gd, Scripts/UI/Components/item_strip.gd, Scripts/UI/Components/item_icon_card.gd, Scripts/UI/Components/bento_board_view.gd, Docs/07_progress_log.md
+- Notes: The sound integration keeps behavior-level triggers in UI scripts and components, while purchase and placement success/failure are still decided by `RunState` return values rather than hidden local guesses.
+## 2026-03-29 12:18
+- Phase: Start button edge glow integration.
+- Changes:
+  - Added a dedicated shader-based glow overlay for the start button.
+  - Replaced the old scaling pulse with a stable combination of button brightness pulse and glow alpha pulse.
+- Verification:
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+### 2026-03-29 08:00
+- Completed: Added a second navigation button on the settings screen that jumps directly back to the main editor while keeping the existing return-to-title button unchanged.
+- In Progress: Manual confirmation of the new settings-to-editor navigation flow.
+- Next: Open the settings screen and click both Back To Editor and Back To Title once to verify the two destinations behave as intended.
+- Blockers: No automated blocker remains for this settings navigation update.
+- Files Touched: Scenes/settings_screen.tscn, Scripts/UI/settings_screen.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup after adding the new settings navigation button.
+## 2026-03-29 12:27
+- Phase: Start button white outline glow tuning.
+- Changes:
+  - Converted the start button glow shader parameters from warm diffuse glow to a tight white outline glow.
+  - Raised the idle start glow alpha so the outline stays visible before interaction, while preserving the non-scaling pulse.
+  - Added a dedicated title screen test to verify the start glow exists, uses white outline color, and stays visibly present while idle.
+- Verification:
+  - Title screen runner PASS.
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+### 2026-03-29 12:20
+- Completed: Connected the remaining reusable SFX assets by adding semantic hooks for battle start, battle win, battle lose, defeat mark, synergy cue, and market-entry announcement; wired battle popup playback to battle-start/result/defeat sounds, and wired the main editor refresh/synergy flow to shop-open and newly activated synergy cues.
+- In Progress: Manual listening pass for timing and layering of the newly connected battle/result/synergy/shop sounds.
+- Next: Open the project and verify one market entry, one newly activated synergy, one battle start, at least one defeat event during playback, and both win/lose result endings.
+- Blockers: No known compile blocker remains for the remaining sound-effect integration; final acceptance is now auditory/timing confirmation in the local player/editor.
+- Files Touched: Scripts/Autoload/ui_sfx_player.gd, Scripts/UI/battle_popup.gd, Scripts/UI/main_editor_screen.gd, Docs/07_progress_log.md
+- Notes: New SFX triggers were only attached to explicit, structured events already present in the runtime: node transitions, synergy activation state changes, battle-result state, and combat log defeat entries.
+### 2026-03-29 08:10
+- Completed: Removed the title-screen code that was skinning the Settings and Quit buttons with the market buy/sell button textures, and switched the Settings button to the dedicated UI settings icon instead.
+- In Progress: Manual confirmation of the updated title-screen button presentation.
+- Next: Open the title screen and verify that Settings now shows the UI settings icon while Quit remains an unskinned text button.
+- Blockers: No automated blocker remains for this title-button skinning update.
+- Files Touched: Scripts/UI/title_screen.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup after removing the old Settings/Quit skinning code.
+### 2026-03-29 12:30
+- Completed: Unified the synergy activation summary with the real combat rule by changing `RunState.get_synergy_summary()` from `count > 0` to `count >= 3`, so summary `active`, synergy cue playback, and actual combat activation now all use the same threshold.
+- In Progress: Manual confirmation that the synergy sound now triggers only when a category actually reaches its real activation threshold.
+- Next: Open the editor, place food until a category reaches 3 items, and verify the synergy cue only plays at that moment rather than on the first item.
+- Blockers: No known compile blocker remains for this synergy-threshold correction.
+- Files Touched: Scripts/Autoload/run_state.gd, Docs/07_progress_log.md
+- Notes: The right-side visual highlight was already using the correct `>= 3` threshold; this round only fixed the inconsistent summary/sound activation source.
+### 2026-03-29 12:40
+- Completed: Changed category synergy activation from total item count to distinct food-definition count per category, so a category now only activates when the board contains 3 different foods of that category; aligned both `RunState.get_synergy_summary()` and `CombatEngine` with the same distinct-count rule.
+- In Progress: Manual confirmation that the synergy panel count now reads as distinct food kinds and that activation occurs only on the third different food of a category.
+- Next: Open the editor, place repeated copies of the same food to confirm no activation, then place three different foods from one category to confirm activation and cue playback.
+- Blockers: No known compile blocker remains for the distinct-synergy-rule change.
+- Files Touched: Scripts/Autoload/run_state.gd, Scripts/Core/combat_engine.gd, Docs/07_progress_log.md
+- Notes: Category scaling that depends on total occupied cells remains cell-based; only the activation threshold and category-count-dependent checks were changed to distinct-definition counting.
+### 2026-03-29 08:20
+- Completed: Softened the editor board's `8x6` limit overlay by lowering the base/expansion/blocked cell alpha values and removing the cell outline stroke entirely so the board constraint stays readable without visually dominating the desk area.
+- In Progress: Manual confirmation that the lighter board overlay is still readable during editing and drag preview.
+- Next: Open the editor, look at the empty board area, and confirm the `8x6` guidance is now subtle enough not to interfere with the food art.
+- Blockers: No automated blocker remains for this board-overlay presentation update.
+- Files Touched: Scripts/UI/Components/bento_board_view.gd, Docs/07_progress_log.md
+- Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup after reducing the board overlay opacity and removing the grid stroke.
+### 2026-03-29 12:50
+- Completed: Exposed the live market reroll cost through `RunState.get_current_refresh_cost()` and updated the editor's `MarketRefreshButton` label to show the exact current refresh price as `Refresh (xG)`.
+- In Progress: Manual visual confirmation that the button text fits the current layout and updates after each reroll.
+- Next: Open the editor, verify the initial refresh cost text, click refresh once, and confirm the displayed cost advances to the next curve value.
+- Blockers: No known compile blocker remains for the refresh-cost label update.
+- Files Touched: Scripts/Autoload/run_state.gd, Scripts/UI/main_editor_screen.gd, Docs/07_progress_log.md
+- Notes: The button now reads from the same runtime source used for actual gold deduction, so displayed cost and deducted cost stay synchronized.
+## 2026-03-29 12:41
+- Phase: Title backdrop fog mask layer.
+- Changes:
+  - Inserted a dedicated full-screen FogMask layer between MainBackdrop and CoverBase1 on the title screen.
+  - Added a procedural white fog shader for a soft backdrop mist effect without moving the cover stack or start button.
+  - Extended the title screen runner to verify FogMask exists and is layered between the backdrop and first cover base.
+- Verification:
+  - Title screen runner PASS.
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).

@@ -29,6 +29,9 @@ func _run_state() -> Node:
 func _bgm_player() -> Node:
 	return get_node("/root/BgmPlayer")
 
+func _ui_sfx() -> Node:
+	return get_node("/root/UiSfxPlayer")
+
 func _ready() -> void:
 	close_button.text = "Close"
 	close_button.pressed.connect(_on_close_pressed)
@@ -39,6 +42,7 @@ func open_battle() -> void:
 		return
 	_is_playing = true
 	close_button.disabled = true
+	_ui_sfx().play_battle_start()
 	_bgm_player().play_battle()
 	var run_state: Node = _run_state()
 	var report: Dictionary = CombatEngine.simulate(run_state)
@@ -73,6 +77,8 @@ func _play_report(report: Dictionary) -> void:
 			await get_tree().create_timer(wait_seconds).timeout
 			playback_time_label.text = "Time %.1fs" % event_time
 			previous_time = event_time
+		if line.contains(" is defeated."):
+			_ui_sfx().play_defeat_mark()
 		_append_recent_log_line(line)
 		has_events = true
 	if not has_events:
@@ -82,6 +88,10 @@ func _play_report(report: Dictionary) -> void:
 
 func _render_final_report(report: Dictionary) -> void:
 	stage_art.texture = TEX_STAGE_RESULT
+	if String(report.get("result", "")) == "win":
+		_ui_sfx().play_battle_win()
+	else:
+		_ui_sfx().play_battle_lose()
 	title_label.text = "%s - %s" % [String(report.get("title", "Battle")), String(report.get("monster_name", "Unknown"))]
 	route_label.text = _run_state().get_route_label()
 	playback_time_label.text = "Time %.1fs" % float(report.get("duration", 0.0))
@@ -130,6 +140,7 @@ func _extract_log_time(line: String) -> float:
 func _on_close_pressed() -> void:
 	if _is_playing:
 		return
+	_ui_sfx().play_button()
 	hide()
 
 func _on_popup_hidden() -> void:

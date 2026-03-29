@@ -1,7 +1,6 @@
 extends Control
 
-const TEX_BUY := preload("res://Art/UI/Slices/ui2_buy_button.png")
-const TEX_SELL := preload("res://Art/UI/Slices/ui2_sell_button.png")
+const TEX_SETTINGS_ICON := preload("res://Art/UI/Slices/ui1_settings_icon.png")
 
 const TRANSITION_STEP := 0.12
 const TRANSITION_DURATION := 0.34
@@ -18,6 +17,7 @@ const LAYER_ALPHA_END := 0.0
 @onready var title_art: TextureRect = %TitleArt
 @onready var floating_art: TextureRect = %FloatingArt
 @onready var floating_art_b: TextureRect = %FloatingArtB
+@onready var start_glow: TextureRect = %StartGlow
 @onready var start_button: TextureButton = %StartButton
 @onready var settings_button: Button = %SettingsButton
 @onready var quit_button: Button = %QuitButton
@@ -36,6 +36,9 @@ func _run_state() -> Node:
 
 func _bgm_player() -> Node:
 	return get_node("/root/BgmPlayer")
+
+func _ui_sfx() -> Node:
+	return get_node("/root/UiSfxPlayer")
 
 func _ready() -> void:
 	_bgm_player().play_non_battle()
@@ -57,28 +60,15 @@ func _process(delta: float) -> void:
 	_advance_floating_scroll(floating_art_b, delta)
 
 func _apply_surface_art() -> void:
-	_apply_button_texture(settings_button, TEX_BUY, 20)
-	_apply_button_texture(quit_button, TEX_SELL, 20)
-	_apply_button_font_color(settings_button, Color(0.94, 0.94, 0.94))
-	_apply_button_font_color(quit_button, Color(0.2, 0.2, 0.2))
-
-func _apply_button_texture(button: Button, texture: Texture2D, margin: int) -> void:
-	for state_name in ["normal", "hover", "pressed", "disabled", "focus"]:
-		var style := StyleBoxTexture.new()
-		style.texture = texture
-		style.texture_margin_left = margin
-		style.texture_margin_top = margin
-		style.texture_margin_right = margin
-		style.texture_margin_bottom = margin
-		button.add_theme_stylebox_override(state_name, style)
-
-func _apply_button_font_color(button: Button, color: Color) -> void:
-	for color_name in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color", "font_focus_color"]:
-		button.add_theme_color_override(color_name, color)
+	settings_button.icon = TEX_SETTINGS_ICON
+	settings_button.expand_icon = true
+	settings_button.text = ""
+	settings_button.custom_minimum_size = Vector2(84, 64)
 
 func _on_start_pressed() -> void:
 	if _transition_started:
 		return
+	_ui_sfx().play_button()
 	_transition_started = true
 	_stop_ambient_effects()
 	start_button.disabled = true
@@ -111,7 +101,7 @@ func _play_start_transition() -> void:
 	get_tree().change_scene_to_file("res://Scenes/main_editor_screen.tscn")
 
 func _configure_cover_pivots() -> void:
-	for node in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4, title_art, floating_art, floating_art_b]:
+	for node in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4, title_art, floating_art, floating_art_b, start_glow]:
 		node.pivot_offset = node.size * 0.5
 	start_button.pivot_offset = start_button.size * 0.5
 
@@ -142,7 +132,7 @@ func _stop_ambient_effects() -> void:
 		layer.modulate = Color.WHITE
 	for glow in [cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4]:
 		glow.modulate.a = 0.0
-	start_button.scale = Vector2.ONE
+	start_glow.modulate = Color(1.0, 1.0, 1.0, 0.22)
 	start_button.modulate = Color.WHITE
 	floating_art.position.y = _floating_a_base_y
 	floating_art_b.position.y = _floating_b_base_y
@@ -188,13 +178,13 @@ func _advance_floating_scroll(node: TextureRect, delta: float) -> void:
 func _start_button_pulse() -> void:
 	var tween: Tween = create_tween()
 	tween.set_loops()
-	tween.tween_property(start_button, "scale", Vector2(1.026, 1.026), 1.8)\
+	tween.tween_property(start_glow, "modulate:a", 0.58, 1.8)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
 	tween.parallel().tween_property(start_button, "modulate", Color(1.0, 1.0, 1.0, 0.94), 1.8)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(start_button, "scale", Vector2.ONE, 1.8)\
+	tween.tween_property(start_glow, "modulate:a", 0.22, 1.8)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
 	tween.parallel().tween_property(start_button, "modulate", Color.WHITE, 1.8)\
@@ -215,9 +205,11 @@ func _queue_layer_transition(tween: Tween, node: TextureRect, delay: float, scal
 func _on_settings_pressed() -> void:
 	if _transition_started:
 		return
+	_ui_sfx().play_button()
 	get_tree().change_scene_to_file("res://Scenes/settings_screen.tscn")
 
 func _on_quit_pressed() -> void:
 	if _transition_started:
 		return
+	_ui_sfx().play_button()
 	get_tree().quit()
