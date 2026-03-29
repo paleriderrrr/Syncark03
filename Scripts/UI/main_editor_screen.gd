@@ -16,6 +16,8 @@ extends Control
 @onready var action_button: Button = %ActionButton
 @onready var wanted_poster_rect: TextureRect = %WantedPosterRect
 @onready var next_monster_name_label: Label = %NextMonsterNameLabel
+@onready var next_monster_bounty_label: Label = %NextMonsterBountyLabel
+@onready var next_monster_stage_label: Label = %NextMonsterStageLabel
 @onready var next_monster_stats_label: Label = %NextMonsterStatsLabel
 @onready var next_monster_skill_label: Label = %NextMonsterSkillLabel
 @onready var monster_tooltip_panel: PanelContainer = %MonsterTooltipPanel
@@ -93,12 +95,7 @@ func _refresh_selected_role(character_id: StringName) -> void:
 	]
 	for role_id in tab_buttons.keys():
 		tab_buttons[role_id].disabled = role_id == character_id
-		var role_health: Dictionary = run_state.get_character_health_display(role_id)
-		tab_buttons[role_id].text = "%s\nHP %d/%d" % [
-			String(_role_names.get(role_id, String(role_id))),
-			int(role_health.get("current_hp", 0)),
-			int(role_health.get("max_hp", 0)),
-		]
+		tab_buttons[role_id].text = ""
 
 func _refresh_market_strip() -> void:
 	var run_state: Node = _run_state()
@@ -163,11 +160,15 @@ func _refresh_next_monster_panel() -> void:
 	var summary: Dictionary = _run_state().get_next_monster_summary()
 	if summary.is_empty():
 		next_monster_name_label.text = "Unknown"
+		next_monster_bounty_label.text = "Bounty: -"
+		next_monster_stage_label.text = "Stage: -"
 		next_monster_stats_label.text = "-"
 		next_monster_skill_label.text = "-"
 		monster_tooltip_panel.visible = false
 		return
 	next_monster_name_label.text = "%s / %s" % [String(summary.get("display_name", "")), String(summary.get("category_name", ""))]
+	next_monster_bounty_label.text = "Bounty: %d G" % _get_next_battle_reward()
+	next_monster_stage_label.text = "Stage: %d / %d" % [_run_state().current_route_index + 1, _get_total_stage_count()]
 	next_monster_stats_label.text = "HP %d  ATK %.1f  Interval %.1fs" % [
 		int(summary.get("hp", 0)),
 		float(summary.get("attack", 0.0)),
@@ -185,6 +186,21 @@ func _build_route_label(run_state: Node) -> String:
 		total_nodes,
 		_display_name_for_node(run_state.get_current_node_type()),
 	]
+
+func _get_total_stage_count() -> int:
+	var run_state: Node = _run_state()
+	if run_state.stage_flow_config == null:
+		return 0
+	return run_state.stage_flow_config.route_nodes.size()
+
+func _get_next_battle_reward() -> int:
+	var run_state: Node = _run_state()
+	if run_state.stage_flow_config == null:
+		return 0
+	var battle_index: int = run_state.get_completed_battle_count()
+	if battle_index < 0 or battle_index >= run_state.stage_flow_config.normal_battle_reward_gold.size():
+		return 0
+	return run_state.stage_flow_config.normal_battle_reward_gold[battle_index]
 
 func _display_name_for_node(node_type: StringName) -> String:
 	match node_type:

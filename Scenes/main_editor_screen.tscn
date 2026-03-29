@@ -4,12 +4,15 @@
 [ext_resource type="PackedScene" path="res://Scenes/battle_popup.tscn" id="2_popup"]
 [ext_resource type="Script" uid="uid://caqumohui2q5b" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
 [ext_resource type="Texture2D" uid="uid://dy6hhm0cxhd6b" path="res://Art/UI/NewUI/ui2_2_panel_top_green.png" id="3_ojex1"]
+[ext_resource type="Texture2D" uid="uid://bk7ef80vtp0rc" path="res://Art/UI/NewUI/ui1_2_coin_marker.png" id="4_1vyjy"]
 [ext_resource type="Texture2D" uid="uid://c15ge3pvw4wc5" path="res://Art/UI/NewUI/ui2_2_badge_small_dark.png" id="4_fwcvo"]
-[ext_resource type="PackedScene" path="res://Scenes/Components/item_strip.tscn" id="4_strip"]
+[ext_resource type="PackedScene" uid="uid://0sdemtp02gb7" path="res://Scenes/Components/item_strip.tscn" id="4_strip"]
 [ext_resource type="PackedScene" path="res://Scenes/Components/synergy_panel.tscn" id="5_synergy"]
 [ext_resource type="Texture2D" uid="uid://dr60km6grv5l7" path="res://Art/UI/Background.png" id="6_bg"]
 [ext_resource type="Texture2D" uid="uid://bp8upp5fdi2kh" path="res://Art/UI/NewUI/ui2_2_badge_green_square.png" id="6_qo1gw"]
 [ext_resource type="Script" uid="uid://bmulngcjm5nc" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
+[ext_resource type="Texture2D" uid="uid://b8f04p7jexi2c" path="res://Art/UI/NewUI/ui2_2_panel_bottom_red.png" id="9_fwcvo"]
+[ext_resource type="Texture2D" uid="uid://dup4t101a6e76" path="res://Art/UI/NewUI/ui1_2_settings_icon.png" id="12_1vyjy"]
 
 [node name="MainEditorScreen" type="Control" unique_id=1265647940]
 layout_mode = 3
@@ -31,45 +34,11 @@ texture = ExtResource("6_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="StatusPanel" type="Control" parent="." unique_id=1849496505]
-anchors_preset = 0
-offset_left = 330.0
-offset_top = 14.0
-offset_right = 1590.0
-offset_bottom = 72.0
-
-[node name="StatusBackground" type="TextureRect" parent="StatusPanel" unique_id=979073390]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 6
-
-[node name="StatusGrid" type="GridContainer" parent="StatusPanel" unique_id=1145141938]
-layout_mode = 0
-offset_left = 18.0
-offset_top = 10.0
-offset_right = 1242.0
-offset_bottom = 48.0
-columns = 4
-
-[node name="GoldLabel" type="Label" parent="StatusPanel/StatusGrid" unique_id=1960790533]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 32)
-layout_mode = 2
-text = "Gold: 0"
-
 [node name="TopMarketPanel" type="Control" parent="." unique_id=187167841]
 anchors_preset = 0
-offset_left = 250.0
-offset_top = 84.0
+offset_left = 238.0
 offset_right = 1670.0
-offset_bottom = 248.0
+offset_bottom = 198.0
 
 [node name="TopMarketBackground" type="TextureRect" parent="TopMarketPanel" unique_id=517598199]
 unique_name_in_owner = true
@@ -77,8 +46,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = 28.0
-offset_bottom = 189.0
+offset_bottom = 144.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -86,30 +54,101 @@ texture = ExtResource("3_ojex1")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="TopMarketVBox" type="VBoxContainer" parent="TopMarketPanel" unique_id=1706503831]
+[node name="GoldIcon" type="TextureRect" parent="TopMarketPanel" unique_id=1746315528]
 layout_mode = 0
-offset_left = 18.0
-offset_top = 12.0
-offset_right = 1402.0
-offset_bottom = 152.0
-theme_override_constants/separation = 4
+offset_left = 23.0
+offset_top = 63.0
+offset_right = 103.0
+offset_bottom = 143.0
+texture = ExtResource("4_1vyjy")
 
-[node name="TopMarketActions" type="Control" parent="TopMarketPanel/TopMarketVBox" unique_id=1575567653]
+[node name="GoldLabel" type="Label" parent="TopMarketPanel/GoldIcon" unique_id=1960790533]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 32)
+layout_mode = 0
+offset_left = 86.0
+offset_top = 22.0
+offset_right = 260.0
+offset_bottom = 54.0
+text = "Gold: 0"
+
+[node name="MarketSlotGuide" type="HBoxContainer" parent="TopMarketPanel" unique_id=201410001]
+z_index = -1
+layout_mode = 0
+offset_left = 248.0
+offset_top = 50.0
+offset_right = 1362.0
+offset_bottom = 186.0
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="MarketSlot1" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410002]
+custom_minimum_size = Vector2(240, 88)
 layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("6_qo1gw")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="MarketSlot2" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410003]
+custom_minimum_size = Vector2(240, 88)
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("6_qo1gw")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="MarketSlot3" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410004]
+custom_minimum_size = Vector2(240, 88)
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("6_qo1gw")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="MarketSlot4" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410005]
+custom_minimum_size = Vector2(240, 88)
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("6_qo1gw")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="MarketSlot5" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410006]
+custom_minimum_size = Vector2(240, 88)
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("6_qo1gw")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TopMarketVBox" type="Control" parent="TopMarketPanel" unique_id=807495892]
+z_index = 10
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 198.0
+offset_top = -24.0
+offset_right = -98.0
+offset_bottom = -9.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopMarketActions" type="HBoxContainer" parent="TopMarketPanel/TopMarketVBox" unique_id=1575567653]
+layout_mode = 0
+offset_left = 41.0
+offset_top = 208.0
+offset_right = 1177.0
+offset_bottom = 275.0
 
 [node name="TopMarketSpacer" type="Control" parent="TopMarketPanel/TopMarketVBox/TopMarketActions" unique_id=1142158324]
-anchors_preset = 0
-offset_right = 1184.0
-offset_bottom = 67.0
+layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="MarketRefreshButton" type="Button" parent="TopMarketPanel/TopMarketVBox/TopMarketActions" unique_id=1757822635]
 unique_name_in_owner = true
-layout_mode = 0
-offset_left = 1186.0
-offset_top = 87.0
-offset_right = 1382.0
-offset_bottom = 154.0
+layout_mode = 2
 text = "Refresh"
 icon = ExtResource("4_fwcvo")
 flat = true
@@ -117,53 +156,17 @@ icon_alignment = 1
 
 [node name="TopMarketStrip" parent="TopMarketPanel/TopMarketVBox" unique_id=198158665 instance=ExtResource("4_strip")]
 unique_name_in_owner = true
-layout_mode = 2
-
-[node name="MarketSlotGuide" type="HBoxContainer" parent="TopMarketPanel" unique_id=201410001]
 layout_mode = 0
-offset_left = 262.0
-offset_top = 64.0
-offset_right = 1568.0
+offset_left = -26.0
+offset_top = 68.0
+offset_right = 1110.0
 offset_bottom = 204.0
-scale = Vector2(0.69948304, 1.1600006)
-mouse_filter = 2
-theme_override_constants/separation = 18
-
-[node name="MarketSlot1" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410002]
-custom_minimum_size = Vector2(240, 88)
-layout_mode = 2
-size_flags_horizontal = 3
-texture = ExtResource("6_qo1gw")
-
-[node name="MarketSlot2" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410003]
-custom_minimum_size = Vector2(240, 88)
-layout_mode = 2
-size_flags_horizontal = 3
-texture = ExtResource("6_qo1gw")
-
-[node name="MarketSlot3" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410004]
-custom_minimum_size = Vector2(240, 88)
-layout_mode = 2
-size_flags_horizontal = 3
-texture = ExtResource("6_qo1gw")
-
-[node name="MarketSlot4" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410005]
-custom_minimum_size = Vector2(240, 88)
-layout_mode = 2
-size_flags_horizontal = 3
-texture = ExtResource("6_qo1gw")
-
-[node name="MarketSlot5" type="TextureRect" parent="TopMarketPanel/MarketSlotGuide" unique_id=201410006]
-custom_minimum_size = Vector2(240, 88)
-layout_mode = 2
-size_flags_horizontal = 3
-texture = ExtResource("6_qo1gw")
 
 [node name="LeftPanel" type="Control" parent="." unique_id=781811621]
 anchors_preset = 0
-offset_left = 22.0
-offset_top = 266.0
-offset_right = 244.0
+offset_left = 34.0
+offset_top = 258.0
+offset_right = 228.0
 offset_bottom = 848.0
 
 [node name="LeftBackground" type="TextureRect" parent="LeftPanel" unique_id=188403451]
@@ -194,6 +197,7 @@ alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 text = "Current Role"
+horizontal_alignment = 1
 
 [node name="WarriorTabButton" type="Button" parent="LeftPanel/LeftCenter/LeftVBox" unique_id=1582877507]
 unique_name_in_owner = true
@@ -263,36 +267,27 @@ stretch_mode = 5
 
 [node name="CenterPanel" type="Control" parent="." unique_id=745002482]
 anchors_preset = 0
-offset_left = 262.0
-offset_top = 260.0
-offset_right = 1320.0
-offset_bottom = 852.0
-
-[node name="BoardTitle" type="Label" parent="CenterPanel" unique_id=1809242346]
-layout_mode = 0
-offset_left = 352.0
-offset_top = 10.0
-offset_right = 706.0
-offset_bottom = 34.0
-text = "Board Editor"
-horizontal_alignment = 1
+offset_left = 258.0
+offset_top = 254.0
+offset_right = 1326.0
+offset_bottom = 850.0
 
 [node name="SelectedItemLabel" type="Label" parent="CenterPanel" unique_id=1226482005]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 274.0
-offset_top = 38.0
-offset_right = 784.0
-offset_bottom = 64.0
+offset_left = 210.0
+offset_top = 28.0
+offset_right = 856.0
+offset_bottom = 58.0
 text = "No Item Selected"
 horizontal_alignment = 1
 
 [node name="BoardBackground" type="TextureRect" parent="CenterPanel" unique_id=507403133]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 82.0
-offset_right = 1034.0
-offset_bottom = 580.0
+offset_left = 26.0
+offset_top = 76.0
+offset_right = 1042.0
+offset_bottom = 586.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
@@ -300,10 +295,10 @@ stretch_mode = 6
 [node name="BoardFrame" type="Control" parent="CenterPanel" unique_id=466375146]
 unique_name_in_owner = true
 anchors_preset = 0
-offset_left = 24.0
-offset_top = 82.0
-offset_right = 1034.0
-offset_bottom = 580.0
+offset_left = 26.0
+offset_top = 76.0
+offset_right = 1042.0
+offset_bottom = 586.0
 
 [node name="BoardCenter" type="CenterContainer" parent="CenterPanel/BoardFrame" unique_id=672146067]
 unique_name_in_owner = true
@@ -322,10 +317,10 @@ cell_pixel_size = 48
 
 [node name="RightPanel" type="Control" parent="." unique_id=1766331938]
 anchors_preset = 0
-offset_left = 1546.0
-offset_top = 261.0
-offset_right = 1892.0
-offset_bottom = 847.0
+offset_left = 1538.0
+offset_top = 254.0
+offset_right = 1886.0
+offset_bottom = 850.0
 
 [node name="RightBackground" type="TextureRect" parent="RightPanel" unique_id=1681799263]
 unique_name_in_owner = true
@@ -344,7 +339,7 @@ anchors_preset = 0
 offset_left = 16.0
 offset_top = 16.0
 offset_right = 330.0
-offset_bottom = 172.0
+offset_bottom = 204.0
 
 [node name="NextMonsterBackground" type="TextureRect" parent="RightPanel/NextMonsterPanel" unique_id=210399161]
 unique_name_in_owner = true
@@ -362,7 +357,7 @@ stretch_mode = 6
 layout_mode = 0
 offset_left = 14.0
 offset_top = 10.0
-offset_right = 166.0
+offset_right = 194.0
 offset_bottom = 32.0
 text = "Next Monster"
 
@@ -381,20 +376,38 @@ stretch_mode = 5
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 140.0
-offset_top = 56.0
-offset_right = 294.0
-offset_bottom = 122.0
+offset_top = 44.0
+offset_right = 300.0
+offset_bottom = 88.0
 text = "-"
 autowrap_mode = 3
+
+[node name="NextMonsterBountyLabel" type="Label" parent="RightPanel/NextMonsterPanel" unique_id=201460001]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 140.0
+offset_top = 94.0
+offset_right = 298.0
+offset_bottom = 116.0
+text = "Bounty: -"
+
+[node name="NextMonsterStageLabel" type="Label" parent="RightPanel/NextMonsterPanel" unique_id=201460002]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 140.0
+offset_top = 122.0
+offset_right = 298.0
+offset_bottom = 144.0
+text = "Stage: -"
 
 [node name="MonsterTooltipPanel" type="PanelContainer" parent="RightPanel" unique_id=1842622011]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
 offset_left = 28.0
-offset_top = 176.0
+offset_top = 208.0
 offset_right = 320.0
-offset_bottom = 286.0
+offset_bottom = 318.0
 
 [node name="MonsterTooltipVBox" type="VBoxContainer" parent="RightPanel/MonsterTooltipPanel" unique_id=1837123090]
 layout_mode = 2
@@ -416,16 +429,16 @@ autowrap_mode = 3
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 16.0
-offset_top = 194.0
+offset_top = 224.0
 offset_right = 330.0
-offset_bottom = 446.0
+offset_bottom = 470.0
 
 [node name="StageInfoPanel" type="Control" parent="RightPanel" unique_id=201420001]
 anchors_preset = 0
 offset_left = 16.0
-offset_top = 454.0
+offset_top = 480.0
 offset_right = 330.0
-offset_bottom = 530.0
+offset_bottom = 566.0
 
 [node name="StageInfoBackground" type="TextureRect" parent="RightPanel/StageInfoPanel" unique_id=201420002]
 layout_mode = 1
@@ -478,9 +491,9 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 74)
 layout_mode = 0
 offset_left = 76.0
-offset_top = 548.0
+offset_top = 582.0
 offset_right = 262.0
-offset_bottom = 622.0
+offset_bottom = 656.0
 text = "Continue"
 
 [node name="RestoreButton" type="Button" parent="RightPanel" unique_id=208933019]
@@ -495,10 +508,10 @@ text = "Restore Previous Loadout"
 
 [node name="BottomInventoryPanel" type="Control" parent="." unique_id=1254454826]
 anchors_preset = 0
-offset_left = 204.0
-offset_top = 874.0
-offset_right = 1694.0
-offset_bottom = 1020.0
+offset_left = 182.0
+offset_top = 765.0
+offset_right = 1708.0
+offset_bottom = 1080.0
 
 [node name="BottomInventoryBackground" type="TextureRect" parent="BottomInventoryPanel" unique_id=1860282968]
 unique_name_in_owner = true
@@ -509,17 +522,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("9_fwcvo")
 expand_mode = 1
 stretch_mode = 6
 
 [node name="WarehouseSlotGuide" type="HBoxContainer" parent="BottomInventoryPanel" unique_id=201430001]
 layout_mode = 0
-offset_left = 130.0
-offset_top = 30.0
-offset_right = 1362.0
-offset_bottom = 118.0
+offset_left = 120.0
+offset_top = 139.0
+offset_right = 1410.0
+offset_bottom = 275.0
 mouse_filter = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="WarehouseSlot1" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430002]
 custom_minimum_size = Vector2(150, 80)
@@ -576,10 +590,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 110.0
-offset_top = 12.0
-offset_right = -110.0
-offset_bottom = -12.0
+offset_left = 86.0
+offset_top = 73.0
+offset_right = -106.0
+offset_bottom = 37.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("7_drop_zone")
@@ -592,11 +606,11 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 0
-offset_left = 42.0
-offset_top = 904.0
-offset_right = 138.0
-offset_bottom = 1000.0
-text = "Settings"
+offset_left = 63.0
+offset_top = 932.00006
+offset_right = 159.0
+offset_bottom = 1028.0
+scale = Vector2(0.819768, 0.8305503)
 
 [node name="SettingsIcon" type="TextureRect" parent="SettingsButton" unique_id=201450004]
 layout_mode = 1
@@ -612,7 +626,6 @@ offset_bottom = 28.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-expand_mode = 1
-stretch_mode = 5
+texture = ExtResource("12_1vyjy")
 
 [node name="BattlePopup" parent="." unique_id=1952828123 instance=ExtResource("2_popup")]

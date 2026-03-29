@@ -1,12 +1,14 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://0sdemtp02gb7"]
 
-[ext_resource type="Script" path="res://Scripts/UI/Components/item_strip.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cpu8nn4ae56es" path="res://Scripts/UI/Components/item_strip.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://sq86itat85xt" path="res://Art/UI/Slices/ui2_left_arrow.png" id="2_h8xde"]
+[ext_resource type="Texture2D" uid="uid://pbwebca55eri" path="res://Art/UI/Slices/ui2_right_arrow.png" id="3_w0ove"]
 
-[node name="ItemStrip" type="PanelContainer"]
+[node name="ItemStrip" type="PanelContainer" unique_id=573594463]
+custom_minimum_size = Vector2(0, 136)
 script = ExtResource("1_script")
-custom_minimum_size = Vector2(0, 112)
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=644164612]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -17,46 +19,53 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="VBox" type="VBoxContainer" parent="."]
-layout_mode = 2
-size_flags_vertical = 3
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1993875552]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 6
 
-[node name="TitleLabel" type="Label" parent="VBox"]
+[node name="TitleLabel" type="Label" parent="VBox" unique_id=1461481487]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-text = ""
 
-[node name="StripHBox" type="HBoxContainer" parent="VBox"]
+[node name="StripHBox" type="HBoxContainer" parent="VBox" unique_id=1771672124]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 8
+theme_override_constants/separation = 10
 
-[node name="PrevButton" type="Button" parent="VBox/StripHBox"]
+[node name="PrevButton" type="Button" parent="VBox/StripHBox" unique_id=766915395]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 112)
 layout_mode = 2
-custom_minimum_size = Vector2(42, 72)
-text = "<"
+size_flags_vertical = 4
+icon = ExtResource("2_h8xde")
+flat = true
 
-[node name="Viewport" type="Control" parent="VBox/StripHBox"]
+[node name="Viewport" type="Control" parent="VBox/StripHBox" unique_id=975938177]
 unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 88)
 clip_contents = true
+custom_minimum_size = Vector2(0, 136)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="CardRow" type="HBoxContainer" parent="VBox/StripHBox/Viewport"]
+[node name="CardRow" type="HBoxContainer" parent="VBox/StripHBox/Viewport" unique_id=389576195]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
+mouse_filter = 2
 theme_override_constants/separation = 14
-mouse_filter = 2
 
-[node name="NextButton" type="Button" parent="VBox/StripHBox"]
+[node name="NextButton" type="Button" parent="VBox/StripHBox" unique_id=632544240]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 112)
 layout_mode = 2
-custom_minimum_size = Vector2(42, 72)
-text = ">"
+size_flags_vertical = 4
+icon = ExtResource("3_w0ove")
+flat = true
