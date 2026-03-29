@@ -9,9 +9,10 @@
 [ext_resource type="Texture2D" uid="uid://duaio0gatvmx6" path="res://Art/UI/UI_formal/标题.png" id="7_title_art"]
 [ext_resource type="Texture2D" uid="uid://bmkly1pctq7pa" path="res://Art/UI/UI_formal/漂浮物.png" id="8_floating"]
 [ext_resource type="Texture2D" uid="uid://elcmybn32hb4" path="res://Art/UI/UI_formal/开始.png" id="11_start"]
-[ext_resource type="Texture2D" uid="uid://dup4t101a6e76" path="res://Art/UI/NewUI/ui1_2_settings_icon.png" id="11_w5sh6"]
 [ext_resource type="Shader" uid="uid://djnl7b13dimqr" path="res://Shaders/title_cover_edge_glow.gdshader" id="12_glow_shader"]
+[ext_resource type="Texture2D" uid="uid://bqn74j022ftxn" path="res://Art/UI/NewUI/设置.png" id="12_o1e67"]
 [ext_resource type="Shader" uid="uid://dpbv4qvckqsb7" path="res://Shaders/title_center_fog.gdshader" id="13_center_fog_shader"]
+[ext_resource type="Texture2D" uid="uid://bgorvo3jje18w" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_exit_sign_button.png" id="13_ycay6"]
 [ext_resource type="Shader" uid="uid://b5xfan3u8nvwj" path="res://Shaders/title_edge_fog.gdshader" id="14_edge_fog_shader"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_center_fog"]
@@ -23,27 +24,26 @@ shader_parameter/fog_radius = Vector2(2, 0.25)
 shader_parameter/fog_softness = 0.52
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glow1"]
+render_priority = 0
 shader = ExtResource("12_glow_shader")
-shader_parameter/glow_color = Color(1, 0.86, 0.62, 1)
-shader_parameter/glow_size = 60.0
-shader_parameter/glow_intensity = 4.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glow2"]
+render_priority = 0
 shader = ExtResource("12_glow_shader")
-shader_parameter/glow_color = Color(1, 0.88, 0.66, 1)
-shader_parameter/glow_size = 60.0
-shader_parameter/glow_intensity = 5.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glow3"]
+render_priority = 0
 shader = ExtResource("12_glow_shader")
-shader_parameter/glow_color = Color(1, 0.9, 0.7, 1)
-shader_parameter/glow_size = 50.0
-shader_parameter/glow_intensity = 5.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glow4"]
+render_priority = 0
 shader = ExtResource("12_glow_shader")
-shader_parameter/glow_color = Color(1, 0.94, 0.76, 1)
-shader_parameter/glow_size = 40.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_start_glow"]
+render_priority = 0
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 1, 1, 1)
+shader_parameter/glow_size = 18.0
 shader_parameter/glow_intensity = 8.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_edge_fog"]
@@ -52,12 +52,6 @@ shader_parameter/fog_color = Color(1, 1, 1, 1)
 shader_parameter/fog_alpha = 0.4
 shader_parameter/edge_width = 0.05
 shader_parameter/edge_softness = 0.1
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow_start"]
-shader = ExtResource("12_glow_shader")
-shader_parameter/glow_color = Color(1, 1, 1, 1)
-shader_parameter/glow_size = 10.0
-shader_parameter/glow_intensity = 5.5
 
 [node name="TitleScreen" type="Control" unique_id=1535692023]
 layout_mode = 3
@@ -210,6 +204,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -128.0
+offset_top = -15.0
+offset_right = 123.0
+offset_bottom = 123.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -254,44 +252,49 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
+[node name="StartGlow" type="TextureRect" parent="." unique_id=1612850455]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.42)
+material = SubResource("ShaderMaterial_start_glow")
+layout_mode = 0
+offset_left = 573.0
+offset_top = 534.0
+offset_right = 1426.0
+offset_bottom = 868.0
+mouse_filter = 2
+texture = ExtResource("11_start")
+expand_mode = 1
+stretch_mode = 6
+
 [node name="SettingsButton" type="Button" parent="." unique_id=1157731675]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 1608.0
-offset_top = 44.0
-offset_right = 1740.0
-offset_bottom = 108.0
-icon = ExtResource("11_w5sh6")
+offset_left = 1781.0
+offset_top = 14.0
+offset_right = 1914.0
+offset_bottom = 151.0
+scale = Vector2(0.8, 0.8)
+icon = ExtResource("12_o1e67")
+flat = true
 
 [node name="QuitButton" type="Button" parent="." unique_id=935186296]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 1748.0
-offset_top = 44.0
-offset_right = 1880.0
-offset_bottom = 108.0
-
-[node name="StartGlow" type="TextureRect" parent="." unique_id=316654086]
-unique_name_in_owner = true
-modulate = Color(1, 1, 1, 0.22)
-material = SubResource("ShaderMaterial_glow_start")
-layout_mode = 0
-offset_left = 640.0
-offset_top = 626.0
-offset_right = 1493.0
-offset_bottom = 960.0
-mouse_filter = 2
-texture = ExtResource("11_start")
-expand_mode = 1
-stretch_mode = 5
+offset_left = 1550.0
+offset_top = 4.0
+offset_right = 1848.0
+offset_bottom = 169.0
+scale = Vector2(0.8, 0.8)
+icon = ExtResource("13_ycay6")
+flat = true
 
 [node name="StartButton" type="TextureButton" parent="." unique_id=316654087]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 640.0
-offset_top = 626.0
-offset_right = 1493.0
-offset_bottom = 960.0
+offset_left = 573.0
+offset_top = 534.0
+offset_right = 1426.0
+offset_bottom = 868.0
 texture_normal = ExtResource("11_start")
 texture_pressed = ExtResource("11_start")
 texture_hover = ExtResource("11_start")

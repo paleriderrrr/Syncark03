@@ -561,3 +561,54 @@
 - Blockers: No known compile blocker remains for the food-effect lab type compatibility path.
 - Files Touched: Scripts/Core/combat_engine.gd, Docs/07_progress_log.md
 - Notes: Root cause was that the high-level preview functions had already been widened to Object, but two deeper helper calls still required Node, so the incompatibility only surfaced when adjacency logic was reached from the lab adapter.
+### 2026-03-30 00:27
+- Completed: Refined the editor right-panel typography by raising title/body font sizes, switching the key labels to the handwriting font, and moving the monster/stage/synergy text colors toward a darker warm-brown palette for higher contrast on the paper/board backgrounds.
+- In Progress: Manual visual confirmation that the right-side labels read clearly without overpowering the panel artwork.
+- Next: Open the editor and inspect the next-monster block, stage info, and synergy rows to confirm the new font sizes and colors feel balanced.
+- Blockers: No known compile blocker remains for this right-panel text-visibility pass.
+- Files Touched: 07_progress_log.md
+- Notes: The synergy panel keeps its existing active/inactive logic; this round only changed presentation with larger font overrides and warmer higher-contrast text colors.
+## 2026-03-30 10:24
+- Phase: NewUI UI1-3 reslicing.
+- Changes:
+  - Parsed UI1-3.png into a new non-destructive slice set under Art/UI/NewUI/UI1-3_slices instead of overwriting existing NewUI slices.
+  - Generated ui13_formal_* outputs for the major panels, tabs, poster, text labels, and six food-category icons.
+  - Added a slice manifest and used expanded transparent safety padding for every crop so the cuts do not hug the painted edge or introduce rough edge artifacts.
+  - Added a UI1-3 asset runner to validate the new slice set exists.
+- Verification:
+  - UI1-3 slice runner PASS.
+### 2026-03-30 00:44
+- Completed: Normalized the main-editor UI text to readable Chinese across runtime labels and static scene headings, including gold/node/risk labels, selected-role text, market refresh text, monster/stage labels, tooltip bonus text, and route/node display names from run state.
+- In Progress: Manual confirmation that the editor no longer flashes garbled strings before runtime refresh and that all visible editor labels now stay in Chinese.
+- Next: Open the main editor and inspect the top market, left role status, right monster/stage info, and tooltip texts to confirm there are no remaining mojibake strings.
+- Blockers: No known compile blocker remains for this editor Chinese-text cleanup.
+- Files Touched: 07_progress_log.md
+- Notes: This round intentionally scoped the localization cleanup to the editor-facing surface and run-state labels it consumes, not the battle popup or other auxiliary scenes.
+### 2026-03-30 01:02
+- Completed: Rebuilt the corrupted main-editor script strings into a clean UTF-8 version and removed duplicated garbled/default 	ext = ... lines from the right-side scene labels, fixing the main_editor_screen parse failure caused by mixed mojibake and duplicated text properties.
+- In Progress: Manual confirmation that the editor now opens cleanly and all core editor-facing labels stay in Chinese.
+- Next: Open the editor, verify it parses without errors, then inspect top/left/right labels and item tooltips for readable Chinese text.
+- Blockers: The title screen still has a separate missing %StartGlow issue, but the main-editor parse path itself should now be clean.
+- Files Touched: 07_progress_log.md
+- Notes: The scene parse break came from duplicated 	ext properties after partial manual replacements, while the script parse break came from malformed non-UTF string literals inserted into format strings.
+### 2026-03-30 01:10
+- Completed: Fixed the remaining main_editor_screen.tscn load failure by rewriting the scene file as UTF-8 without BOM; the parse error Expected '[' came from a BOM prefix (EF BB BF) before the [gd_scene ...] header.
+- In Progress: Manual confirmation that entering the editor through the title transition now loads the main editor scene instead of failing at scene parse.
+- Next: Start the game from the title screen and confirm the transition reaches the editor cleanly.
+- Blockers: No known parse blocker remains on main_editor_screen.tscn; only the existing title-scene shader UID warning and exit-time resource warning remain.
+- Files Touched: 07_progress_log.md
+- Notes: The scene text itself was valid after the earlier text cleanup; the remaining failure was purely the BOM prefix added by PowerShell file writing.
+### 2026-03-30 13:08
+- Completed: Reworked the main editor's bottom-right primary action button into a composite NewUI button with a fixed base art and swappable text texture, and added a stable RunState visual-key mapping so battle/boss show depart, market/rest show continue, and finished runs show restart.
+- In Progress: Manual visual confirmation that the new button art, text centering, and stage-driven texture swaps look correct in the live editor.
+- Next: Open the main editor, visit market/rest/battle/boss/finished states, and confirm the button text image changes to continue/depart/restart without falling back to default font text.
+- Blockers: Action-button implementation is passing its dedicated runner and campaign regression, but the project still has a separate pre-existing title-screen startup issue in headless quit-after validation (%StartGlow/title scene path) that is outside this button change.
+- Files Touched: Scenes/main_editor_screen.tscn, Scripts/UI/main_editor_screen.gd, Scripts/Autoload/run_state.gd, Scripts/Tests/action_button_runner.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
+- Notes: The button behavior path is unchanged; only the visual carrier changed from direct string text to a fixed base plus image-text overlay sourced from Art/UI/NewUI/UI1-3_slices.
+### 2026-03-30 13:24
+- Completed: Fixed the title-screen null-instance chain caused by a missing StartGlow node. Reintroduced a dedicated StartGlow texture overlay with the expected shader material so title_screen.gd can safely configure pivots, pulse the start highlight, and stop ambient effects without null access.
+- In Progress: Manual confirmation that the restored StartGlow reads correctly behind the start button in the live title scene.
+- Next: Open the title screen and verify the start button glow is visible and stable.
+- Blockers: The null-instance crash is resolved and the title-screen runner now passes. Separate non-blocking headless warnings remain for the title scene's center-fog shader UID and dummy-renderer shader support.
+- Files Touched: Scenes/title_screen.tscn, Docs/07_progress_log.md
+- Notes: This round restored structural consistency between title_screen.tscn, title_screen.gd, and title_screen_runner.gd instead of adding null-guard workarounds.

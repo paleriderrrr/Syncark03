@@ -26,6 +26,7 @@ func _run() -> void:
 	_assert(editor.get_node_or_null("RightPanel/MonsterTooltipPanel") != null, "Monster tooltip panel should exist")
 	_assert(editor.get_node_or_null("RightPanel/SynergyPanel") != null, "Synergy panel should exist")
 	_assert(editor.get_node_or_null("RightPanel/ActionButton") != null, "Action button should exist inside the right panel")
+	_assert(editor.get_node_or_null("RightPanel/ActionButton/ActionButtonText") != null, "Action button should expose a dedicated text texture node")
 	var market_strip: Node = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip")
 	_assert(market_strip.has_method("get_entry_count"), "Top market strip should expose grouped entries")
 	if market_strip.has_method("get_entry_count"):
@@ -46,6 +47,19 @@ func _run() -> void:
 	_assert(editor.get_node_or_null("BottomInventoryPanel/InventoryDropZone/InventoryStrip/VBox/Scroll") == null, "Bottom inventory strip should no longer use a ScrollContainer")
 	_assert(editor.get_node_or_null("BottomInventoryPanel/InventoryDropZone/InventoryStrip/VBox/StripHBox/Viewport") != null, "Bottom inventory strip should use a fixed viewport")
 	_assert(editor.get_node_or_null("CenterPanel/BoardFrame/BoardCenter/BentoBoardView") != null, "Board should be centered inside the editor area")
+	_assert(run_state.has_method("get_action_button_visual_key"), "RunState should expose a visual key for the action button")
+	if run_state.has_method("get_action_button_visual_key"):
+		_assert(run_state.call("get_action_button_visual_key") == &"continue", "Market node should map to continue visual")
+		run_state.current_route_index = 1
+		_assert(run_state.call("get_action_button_visual_key") == &"depart", "Battle node should map to depart visual")
+		run_state.current_route_index = 2
+		_assert(run_state.call("get_action_button_visual_key") == &"continue", "Rest node should map to continue visual")
+		run_state.current_route_index = 13
+		_assert(run_state.call("get_action_button_visual_key") == &"depart", "Boss node should map to depart visual")
+		run_state.run_finished = true
+		_assert(run_state.call("get_action_button_visual_key") == &"restart", "Finished runs should map to restart visual")
+		run_state.run_finished = false
+		run_state.current_route_index = 0
 	await process_frame
 	await process_frame
 	var viewport_rect := Rect2(Vector2.ZERO, editor.get_viewport().get_visible_rect().size)
