@@ -13,13 +13,12 @@ func _run() -> void:
 	await process_frame
 
 	var start_glow: TextureRect = screen.get_node("StartGlow")
-	var main_backdrop: TextureRect = screen.get_node("MainBackdrop")
-	var fog_mask: ColorRect = screen.get_node_or_null("FogMask")
 	var cover_base_1: TextureRect = screen.get_node("CoverBase1")
+	var fog_mask: TextureRect = screen.get_node_or_null("FogMask")
 	_assert(fog_mask != null, "Fog mask should exist above the main backdrop")
 	if fog_mask != null:
-		_assert(fog_mask.get_index() > main_backdrop.get_index(), "Fog mask should render above the main backdrop")
-		_assert(fog_mask.get_index() < cover_base_1.get_index(), "Fog mask should render below CoverBase1")
+		_assert(fog_mask.get_index() > cover_base_1.get_index(), "Fog mask should render above CoverBase1 so the mist is visible")
+		_assert(fog_mask.texture == cover_base_1.texture, "Fog mask should reuse CoverBase1 texture as its visible mask source")
 		var fog_material: ShaderMaterial = fog_mask.material as ShaderMaterial
 		_assert(fog_material != null, "Fog mask should use a shader material")
 	_assert(start_glow != null, "Start glow overlay should exist")
