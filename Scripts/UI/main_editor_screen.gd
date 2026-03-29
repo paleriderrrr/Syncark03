@@ -32,12 +32,17 @@ extends Control
 
 var _food_textures: Dictionary = {}
 var _role_names: Dictionary = {}
+var _last_node_type: StringName = &""
+var _active_synergy_ids: Dictionary = {}
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
 
 func _bgm_player() -> Node:
 	return get_node("/root/BgmPlayer")
+
+func _ui_sfx() -> Node:
+	return get_node("/root/UiSfxPlayer")
 
 func _ready() -> void:
 	_bgm_player().play_non_battle()
@@ -62,9 +67,9 @@ func _ready() -> void:
 	settings_button.pressed.connect(_on_settings_pressed)
 	restore_button.pressed.connect(_on_restore_pressed)
 	action_button.pressed.connect(_on_action_pressed)
-	tab_buttons[&"warrior"].pressed.connect(func() -> void: _run_state().select_character(&"warrior"))
-	tab_buttons[&"hunter"].pressed.connect(func() -> void: _run_state().select_character(&"hunter"))
-	tab_buttons[&"mage"].pressed.connect(func() -> void: _run_state().select_character(&"mage"))
+	tab_buttons[&"warrior"].pressed.connect(func() -> void: _on_role_tab_pressed(&"warrior"))
+	tab_buttons[&"hunter"].pressed.connect(func() -> void: _on_role_tab_pressed(&"hunter"))
+	tab_buttons[&"mage"].pressed.connect(func() -> void: _on_role_tab_pressed(&"mage"))
 	board_view.set_food_textures(_food_textures)
 	wanted_poster_rect.mouse_entered.connect(_on_monster_hover_entered)
 	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
@@ -73,15 +78,19 @@ func _ready() -> void:
 
 func _refresh() -> void:
 	var run_state: Node = _run_state()
+	var current_node_type: StringName = run_state.get_current_node_type()
+	if current_node_type == run_state.NODE_MARKET and _last_node_type != run_state.NODE_MARKET:
+		_ui_sfx().play_shop_open()
+	_last_node_type = current_node_type
 	_role_names = run_state.get_character_display_names()
 	gold_label.text = "Gold: %d" % run_state.current_gold
 	route_label.text = _build_route_label(run_state)
-	node_label.text = "Current Node: %s" % _display_name_for_node(run_state.get_current_node_type())
+	node_label.text = "Current Node: %s" % _display_name_for_node(current_node_type)
 	risk_label.text = "Risk: %s" % _estimate_risk_label()
 	selected_item_label.text = run_state.get_selected_item_summary()
 	action_button.text = run_state.get_action_button_text()
-	market_refresh_button.disabled = run_state.get_current_node_type() != run_state.NODE_MARKET
-	restore_button.disabled = run_state.get_current_node_type() != run_state.NODE_REST
+	market_refresh_button.disabled = current_node_type != run_state.NODE_MARKET
+	restore_button.disabled = current_node_type != run_state.NODE_REST
 	_refresh_selected_role(run_state.selected_character_id)
 	_refresh_market_strip()
 	_refresh_inventory_strip()
@@ -223,6 +232,16 @@ func _refresh_synergy_panel() -> void:
 	var run_state: Node = _run_state()
 	var summary: Dictionary = run_state.get_synergy_summary(run_state.selected_character_id)
 	var role_name: String = String(_role_names.get(run_state.selected_character_id, String(run_state.selected_character_id)))
+	var new_active_ids: Dictionary = {}
+	for entry_variant in summary.get("entries", []):
+		var entry: Dictionary = entry_variant
+		if bool(entry.get("active", false)):
+			new_active_ids[entry.get("category_id", &"")] = true
+	for category_id in new_active_ids.keys():
+		if not _active_synergy_ids.has(category_id):
+			_ui_sfx().play_synergy_cue()
+			break
+	_active_synergy_ids = new_active_ids
 	synergy_panel.set_summary(summary, role_name)
 
 func _on_selected_character_changed(character_id: StringName) -> void:
@@ -231,7 +250,11 @@ func _on_selected_character_changed(character_id: StringName) -> void:
 
 func _on_market_entry_clicked(entry: Dictionary) -> void:
 	if entry.get("kind", &"") == &"expansion":
-		_run_state().purchase_market_offer_package(entry.get("offer_id", &""))
+		var gained: Array[Dictionary] = _run_state().purchase_market_offer_package(entry.get("offer_id", &""))
+		if gained.is_empty():
+			_ui_sfx().play_purchase_denied()
+		else:
+			_ui_sfx().play_purchase_success()
 
 func _on_inventory_entry_clicked(entry: Dictionary) -> void:
 	if entry.get("entry_kind", &"food") == &"expansion":
@@ -242,61 +265,92 @@ func _on_inventory_entry_clicked(entry: Dictionary) -> void:
 func _on_board_cell_clicked(cell: Vector2i) -> void:
 	var run_state: Node = _run_state()
 	if not run_state.selected_item.is_empty():
-		run_state.try_place_selected_item(cell)
+		if run_state.try_place_selected_item(cell):
+			_ui_sfx().play_place()
 
 func _on_board_cell_right_clicked(cell: Vector2i) -> void:
-	_run_state().remove_item_at_cell(cell)
+	if _run_state().remove_item_at_cell(cell):
+		_ui_sfx().play_place()
 
 func _on_board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary) -> void:
 	var run_state: Node = _run_state()
 	match drag_data.get("source", &""):
 		&"market_offer":
 			var gained_items: Array[Dictionary] = run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
-			if not gained_items.is_empty() and drag_data.has("definition_id"):
+			if gained_items.is_empty():
+				_ui_sfx().play_purchase_denied()
+			elif drag_data.has("definition_id"):
 				var first_instance: Dictionary = gained_items[0]
 				run_state.select_inventory_item(first_instance["instance_id"])
-				if not run_state.try_place_selected_item(anchor_cell):
+				if run_state.try_place_selected_item(anchor_cell):
+					_ui_sfx().play_place()
+				else:
+					_ui_sfx().play_purchase_success()
 					run_state.clear_selection()
+			else:
+				_ui_sfx().play_purchase_success()
 		&"inventory":
 			var picked_item: Dictionary = run_state.pick_inventory_instance(drag_data.get("group_key", &""))
 			if not picked_item.is_empty():
-				if not run_state.try_place_selected_item(anchor_cell):
+				if run_state.try_place_selected_item(anchor_cell):
+					_ui_sfx().play_place()
+				else:
 					run_state.clear_selection()
 		&"pending_expansion":
 			run_state.select_pending_expansion(drag_data.get("instance_id", &""))
-			if not run_state.try_place_selected_item(anchor_cell):
+			if run_state.try_place_selected_item(anchor_cell):
+				_ui_sfx().play_place()
+			else:
 				run_state.clear_selection()
 		&"board_food":
-			run_state.move_placed_food(drag_data.get("from_cell", Vector2i.ZERO), anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO))
+			if run_state.move_placed_food(drag_data.get("from_cell", Vector2i.ZERO), anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)):
+				_ui_sfx().play_place()
 		&"board_expansion":
-			run_state.move_placed_expansion(drag_data.get("from_cell", Vector2i.ZERO), anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO))
+			if run_state.move_placed_expansion(drag_data.get("from_cell", Vector2i.ZERO), anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)):
+				_ui_sfx().play_place()
 		&"board_base":
 			var adjusted_anchor: Vector2i = anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)
-			run_state.move_base_board(adjusted_anchor)
+			if run_state.move_base_board(adjusted_anchor):
+				_ui_sfx().play_place()
 	_refresh()
 
 func _on_inventory_strip_drop_requested(drag_data: Dictionary) -> void:
 	var run_state: Node = _run_state()
 	match drag_data.get("source", &""):
 		&"market_offer":
-			run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
+			var gained_items: Array[Dictionary] = run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
+			if gained_items.is_empty():
+				_ui_sfx().play_purchase_denied()
+			else:
+				_ui_sfx().play_purchase_success()
 		&"market_expansion":
-			run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
+			var gained_expansions: Array[Dictionary] = run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
+			if gained_expansions.is_empty():
+				_ui_sfx().play_purchase_denied()
+			else:
+				_ui_sfx().play_purchase_success()
 		&"board_food":
-			run_state.store_placed_food(drag_data.get("from_cell", Vector2i.ZERO))
+			if run_state.store_placed_food(drag_data.get("from_cell", Vector2i.ZERO)):
+				_ui_sfx().play_place()
 	_refresh()
 
 func _on_restore_pressed() -> void:
+	_ui_sfx().play_button()
 	_run_state().try_restore_snapshot()
 
 func _on_settings_pressed() -> void:
+	_ui_sfx().play_button()
 	get_tree().change_scene_to_file("res://Scenes/settings_screen.tscn")
 
 func _on_action_pressed() -> void:
+	_ui_sfx().play_button()
 	_run_state().perform_primary_action()
 
 func _on_market_refresh_pressed() -> void:
-	_run_state().refresh_market_offers()
+	if _run_state().refresh_market_offers():
+		_ui_sfx().play_button()
+	else:
+		_ui_sfx().play_purchase_denied()
 
 func _on_battle_requested() -> void:
 	battle_popup.open_battle()
@@ -343,6 +397,10 @@ func _estimate_risk_label() -> String:
 	if ratio >= 0.6:
 		return "Risky"
 	return "Fatal"
+
+func _on_role_tab_pressed(character_id: StringName) -> void:
+	_ui_sfx().play_button()
+	_run_state().select_character(character_id)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:

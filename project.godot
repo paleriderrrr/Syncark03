@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 RunState="*res://Scripts/Autoload/run_state.gd"
 BgmPlayer="*res://Scripts/Autoload/bgm_player.gd"
+UiSfxPlayer="*res://Scripts/Autoload/ui_sfx_player.gd"
 
 [display]
 

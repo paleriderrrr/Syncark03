@@ -130,6 +130,7 @@ func _get_drag_data(at_position: Vector2) -> Variant:
 	var payload: Dictionary = _build_drag_payload(cell)
 	if payload.is_empty():
 		return null
+	_ui_sfx().play_pickup()
 	set_drag_preview(_build_drag_preview(payload))
 	return payload
 
@@ -325,3 +326,6 @@ func _color_for_rarity(rarity: StringName) -> Color:
 			return Color(0.92, 0.68, 1.0, 0.95)
 		_:
 			return Color(1.0, 1.0, 1.0, 0.95)
+
+func _ui_sfx() -> Node:
+	return get_node("/root/UiSfxPlayer")

@@ -918,24 +918,26 @@ func get_next_monster_summary() -> Dictionary:
 	}
 
 func get_synergy_summary(character_id: StringName) -> Dictionary:
-	var counts: Dictionary = {}
+	var category_definition_sets: Dictionary = {}
 	for category_id in CATEGORY_ORDER:
-		counts[category_id] = 0
+		category_definition_sets[category_id] = {}
 	var state: Dictionary = get_character_state(character_id)
 	for item in state.get("placed_foods", []):
 		var definition: FoodDefinition = get_food_definition(item["definition_id"])
 		for category_id in get_food_categories(definition):
-			counts[category_id] = int(counts.get(category_id, 0)) + 1
+			var definition_set: Dictionary = category_definition_sets.get(category_id, {})
+			definition_set[definition.id] = true
+			category_definition_sets[category_id] = definition_set
 	var entries: Array[Dictionary] = []
 	for category_id in CATEGORY_ORDER:
-		var count: int = int(counts.get(category_id, 0))
+		var count: int = int(category_definition_sets.get(category_id, {}).size())
 		entries.append({
 			"category_id": category_id,
 			"category_name": CATEGORY_DISPLAY_NAMES.get(category_id, String(category_id)),
 			"synergy_name": CATEGORY_SYNERGY_NAMES.get(category_id, ""),
 			"effect_text": CATEGORY_SYNERGY_EFFECTS.get(category_id, ""),
 			"count": count,
-			"active": count > 0,
+			"active": count >= 3,
 		})
 	return {
 		"character_id": character_id,

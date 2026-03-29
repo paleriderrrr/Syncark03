@@ -35,6 +35,12 @@ shader_parameter/glow_color = Color(1, 0.94, 0.76, 1)
 shader_parameter/glow_size = 40.0
 shader_parameter/glow_intensity = 8.0
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow_start"]
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 1, 1, 1)
+shader_parameter/glow_size = 10.0
+shader_parameter/glow_intensity = 5.5
+
 [node name="TitleScreen" type="Control" unique_id=1535692023]
 layout_mode = 3
 anchors_preset = 15
@@ -225,6 +231,20 @@ offset_top = 44.0
 offset_right = 1880.0
 offset_bottom = 108.0
 text = "Quit"
+
+[node name="StartGlow" type="TextureRect" parent="." unique_id=316654086]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.22)
+material = SubResource("ShaderMaterial_glow_start")
+layout_mode = 0
+offset_left = 640.0
+offset_top = 626.0
+offset_right = 1493.0
+offset_bottom = 960.0
+mouse_filter = 2
+texture = ExtResource("11_start")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="StartButton" type="TextureButton" parent="." unique_id=316654087]
 unique_name_in_owner = true

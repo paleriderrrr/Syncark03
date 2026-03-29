@@ -49,6 +49,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Restart Run"
 
+[node name="EditorButton" type="Button" parent="CenterContainer/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Back To Editor"
+
 [node name="BackButton" type="Button" parent="CenterContainer/Panel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2

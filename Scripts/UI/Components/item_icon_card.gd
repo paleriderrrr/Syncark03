@@ -45,6 +45,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		return null
 	_drag_started = true
 	_left_pressed = false
+	_ui_sfx().play_pickup()
 	var preview: Control = _build_preview()
 	set_drag_preview(preview)
 	return drag_payload.duplicate(true)
@@ -77,3 +78,6 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 		return
 	if drop_forward_target != null and drop_forward_target.has_method("handle_forwarded_drop"):
 		drop_forward_target.call("handle_forwarded_drop", data)
+
+func _ui_sfx() -> Node:
+	return get_node("/root/UiSfxPlayer")

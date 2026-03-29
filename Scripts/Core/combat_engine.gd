@@ -207,7 +207,8 @@ func _evaluate_character_board(run_state: Node, definition: CharacterDefinition,
 
 	var placed_foods: Array = board_state.get("placed_foods", [])
 	var disabled_foods: Dictionary = _compute_durian_disabled_items(placed_foods)
-	var category_item_count: Dictionary = {}
+	var category_definition_sets: Dictionary = {}
+	var category_distinct_count: Dictionary = {}
 	var category_cell_count: Dictionary = {}
 	var unique_categories: Dictionary = {}
 
@@ -219,7 +220,10 @@ func _evaluate_character_board(run_state: Node, definition: CharacterDefinition,
 		for hybrid in food.hybrid_categories:
 			categories.append(hybrid)
 		for category in categories:
-			category_item_count[category] = category_item_count.get(category, 0) + 1
+			var definition_set: Dictionary = category_definition_sets.get(category, {})
+			definition_set[food.id] = true
+			category_definition_sets[category] = definition_set
+			category_distinct_count[category] = definition_set.size()
 			category_cell_count[category] = category_cell_count.get(category, 0) + item["cells"].size()
 			unique_categories[category] = true
 		result["max_hp_bonus"] += food.hp_bonus
@@ -235,11 +239,11 @@ func _evaluate_character_board(run_state: Node, definition: CharacterDefinition,
 		if disabled_foods.has(item["instance_id"]):
 			continue
 		var definition_post: FoodDefinition = run_state.get_food_definition(item["definition_id"])
-		_apply_food_post_passive(run_state, definition_post, item, placed_foods, board_state, result, category_item_count, unique_categories)
+		_apply_food_post_passive(run_state, definition_post, item, placed_foods, board_state, result, category_distinct_count, unique_categories)
 
 	var active_bonds: int = 0
-	for category in category_item_count.keys():
-		if int(category_item_count[category]) >= 3:
+	for category in category_distinct_count.keys():
+		if int(category_distinct_count[category]) >= 3:
 			active_bonds += 1
 			var total_cells: int = int(category_cell_count[category])
 			match category:
@@ -457,17 +461,17 @@ func _count_adjacent_foods(item: Dictionary, placed_foods: Array) -> int:
 			count += 1
 	return count
 
-func _apply_food_post_passive(run_state: Node, food: FoodDefinition, item: Dictionary, placed_foods: Array, board_state: Dictionary, result: Dictionary, category_item_count: Dictionary, unique_categories: Dictionary) -> void:
+func _apply_food_post_passive(run_state: Node, food: FoodDefinition, item: Dictionary, placed_foods: Array, board_state: Dictionary, result: Dictionary, category_distinct_count: Dictionary, unique_categories: Dictionary) -> void:
 	match food.id:
 		&"rosemary_tomato":
 			var adj: Dictionary = _adjacent_food_categories(item, placed_foods, run_state)
 			if adj.has(&"spice"):
-				result["retaliate_damage"] += float(category_item_count.get(&"fruit", 0))
+				result["retaliate_damage"] += float(category_distinct_count.get(&"fruit", 0))
 		&"puff_tower":
 			if unique_categories.size() >= 3:
 				result["attack_speed_bonus"] += 50.0
 		&"parma_ham":
-			if int(category_item_count.get(&"meat", 0)) >= 3:
+			if int(category_distinct_count.get(&"meat", 0)) >= 3:
 				result["max_hp_bonus"] += 40.0
 		&"amber_tea":
 			result["amber_cancel_chance"] += 0.05 * _count_adjacent_items_in_categories(item, placed_foods, run_state, [&"drink"], true)
