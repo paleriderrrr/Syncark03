@@ -302,3 +302,16 @@
 - Blockers: No automated blocker remains for the 54-food effect matrix; the dedicated runner is now green.
 - Files Touched: Scripts/Core/combat_engine.gd, Scripts/Tests/food_effect_runner.gd, Docs/07_progress_log.md
 - Notes: Fresh verification passed under Godot 4.6.1 for plain headless startup, `campaign_runner.gd`, and `food_effect_runner.gd` with `FOOD_EFFECT_TEST_PASS`.
+## 2026-03-29 09:25
+- Phase: Monster skill refresh completed against latest user spec.
+- Changes:
+  - Updated monster combat implementation for fruit_tree_king, cream_overlord, charging_beast, water_giant, bread_knight, spice_wizard, and nc2_auto_cooker.
+  - Added monster effect automation runner and aligned monster roster stats with the latest table.
+  - Repaired combat_engine.gd combat loop/status processing so monster opening skills, timed skills, incoming modifiers, outgoing effects, and boss hit-count reactions are all testable.
+- Verification:
+  - Godot headless launch PASS.
+  - MONSTER_EFFECT_TEST_PASS.
+  - FOOD_EFFECT_TEST_PASS.
+  - CAMPAIGN_TEST_PASS.
+- Notes:
+  - Boss 30-hit reaction is implemented as deterministic target-order rotation for stable validation.

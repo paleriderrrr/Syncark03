@@ -11,7 +11,7 @@ category = &"fruit"
 base_hp = 320
 base_attack = 25.0
 attack_interval = 3.0
-skill_summary = "每次攻击使被攻击者遭到[腐蚀]，额外扣除3点生命。"
+skill_summary = "战斗开始时使所有敌人遭到[腐蚀]。腐蚀：每秒额外扣除1点生命值，持续25秒。"
 target_rule = &"default_frontline"
 
 [sub_resource type="Resource" id="MonsterDefinition_dessert"]
@@ -22,7 +22,7 @@ category = &"dessert"
 base_hp = 360
 base_attack = 15.0
 attack_interval = 1.2
-skill_summary = "带有[满足]效果，每5秒恢复过去5秒内所受伤害的一半。"
+skill_summary = "带有[满足]效果。每5秒恢复等同于5秒内所受伤害一半的血量；每次受击时降低伤害来源角色1点攻击力，单角色最多5点。"
 target_rule = &"default_frontline"
 
 [sub_resource type="Resource" id="MonsterDefinition_meat"]
@@ -33,7 +33,7 @@ category = &"meat"
 base_hp = 200
 base_attack = 40.0
 attack_interval = 2.0
-skill_summary = "战斗开始时随机使一名角色失去自己的饭盒效果5秒。"
+skill_summary = "战斗开始时随机使一名角色失去自己的饭盒效果5秒；生命值降低至50%时，立刻随机对一名角色造成50点伤害。"
 target_rule = &"random_role"
 
 [sub_resource type="Resource" id="MonsterDefinition_drink"]
@@ -44,7 +44,7 @@ category = &"drink"
 base_hp = 300
 base_attack = 15.0
 attack_interval = 2.0
-skill_summary = "每5秒获得一层[浪花]，持续4秒并记录受到伤害，结束后对全队造成40%记录伤害。"
+skill_summary = "在50%生命值以下时，每次受到的伤害降低1点。若攻击对象生命值高于50%，每次攻击额外造成3点伤害。"
 target_rule = &"default_frontline"
 
 [sub_resource type="Resource" id="MonsterDefinition_staple"]
@@ -53,9 +53,9 @@ id = &"bread_knight"
 display_name = "面饱饱骑士"
 category = &"staple"
 base_hp = 340
-base_attack = 20.0
+base_attack = 22.0
 attack_interval = 2.5
-skill_summary = "开局带有10层面包糠，受击时抵消一层伤害并在结算后恢复10生命。"
+skill_summary = "开局带有5层面包糠。面包糠：受到伤害时抵消伤害，每次抵消扣除一层。每次攻击赋予一层破甲，单个角色至多5层。破甲：每次受到的伤害增加10%。"
 target_rule = &"default_frontline"
 
 [sub_resource type="Resource" id="MonsterDefinition_spice"]
@@ -66,21 +66,20 @@ category = &"spice"
 base_hp = 290
 base_attack = 22.0
 attack_interval = 1.8
-skill_summary = "战斗开始后每10秒随机指定一个目标。"
-target_rule = &"random_swap"
+skill_summary = "每5秒赋予一次治疗限制效果。治疗限制：恢复的生命值减少50%，持续3秒。攻击拥有治疗限制的目标时，额外造成其当前生命值1%伤害。"
+target_rule = &"random_role"
 
 [sub_resource type="Resource" id="MonsterDefinition_boss"]
 script = ExtResource("2_definition")
 id = &"nc2_auto_cooker"
-display_name = "NC-2 自动烹饪机"
+display_name = "NC-2复合型自动烹饪机"
 category = &"boss"
 base_hp = 1000
 base_attack = 60.0
 attack_interval = 5.0
-skill_summary = "最终Boss。"
+skill_summary = "每受到30次攻击，变换一次敌方角色的站位（仇恨）。第三次攻击使命中的目标失去所有行动能力3秒。"
 target_rule = &"default_frontline"
 
 [resource]
 script = ExtResource("1_roster")
 monsters = [SubResource("MonsterDefinition_fruit"), SubResource("MonsterDefinition_dessert"), SubResource("MonsterDefinition_meat"), SubResource("MonsterDefinition_drink"), SubResource("MonsterDefinition_staple"), SubResource("MonsterDefinition_spice"), SubResource("MonsterDefinition_boss")]
-
