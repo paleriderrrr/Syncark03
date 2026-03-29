@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="MonsterDefinition_fruit"]
 script = ExtResource("2_definition")
 id = &"fruit_tree_king"
-display_name = "腐坏树灵王"
+display_name = "枝枝树灵王"
 category = &"fruit"
 base_hp = 320
 base_attack = 25.0
@@ -28,7 +28,7 @@ target_rule = &"default_frontline"
 [sub_resource type="Resource" id="MonsterDefinition_meat"]
 script = ExtResource("2_definition")
 id = &"charging_beast"
-display_name = "冲锋牛龙兽"
+display_name = "冲冲牛龙兽"
 category = &"meat"
 base_hp = 200
 base_attack = 40.0
@@ -39,7 +39,7 @@ target_rule = &"random_role"
 [sub_resource type="Resource" id="MonsterDefinition_drink"]
 script = ExtResource("2_definition")
 id = &"water_giant"
-display_name = "哗啦水巨人"
+display_name = "哗哗水巨人"
 category = &"drink"
 base_hp = 300
 base_attack = 15.0
@@ -50,10 +50,10 @@ target_rule = &"default_frontline"
 [sub_resource type="Resource" id="MonsterDefinition_staple"]
 script = ExtResource("2_definition")
 id = &"bread_knight"
-display_name = "持棍面包将"
+display_name = "面饱饱骑士"
 category = &"staple"
 base_hp = 340
-base_attack = 30.0
+base_attack = 20.0
 attack_interval = 2.5
 skill_summary = "开局带有10层面包糠，受击时抵消一层伤害并在结算后恢复10生命。"
 target_rule = &"default_frontline"
@@ -66,7 +66,7 @@ category = &"spice"
 base_hp = 290
 base_attack = 22.0
 attack_interval = 1.8
-skill_summary = "战斗开始后每10秒随机交换一次角色站位。ATK与攻击间隔按实现值补全为22 / 1.8。"
+skill_summary = "战斗开始后每10秒随机指定一个目标。"
 target_rule = &"random_swap"
 
 [sub_resource type="Resource" id="MonsterDefinition_boss"]
