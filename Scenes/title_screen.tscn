@@ -1,18 +1,41 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene format=3 uid="uid://b2tjwa4uprw53"]
 
-[ext_resource type="Script" path="res://Scripts/UI/title_screen.gd" id="1_title"]
-[ext_resource type="Texture2D" path="res://Art/UI/Background.png" id="2_main_bg"]
-[ext_resource type="Texture2D" path="res://Art/UI/UI_formal/封面底1.png" id="3_cover1"]
-[ext_resource type="Texture2D" path="res://Art/UI/UI_formal/封面底2.png" id="4_cover2"]
-[ext_resource type="Texture2D" path="res://Art/UI/UI_formal/封面底3.png" id="5_cover3"]
-[ext_resource type="Texture2D" path="res://Art/UI/UI_formal/封面底4.png" id="6_cover4"]
-[ext_resource type="Texture2D" path="res://Art/UI/UI_formal/标题.png" id="7_title_art"]
-[ext_resource type="Texture2D" path="res://Art/UI/UI_formal/漂浮物.png" id="8_floating"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/ui2_buy_button.png" id="9_buy"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/ui2_sell_button.png" id="10_sell"]
-[ext_resource type="Texture2D" path="res://Art/UI/UI_formal/开始.png" id="11_start"]
+[ext_resource type="Script" uid="uid://cq6r8mjnr6tx1" path="res://Scripts/UI/title_screen.gd" id="1_title"]
+[ext_resource type="Texture2D" uid="uid://dr60km6grv5l7" path="res://Art/UI/Background.png" id="2_main_bg"]
+[ext_resource type="Texture2D" uid="uid://cb8isjh1si55u" path="res://Art/UI/UI_formal/封面底1.png" id="3_cover1"]
+[ext_resource type="Texture2D" uid="uid://bqaseyvgcm8kk" path="res://Art/UI/UI_formal/封面底2.png" id="4_cover2"]
+[ext_resource type="Texture2D" uid="uid://cyb87gxhx6nbs" path="res://Art/UI/UI_formal/封面底3.png" id="5_cover3"]
+[ext_resource type="Texture2D" uid="uid://rnefy2mi22yt" path="res://Art/UI/UI_formal/封面底4.png" id="6_cover4"]
+[ext_resource type="Texture2D" uid="uid://duaio0gatvmx6" path="res://Art/UI/UI_formal/标题.png" id="7_title_art"]
+[ext_resource type="Texture2D" uid="uid://bmkly1pctq7pa" path="res://Art/UI/UI_formal/漂浮物.png" id="8_floating"]
+[ext_resource type="Texture2D" uid="uid://elcmybn32hb4" path="res://Art/UI/UI_formal/开始.png" id="11_start"]
+[ext_resource type="Shader" uid="uid://djnl7b13dimqr" path="res://Shaders/title_cover_edge_glow.gdshader" id="12_glow_shader"]
 
-[node name="TitleScreen" type="Control"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow1"]
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 0.86, 0.62, 1)
+shader_parameter/glow_size = 60.0
+shader_parameter/glow_intensity = 4.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow2"]
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 0.88, 0.66, 1)
+shader_parameter/glow_size = 60.0
+shader_parameter/glow_intensity = 5.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow3"]
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 0.9, 0.7, 1)
+shader_parameter/glow_size = 50.0
+shader_parameter/glow_intensity = 5.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glow4"]
+shader = ExtResource("12_glow_shader")
+shader_parameter/glow_color = Color(1, 0.94, 0.76, 1)
+shader_parameter/glow_size = 40.0
+shader_parameter/glow_intensity = 8.0
+
+[node name="TitleScreen" type="Control" unique_id=1535692023]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,7 +44,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_title")
 
-[node name="MainBackdrop" type="TextureRect" parent="."]
+[node name="MainBackdrop" type="TextureRect" parent="." unique_id=584073712]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -34,7 +57,7 @@ texture = ExtResource("2_main_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="CoverBase1" type="TextureRect" parent="."]
+[node name="CoverBase1" type="TextureRect" parent="." unique_id=1907132110]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -47,7 +70,22 @@ texture = ExtResource("3_cover1")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="CoverBase2" type="TextureRect" parent="."]
+[node name="CoverGlow1" type="TextureRect" parent="." unique_id=65474078]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_glow1")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_cover1")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoverBase2" type="TextureRect" parent="." unique_id=1269007133]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -60,7 +98,22 @@ texture = ExtResource("4_cover2")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="CoverBase3" type="TextureRect" parent="."]
+[node name="CoverGlow2" type="TextureRect" parent="." unique_id=794810810]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_glow2")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_cover2")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoverBase3" type="TextureRect" parent="." unique_id=102781665]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -73,7 +126,22 @@ texture = ExtResource("5_cover3")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="CoverBase4" type="TextureRect" parent="."]
+[node name="CoverGlow3" type="TextureRect" parent="." unique_id=697185266]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_glow3")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_cover3")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoverBase4" type="TextureRect" parent="." unique_id=978332702]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -86,7 +154,22 @@ texture = ExtResource("6_cover4")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="TitleArt" type="TextureRect" parent="."]
+[node name="CoverGlow4" type="TextureRect" parent="." unique_id=1550352599]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_glow4")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_cover4")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TitleArt" type="TextureRect" parent="." unique_id=380022748]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -99,7 +182,7 @@ texture = ExtResource("7_title_art")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="FloatingArt" type="TextureRect" parent="."]
+[node name="FloatingArt" type="TextureRect" parent="." unique_id=992108341]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -112,7 +195,20 @@ texture = ExtResource("8_floating")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="SettingsButton" type="Button" parent="."]
+[node name="FloatingArtB" type="TextureRect" parent="." unique_id=1612850453]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_floating")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="SettingsButton" type="Button" parent="." unique_id=1157731675]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 1608.0
@@ -121,7 +217,7 @@ offset_right = 1740.0
 offset_bottom = 108.0
 text = "Settings"
 
-[node name="QuitButton" type="Button" parent="."]
+[node name="QuitButton" type="Button" parent="." unique_id=935186296]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 1748.0
@@ -130,15 +226,14 @@ offset_right = 1880.0
 offset_bottom = 108.0
 text = "Quit"
 
-[node name="StartButton" type="TextureButton" parent="."]
+[node name="StartButton" type="TextureButton" parent="." unique_id=316654087]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 533.5
-offset_top = 684.0
-offset_right = 1386.5
-offset_bottom = 1018.0
+offset_left = 640.0
+offset_top = 626.0
+offset_right = 1493.0
+offset_bottom = 960.0
 texture_normal = ExtResource("11_start")
-texture_hover = ExtResource("11_start")
 texture_pressed = ExtResource("11_start")
+texture_hover = ExtResource("11_start")
 stretch_mode = 0
-

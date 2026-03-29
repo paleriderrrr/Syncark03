@@ -11,16 +11,25 @@ const LAYER_ALPHA_END := 0.0
 @onready var cover_base_2: TextureRect = %CoverBase2
 @onready var cover_base_3: TextureRect = %CoverBase3
 @onready var cover_base_4: TextureRect = %CoverBase4
+@onready var cover_glow_1: TextureRect = %CoverGlow1
+@onready var cover_glow_2: TextureRect = %CoverGlow2
+@onready var cover_glow_3: TextureRect = %CoverGlow3
+@onready var cover_glow_4: TextureRect = %CoverGlow4
 @onready var title_art: TextureRect = %TitleArt
 @onready var floating_art: TextureRect = %FloatingArt
+@onready var floating_art_b: TextureRect = %FloatingArtB
 @onready var start_button: TextureButton = %StartButton
 @onready var settings_button: Button = %SettingsButton
 @onready var quit_button: Button = %QuitButton
 
 var _transition_started: bool = false
 var _ambient_tweens: Array[Tween] = []
-var _ambient_float_base_y: float = 0.0
 var _title_base_y: float = 0.0
+var _floating_scroll_active: bool = false
+var _floating_scroll_speed: float = 12.0
+var _floating_scroll_height: float = 1080.0
+var _floating_a_base_y: float = 0.0
+var _floating_b_base_y: float = 0.0
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -40,6 +49,12 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	_stop_ambient_effects()
+
+func _process(delta: float) -> void:
+	if not _floating_scroll_active:
+		return
+	_advance_floating_scroll(floating_art, delta)
+	_advance_floating_scroll(floating_art_b, delta)
 
 func _apply_surface_art() -> void:
 	_apply_button_texture(settings_button, TEX_BUY, 20)
@@ -74,6 +89,7 @@ func _on_start_pressed() -> void:
 func _play_start_transition() -> void:
 	var layers: Array[Dictionary] = [
 		{"node": floating_art, "scale": Vector2(1.16, 1.16), "delay": 0.00},
+		{"node": floating_art_b, "scale": Vector2(1.16, 1.16), "delay": 0.00},
 		{"node": title_art, "scale": Vector2(1.13, 1.13), "delay": TRANSITION_STEP},
 		{"node": cover_base_4, "scale": Vector2(1.10, 1.10), "delay": TRANSITION_STEP * 2.0},
 		{"node": cover_base_3, "scale": Vector2(1.09, 1.09), "delay": TRANSITION_STEP * 3.0},
@@ -95,40 +111,49 @@ func _play_start_transition() -> void:
 	get_tree().change_scene_to_file("res://Scenes/main_editor_screen.tscn")
 
 func _configure_cover_pivots() -> void:
-	for node in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, title_art, floating_art]:
+	for node in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4, title_art, floating_art, floating_art_b]:
 		node.pivot_offset = node.size * 0.5
 	start_button.pivot_offset = start_button.size * 0.5
 
 func _cache_ambient_bases() -> void:
-	_ambient_float_base_y = floating_art.position.y
 	_title_base_y = title_art.position.y
+	_floating_a_base_y = floating_art.position.y
+	_floating_b_base_y = floating_art.position.y - _floating_scroll_height
+	floating_art_b.position.y = _floating_b_base_y
 
 func _start_ambient_effects() -> void:
-	_start_layer_fade(cover_base_1, 0.985, 8.0)
-	_start_layer_fade(cover_base_2, 0.978, 9.0)
-	_start_layer_fade(cover_base_3, 0.972, 10.0)
-	_start_layer_fade(cover_base_4, 0.966, 12.0)
+	_start_glow_overlay(cover_glow_1, 0.46, 3.1)
+	_start_glow_overlay(cover_glow_2, 0.40, 3.7)
+	_start_glow_overlay(cover_glow_3, 0.64, 4.3)
+	_start_glow_overlay(cover_glow_4, 0.60, 4.9)
 	_start_title_glow()
-	_start_floating_glow()
+	_start_floating_glow(floating_art, 0.92, 2.8)
+	_start_floating_glow(floating_art_b, 0.92, 2.8)
+	_floating_scroll_active = true
 	_start_button_pulse()
 
 func _stop_ambient_effects() -> void:
+	_floating_scroll_active = false
 	for tween in _ambient_tweens:
 		if tween != null and tween.is_valid():
 			tween.kill()
 	_ambient_tweens.clear()
-	for layer in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, title_art, floating_art]:
+	for layer in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, title_art, floating_art, floating_art_b]:
 		layer.modulate = Color.WHITE
+	for glow in [cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4]:
+		glow.modulate.a = 0.0
 	start_button.scale = Vector2.ONE
 	start_button.modulate = Color.WHITE
+	floating_art.position.y = _floating_a_base_y
+	floating_art_b.position.y = _floating_b_base_y
 
-func _start_layer_fade(node: TextureRect, low_alpha: float, duration: float) -> void:
+func _start_glow_overlay(node: TextureRect, peak_alpha: float, duration: float) -> void:
 	var tween: Tween = create_tween()
 	tween.set_loops()
-	tween.tween_property(node, "modulate:a", low_alpha, duration)\
+	tween.tween_property(node, "modulate:a", peak_alpha, duration)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(node, "modulate:a", 1.0, duration)\
+	tween.tween_property(node, "modulate:a", 0.0, duration)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
 	_ambient_tweens.append(tween)
@@ -144,16 +169,21 @@ func _start_title_glow() -> void:
 		.set_ease(Tween.EASE_IN_OUT)
 	_ambient_tweens.append(tween)
 
-func _start_floating_glow() -> void:
+func _start_floating_glow(node: TextureRect, low_alpha: float, duration: float) -> void:
 	var tween: Tween = create_tween()
 	tween.set_loops()
-	tween.tween_property(floating_art, "modulate", Color(1.0, 1.0, 1.0, 0.92), 2.8)\
+	tween.tween_property(node, "modulate", Color(1.0, 1.0, 1.0, low_alpha), duration)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(floating_art, "modulate", Color.WHITE, 2.8)\
+	tween.tween_property(node, "modulate", Color.WHITE, duration)\
 		.set_trans(Tween.TRANS_SINE)\
 		.set_ease(Tween.EASE_IN_OUT)
 	_ambient_tweens.append(tween)
+
+func _advance_floating_scroll(node: TextureRect, delta: float) -> void:
+	node.position.y += _floating_scroll_speed * delta
+	if node.position.y >= _floating_scroll_height:
+		node.position.y -= _floating_scroll_height * 2.0
 
 func _start_button_pulse() -> void:
 	var tween: Tween = create_tween()

@@ -367,3 +367,45 @@
   - Ambient effects now use subtle alpha breathing on cover/title/floating layers, with only the start button keeping a soft pulse.
 - Verification:
   - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+## 2026-03-29 11:05
+- Phase: Title background light expansion and floating scroll.
+- Changes:
+  - Expanded light breathing on CoverBase1~4 with stronger staggered alpha pulses.
+  - Added a second floating layer and implemented continuous slow downward scrolling for the floating overlay.
+  - Start button pulse remains geometry-stable while title/title-cover idle effects stay non-scaling.
+- Verification:
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+## 2026-03-29 11:22
+- Phase: Title cover light visibility fix.
+- Changes:
+  - Replaced CoverBase1~4 alpha breathing with visible warm-color glow breathing.
+  - Preserved non-scaling, non-moving full-screen layers to avoid jitter while making the paper-light effect readable.
+- Verification:
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+## 2026-03-29 11:32
+- Phase: Title cover light debug amplification.
+- Changes:
+  - Temporarily increased CoverBase1~4 glow contrast to strong warm-dark modulation values to verify that the layer-light implementation is actually visible.
+- Verification:
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+## 2026-03-29 11:48
+- Phase: Title cover light root-cause fix.
+- Changes:
+  - Replaced ineffective base-layer modulate breathing with dedicated additive glow overlays for CoverBase1~4.
+  - Animated each glow overlay independently by alpha, keeping the underlying full-screen cover textures static.
+- Verification:
+  - Godot headless launch PASS.
+## 2026-03-29 11:54
+- Phase: Title cover edge-glow implementation.
+- Changes:
+  - Added shader-based additive edge glow overlays for CoverBase1~4 instead of modulating the base cover textures.
+  - Retained static cover geometry while driving visible glow intensity through overlay alpha animation.
+- Verification:
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
+## 2026-03-29 12:08
+- Phase: Title cover glow tuning.
+- Changes:
+  - Halved the glow breathing cycle duration for CoverBase1~4.
+  - Increased CoverBase1 and CoverBase3 peak glow alpha to improve visibility while keeping CoverBase2 and CoverBase4 unchanged.
+- Verification:
+  - Godot headless launch PASS (project still reports an existing exit-time resource warning).
