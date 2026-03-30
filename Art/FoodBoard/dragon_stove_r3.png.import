@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2sbhq4gwv2ps"
-path="res://.godot/imported/ramen_r0.png-b7e4333a733edde360b7caf5fac98d8e.ctex"
+uid="uid://deq3qif75uigi"
+path="res://.godot/imported/dragon_stove_r3.png-d195f6a19e7fb44050cdac5980ab3d73.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/FoodBoard/ramen_r0.png"
-dest_files=["res://.godot/imported/ramen_r0.png-b7e4333a733edde360b7caf5fac98d8e.ctex"]
+source_file="res://Art/FoodBoard/dragon_stove_r3.png"
+dest_files=["res://.godot/imported/dragon_stove_r3.png-d195f6a19e7fb44050cdac5980ab3d73.ctex"]
 
 [params]
 
