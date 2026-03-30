@@ -298,6 +298,7 @@ func _process_damage_event(content: String) -> void:
 	var source_name: String = first_split[0]
 	var amount: float = float(second_split[0])
 	var target_name: String = String(second_split[1]).trim_suffix(".")
+	_play_attack_sfx_for_source(source_name)
 	await _play_attack_animation(source_name)
 	_apply_damage_to_target(target_name, amount)
 	_spawn_floating_text(
@@ -340,6 +341,7 @@ func _process_retaliate_event(content: String) -> void:
 		return
 	var source_name: String = first_split[0]
 	var amount: float = float(String(first_split[1]).trim_suffix(" damage."))
+	_play_attack_sfx_for_source(source_name)
 	await _play_attack_animation(source_name)
 	_apply_damage_to_target(String(_display_monster.get("name", "")), amount)
 	_spawn_floating_text(
@@ -358,6 +360,7 @@ func _process_execute_event(content: String) -> void:
 		return
 	var source_name: String = first_split[0]
 	var target_name: String = String(first_split[1]).trim_suffix(".")
+	_play_attack_sfx_for_source(source_name)
 	await _play_attack_animation(source_name)
 	_set_target_hp(target_name, 0.0, false)
 	_spawn_floating_text(_resolve_target_node(target_name), "EXEC", NOTICE_COLOR)
@@ -442,6 +445,15 @@ func _set_target_hp(target_name: String, hp_value: float, alive: bool) -> void:
 
 func _is_monster_name(target_name: String) -> bool:
 	return target_name == String(_display_monster.get("name", ""))
+
+func _is_party_name(actor_name: String) -> bool:
+	return int(_name_to_party_index.get(actor_name, -1)) >= 0
+
+func _play_attack_sfx_for_source(source_name: String) -> void:
+	if _is_monster_name(source_name):
+		_ui_sfx().play_monster_attack()
+	elif _is_party_name(source_name):
+		_ui_sfx().play_role_attack()
 
 func _resolve_actor_node(actor_name: String) -> Control:
 	if _is_monster_name(actor_name):

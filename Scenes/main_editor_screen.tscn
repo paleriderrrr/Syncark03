@@ -25,6 +25,7 @@
 [ext_resource type="Texture2D" uid="uid://bqn74j022ftxn" path="res://Art/UI/NewUI/设置.png" id="22_80818"]
 [ext_resource type="Texture2D" uid="uid://dqy8yyxju1ffo" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_help_icon.png" id="23_help_icon"]
 [ext_resource type="Texture2D" uid="uid://dgmo8udhv7she" path="res://Art/UI/NewUI/Carriage.png" id="27_oi5tu"]
+[ext_resource type="Texture2D" uid="uid://pnv0stxua51g" path="res://Art/UI/tutor1.png" id="28_tutor_1"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_inventory_drop_zone"]
 
@@ -670,6 +671,17 @@ scale = Vector2(0.819768, 0.8305503)
 icon = ExtResource("23_help_icon")
 flat = true
 
+[node name="StageTitleLabel" type="Label" parent="." unique_id=485258389]
+layout_mode = 0
+offset_left = 440.0
+offset_top = 243.0
+offset_right = 1043.0
+offset_bottom = 348.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("15_80818")
+theme_override_font_sizes/font_size = 32
+text = "放置：鼠标左键 移除：鼠标右键 旋转：R键"
+
 [node name="GuideOverlay" type="Control" parent="." unique_id=2104001760]
 unique_name_in_owner = true
 visible = false
@@ -688,42 +700,20 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.72)
+color = Color(0, 0, 0, 0)
 
-[node name="GuideWindow" type="CenterContainer" parent="GuideOverlay" unique_id=2104001763]
+[node name="GuideImage" type="TextureRect" parent="GuideOverlay" unique_id=2104001766]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="GuideContent" type="MarginContainer" parent="GuideOverlay/GuideWindow" unique_id=2104001764]
-layout_mode = 2
-theme_override_constants/margin_left = 48
-theme_override_constants/margin_top = 48
-theme_override_constants/margin_right = 48
-theme_override_constants/margin_bottom = 48
-
-[node name="GuideStack" type="VBoxContainer" parent="GuideOverlay/GuideWindow/GuideContent" unique_id=2104001765]
-layout_mode = 2
-theme_override_constants/separation = 18
-alignment = 1
-
-[node name="GuideImage" type="TextureRect" parent="GuideOverlay/GuideWindow/GuideContent/GuideStack" unique_id=2104001766]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 320)
-layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("23_help_icon")
+texture = ExtResource("28_tutor_1")
 expand_mode = 1
-stretch_mode = 5
-
-[node name="GuideCloseButton" type="Button" parent="GuideOverlay/GuideWindow/GuideContent/GuideStack" unique_id=2104001767]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 56)
-layout_mode = 2
-text = "Close"
+stretch_mode = 6
 
 [node name="BattleModalBlocker" type="ColorRect" parent="." unique_id=2104001761]
 unique_name_in_owner = true
