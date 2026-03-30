@@ -59,9 +59,13 @@ const TEXT_RISK_FATAL := "\u81f4\u547d"
 @onready var inventory_drop_zone: InventoryDropZone = %InventoryDropZone
 @onready var inventory_strip: ItemStrip = %InventoryStrip
 @onready var settings_button: Button = %SettingsButton
+@onready var help_button: Button = %HelpButton
 @onready var restore_button: Button = %RestoreButton
 @onready var action_button: Button = %ActionButton
 @onready var action_button_text: TextureRect = %ActionButtonText
+@onready var guide_overlay: Control = %GuideOverlay
+@onready var guide_backdrop: ColorRect = %GuideBackdrop
+@onready var guide_close_button: Button = %GuideCloseButton
 @onready var wanted_poster_rect: TextureRect = %WantedPosterRect
 @onready var next_monster_name_label: Label = %NextMonsterNameLabel
 @onready var next_monster_bounty_label: Label = %NextMonsterBountyLabel
@@ -144,8 +148,11 @@ func _ready() -> void:
 	inventory_strip.card_drop_sources = [&"market_offer", &"board_food", &"market_expansion"]
 	inventory_strip.card_drop_target = inventory_drop_zone
 	settings_button.pressed.connect(_on_settings_pressed)
+	help_button.pressed.connect(_on_help_pressed)
 	restore_button.pressed.connect(_on_restore_pressed)
 	action_button.pressed.connect(_on_action_pressed)
+	guide_close_button.pressed.connect(_hide_guide_overlay)
+	guide_backdrop.gui_input.connect(_on_guide_backdrop_gui_input)
 	tab_buttons[&"warrior"].pressed.connect(func() -> void: _on_role_tab_pressed(&"warrior"))
 	tab_buttons[&"hunter"].pressed.connect(func() -> void: _on_role_tab_pressed(&"hunter"))
 	tab_buttons[&"mage"].pressed.connect(func() -> void: _on_role_tab_pressed(&"mage"))
@@ -155,6 +162,7 @@ func _ready() -> void:
 	wanted_poster_rect.mouse_entered.connect(_on_monster_hover_entered)
 	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
 	monster_tooltip_panel.visible = false
+	guide_overlay.visible = false
 	item_tooltip_overlay.hide_tooltip()
 	battle_modal_blocker.visible = false
 	_refresh()
@@ -245,6 +253,11 @@ func _play_intro_animation() -> void:
 			"node": settings_button,
 			"target": settings_button.position,
 			"start": settings_button.position + Vector2(-120.0, 120.0),
+		},
+		{
+			"node": help_button,
+			"target": help_button.position,
+			"start": help_button.position + Vector2(-120.0, 120.0),
 		},
 	]
 	for entry_variant in panel_entries:
@@ -617,6 +630,22 @@ func _on_restore_pressed() -> void:
 	_ui_sfx().play_button()
 	_run_state().try_restore_snapshot()
 
+func _on_help_pressed() -> void:
+	_ui_sfx().play_button()
+	item_tooltip_overlay.hide_tooltip()
+	_show_guide_overlay()
+
+func _show_guide_overlay() -> void:
+	guide_overlay.visible = true
+
+func _hide_guide_overlay() -> void:
+	guide_overlay.visible = false
+
+func _on_guide_backdrop_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_hide_guide_overlay()
+		get_viewport().set_input_as_handled()
+
 func _on_settings_pressed() -> void:
 	_ui_sfx().play_button()
 	item_tooltip_overlay.hide_tooltip()
@@ -694,6 +723,11 @@ func _on_role_tab_pressed(character_id: StringName) -> void:
 	_run_state().select_character(character_id)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if guide_overlay.visible:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			_hide_guide_overlay()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
 		_run_state().rotate_selected_item()
 		get_viewport().set_input_as_handled()

@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://bfa4r6vv3w305" path="res://Art/UI/NewUI/ui2_2_badge_small_light.png" id="17_3wget"]
 [ext_resource type="Texture2D" uid="uid://cbplt3be72ft0" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_header_plate_blank.png" id="17_qli1y"]
 [ext_resource type="Texture2D" uid="uid://bqn74j022ftxn" path="res://Art/UI/NewUI/设置.png" id="22_80818"]
+[ext_resource type="Texture2D" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_help_icon.png" id="23_help_icon"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_inventory_drop_zone"]
 
@@ -694,6 +695,76 @@ offset_bottom = 153.0
 scale = Vector2(0.819768, 0.8305503)
 icon = ExtResource("22_80818")
 flat = true
+
+[node name="HelpButton" type="Button" parent="." unique_id=201440002]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 0
+offset_left = 1676.0
+offset_top = 26.0
+offset_right = 1802.0
+offset_bottom = 153.0
+scale = Vector2(0.819768, 0.8305503)
+icon = ExtResource("23_help_icon")
+flat = true
+
+[node name="GuideOverlay" type="Control" parent="." unique_id=2104001760]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="GuideBackdrop" type="ColorRect" parent="GuideOverlay" unique_id=2104001762]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.72)
+
+[node name="GuideWindow" type="CenterContainer" parent="GuideOverlay" unique_id=2104001763]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="GuideContent" type="MarginContainer" parent="GuideOverlay/GuideWindow" unique_id=2104001764]
+layout_mode = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+
+[node name="GuideStack" type="VBoxContainer" parent="GuideOverlay/GuideWindow/GuideContent" unique_id=2104001765]
+layout_mode = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="GuideImage" type="TextureRect" parent="GuideOverlay/GuideWindow/GuideContent/GuideStack" unique_id=2104001766]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 320)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("23_help_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GuideCloseButton" type="Button" parent="GuideOverlay/GuideWindow/GuideContent/GuideStack" unique_id=2104001767]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 56)
+layout_mode = 2
+text = "Close"
 
 [node name="BattleModalBlocker" type="ColorRect" parent="." unique_id=2104001761]
 unique_name_in_owner = true

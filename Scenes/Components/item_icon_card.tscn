@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dpjwawppnbn2u"]
 
-[ext_resource type="Script" uid="uid://cmnqwh22dhtcn" uid="uid://cmnqwh22dhtcn" path="res://Scripts/UI/Components/item_icon_card.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cmnqwh22dhtcn" path="res://Scripts/UI/Components/item_icon_card.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://bgm3gwcogagmy" path="res://Art/Fonts/handwriting.ttf" id="2_qghfr"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_card"]
@@ -14,36 +14,26 @@ corner_radius_bottom_left = 10
 
 [node name="ItemIconCard" type="PanelContainer" unique_id=281851868]
 custom_minimum_size = Vector2(156, 164)
-layout_mode = 3
-anchors_preset = 0
 offset_right = 156.0
 offset_bottom = 164.0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 script = ExtResource("1_script")
 
 [node name="Background" type="TextureRect" parent="." unique_id=373685472]
-layout_mode = 0
-offset_right = 156.0
-offset_bottom = 164.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
 [node name="RarityBar" type="ColorRect" parent="." unique_id=831774101]
 unique_name_in_owner = true
-layout_mode = 0
-offset_right = 156.0
-offset_bottom = 8.0
+layout_mode = 2
 mouse_filter = 2
 color = Color(0.75, 0.75, 0.75, 0.95)
 
 [node name="RarityBadge" type="Panel" parent="." unique_id=190200428]
 unique_name_in_owner = true
-layout_mode = 0
-offset_right = 156.0
-offset_bottom = 164.0
+layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 script = ExtResource("1_script")
@@ -62,9 +52,7 @@ vertical_alignment = 1
 
 [node name="DiscountBadge" type="Panel" parent="." unique_id=179769470]
 unique_name_in_owner = true
-layout_mode = 0
-offset_right = 156.0
-offset_bottom = 164.0
+layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_discount_badge")
 
@@ -74,9 +62,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -16.0
-offset_right = 129.0
-offset_bottom = -133.0
+offset_left = -1.0
+offset_top = -17.0
+offset_right = 128.0
+offset_bottom = -134.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_fonts/font = ExtResource("2_qghfr")
@@ -87,20 +76,14 @@ vertical_alignment = 1
 
 [node name="IconRect" type="TextureRect" parent="." unique_id=1828858474]
 unique_name_in_owner = true
-layout_mode = 0
-offset_right = 156.0
-offset_bottom = 164.0
+layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="." unique_id=602264525]
 unique_name_in_owner = true
-layout_mode = 0
-offset_left = 24.0
-offset_top = 134.0
-offset_right = 132.0
-offset_bottom = 161.0
+layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 22
@@ -111,9 +94,7 @@ clip_text = true
 
 [node name="CountBadge" type="Panel" parent="." unique_id=163751742]
 unique_name_in_owner = true
-layout_mode = 0
-offset_right = 156.0
-offset_bottom = 164.0
+layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 
@@ -133,13 +114,11 @@ vertical_alignment = 1
 
 [node name="PriceBadge" type="Panel" parent="." unique_id=1270211533]
 unique_name_in_owner = true
-layout_mode = 0
-offset_right = 156.0
-offset_bottom = 164.0
+layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 
-[node name="PriceLabel" type="Label" parent="PriceBadge" unique_id=1905376052 unique_id=853139539]
+[node name="PriceLabel" type="Label" parent="PriceBadge" unique_id=853139539]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
