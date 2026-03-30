@@ -77,7 +77,6 @@ const TEXT_ROLE_TAB_STATS := "HP %d/%d\nATK %s\nINT %ss"
 @onready var action_button_text: TextureRect = %ActionButtonText
 @onready var guide_overlay: Control = %GuideOverlay
 @onready var guide_backdrop: ColorRect = %GuideBackdrop
-@onready var guide_close_button: Button = %GuideCloseButton
 @onready var wanted_poster_rect: TextureRect = %WantedPosterRect
 @onready var next_monster_name_label: Label = %NextMonsterNameLabel
 @onready var next_monster_bounty_label: Label = %NextMonsterBountyLabel
@@ -174,7 +173,6 @@ func _ready() -> void:
 	help_button.pressed.connect(_on_help_pressed)
 	restore_button.pressed.connect(_on_restore_pressed)
 	action_button.pressed.connect(_on_action_pressed)
-	guide_close_button.pressed.connect(_hide_guide_overlay)
 	guide_backdrop.gui_input.connect(_on_guide_backdrop_gui_input)
 	tab_buttons[&"warrior"].pressed.connect(func() -> void: _on_role_tab_pressed(&"warrior"))
 	tab_buttons[&"hunter"].pressed.connect(func() -> void: _on_role_tab_pressed(&"hunter"))
