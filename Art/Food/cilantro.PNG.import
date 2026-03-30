@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1jhlfqww1llf"
-path="res://.godot/imported/mixed_feast.png-ff2675634e2b9043250b85b7b3a047b1.ctex"
+uid="uid://cuy8yt28hk3bi"
+path="res://.godot/imported/cilantro.PNG-2470b816e4b0b4e9bd99b737bd93b16f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/Food/mixed_feast.png"
-dest_files=["res://.godot/imported/mixed_feast.png-ff2675634e2b9043250b85b7b3a047b1.ctex"]
+source_file="res://Art/Food/cilantro.PNG"
+dest_files=["res://.godot/imported/cilantro.PNG-2470b816e4b0b4e9bd99b737bd93b16f.ctex"]
 
 [params]
 

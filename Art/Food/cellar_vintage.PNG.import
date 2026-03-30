@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2sbhq4gwv2ps"
-path="res://.godot/imported/ramen_r0.png-b7e4333a733edde360b7caf5fac98d8e.ctex"
+uid="uid://cjh0jjh5b7qr2"
+path="res://.godot/imported/cellar_vintage.PNG-4474279c5329dd54b9c987d9c587020c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/FoodBoard/ramen_r0.png"
-dest_files=["res://.godot/imported/ramen_r0.png-b7e4333a733edde360b7caf5fac98d8e.ctex"]
+source_file="res://Art/Food/cellar_vintage.PNG"
+dest_files=["res://.godot/imported/cellar_vintage.PNG-4474279c5329dd54b9c987d9c587020c.ctex"]
 
 [params]
 

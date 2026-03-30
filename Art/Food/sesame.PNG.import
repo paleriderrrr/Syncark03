@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1jhlfqww1llf"
-path="res://.godot/imported/mixed_feast.png-ff2675634e2b9043250b85b7b3a047b1.ctex"
+uid="uid://b2hmqvu7tnoh"
+path="res://.godot/imported/sesame.PNG-f0f92ad7103e9ab2fdec9df4b6f54a50.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/Food/mixed_feast.png"
-dest_files=["res://.godot/imported/mixed_feast.png-ff2675634e2b9043250b85b7b3a047b1.ctex"]
+source_file="res://Art/Food/sesame.PNG"
+dest_files=["res://.godot/imported/sesame.PNG-f0f92ad7103e9ab2fdec9df4b6f54a50.ctex"]
 
 [params]
 

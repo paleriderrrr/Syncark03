@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cs0ysqrk0q7d3"
-path="res://.godot/imported/ramen_r1.png-7dcffce8c74d108ff6067a33f274c132.ctex"
+uid="uid://dsvh5iuv87xwm"
+path="res://.godot/imported/salt_pack.PNG-2a848e1200e59ae34f694b22165f9c46.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/FoodBoard/ramen_r1.png"
-dest_files=["res://.godot/imported/ramen_r1.png-7dcffce8c74d108ff6067a33f274c132.ctex"]
+source_file="res://Art/Food/salt_pack.PNG"
+dest_files=["res://.godot/imported/salt_pack.PNG-2a848e1200e59ae34f694b22165f9c46.ctex"]
 
 [params]
 
