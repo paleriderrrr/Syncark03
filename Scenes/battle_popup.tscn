@@ -321,6 +321,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="TimelinePanel" type="PanelContainer" parent="Margin/RootVBox" unique_id=976345216]
+visible = false
 custom_minimum_size = Vector2(0, 132)
 layout_mode = 0
 offset_left = 47.199074

@@ -1,5 +1,8 @@
 extends Control
 
+const TITLE_SCENE_PATH := "res://Scenes/title_screen.tscn"
+const MAIN_EDITOR_SCENE_PATH := "res://Scenes/main_editor_screen.tscn"
+
 @onready var volume_slider: HSlider = %VolumeSlider
 @onready var restart_button: TextureButton = %RestartButton
 @onready var editor_button: TextureButton = %EditorButton
@@ -27,18 +30,19 @@ func _ready() -> void:
 func _on_restart_pressed() -> void:
 	_ui_sfx().play_button()
 	_run_state().start_new_run()
+	get_tree().change_scene_to_file(MAIN_EDITOR_SCENE_PATH)
 
 func _on_back_pressed() -> void:
 	_ui_sfx().play_button()
-	get_tree().change_scene_to_file("res://Scenes/title_screen.tscn")
+	get_tree().change_scene_to_file(TITLE_SCENE_PATH)
 
 func _on_editor_pressed() -> void:
 	_ui_sfx().play_button()
-	get_tree().change_scene_to_file("res://Scenes/main_editor_screen.tscn")
+	get_tree().change_scene_to_file(MAIN_EDITOR_SCENE_PATH)
 
 func _on_close_pressed() -> void:
 	_ui_sfx().play_button()
-	var return_path: String = _run_state().consume_settings_return_scene("res://Scenes/title_screen.tscn")
+	var return_path: String = _run_state().consume_settings_return_scene(TITLE_SCENE_PATH)
 	get_tree().change_scene_to_file(return_path)
 
 func _on_volume_changed(value: float) -> void:
