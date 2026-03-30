@@ -9,11 +9,14 @@ signal hover_food_cleared
 
 const GRID_WIDTH := 8
 const GRID_HEIGHT := 6
+const BOARD_RANGE_BACKGROUND_COLOR := Color(1.0, 1.0, 1.0, 0.085)
 const GRID_CELL_COLOR := Color(1.0, 1.0, 1.0, 0.02)
 const VALID_PREVIEW_COLOR := Color(0.44, 0.9, 0.52, 0.55)
 const INVALID_PREVIEW_COLOR := Color(0.92, 0.36, 0.36, 0.55)
 const FOOD_BACKGROUND_ALPHA := 0.18
 const CELL_CORNER_RADIUS := 14.0
+const BOARD_RANGE_CORNER_RADIUS := 24.0
+const BOARD_RANGE_INSET := 6.0
 const FOOD_TEXTURE_INSET_RATIO := 0.08
 const FOOD_TEXTURE_INSET_MIN := 4.0
 
@@ -77,6 +80,8 @@ func _apply_cell_metrics() -> void:
 	custom_minimum_size = Vector2(GRID_WIDTH * cell_pixel_size, GRID_HEIGHT * cell_pixel_size)
 
 func _draw() -> void:
+	var board_rect := Rect2(Vector2.ZERO, Vector2(GRID_WIDTH * cell_pixel_size, GRID_HEIGHT * cell_pixel_size))
+	_draw_board_range_background(board_rect)
 	for y in range(GRID_HEIGHT):
 		for x in range(GRID_WIDTH):
 			var cell_rect := Rect2(Vector2(x * cell_pixel_size, y * cell_pixel_size), Vector2(cell_pixel_size, cell_pixel_size))
@@ -107,7 +112,10 @@ func _draw_food_item(item: Dictionary) -> void:
 	elif _texture_lookup.has(item.get("definition_id", &"")):
 		draw_texture_rect(_texture_lookup[item.get("definition_id", &"")], texture_rect, false)
 	elif definition != null and not definition.display_name.is_empty():
-		draw_string(get_theme_default_font(), bounds.position + Vector2(10, bounds.size.y * 0.55), definition.display_name.left(2), HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x - 20, 18, Color.BLACK)
+			draw_string(get_theme_default_font(), bounds.position + Vector2(10, bounds.size.y * 0.55), definition.display_name.left(2), HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x - 20, 18, Color.BLACK)
+
+func _draw_board_range_background(board_rect: Rect2) -> void:
+	_draw_rounded_rect_with_radius(board_rect.grow(-BOARD_RANGE_INSET), BOARD_RANGE_BACKGROUND_COLOR, BOARD_RANGE_CORNER_RADIUS)
 
 func _draw_base_lunchbox(character_id: StringName) -> void:
 	var texture: Texture2D = _base_lunchbox_textures.get(character_id, null) as Texture2D
@@ -150,10 +158,13 @@ func _food_cell_rect(cell: Vector2i) -> Rect2:
 	return Rect2(Vector2(cell.x * cell_pixel_size, cell.y * cell_pixel_size), Vector2(cell_pixel_size, cell_pixel_size))
 
 func _draw_rounded_cell(rect: Rect2, color: Color) -> void:
+	_draw_rounded_rect_with_radius(rect, color, CELL_CORNER_RADIUS)
+
+func _draw_rounded_rect_with_radius(rect: Rect2, color: Color, corner_radius: float) -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	style.draw_center = true
-	style.set_corner_radius_all(int(CELL_CORNER_RADIUS))
+	style.set_corner_radius_all(int(corner_radius))
 	draw_style_box(style, rect)
 
 func _get_cells_bounds(cells: Array) -> Rect2:
@@ -510,6 +521,9 @@ func _color_for_rarity(rarity: StringName) -> Color:
 
 func get_food_background_alpha() -> float:
 	return FOOD_BACKGROUND_ALPHA
+
+func get_board_range_background_alpha() -> float:
+	return BOARD_RANGE_BACKGROUND_COLOR.a
 
 func get_grid_background_alpha() -> float:
 	return GRID_CELL_COLOR.a

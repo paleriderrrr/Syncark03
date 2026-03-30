@@ -1,11 +1,46 @@
 extends Control
 
+## Keep UI literals ASCII-only in this file via Unicode escapes.
+## That avoids accidental recoding issues when editing around legacy-encoded assets/scenes.
 const ACTION_BUTTON_TEXT_TEXTURES := {
 	&"depart": preload("res://Art/UI/NewUI/UI1-3_slices/ui13_formal_depart_text.png"),
 	&"continue": preload("res://Art/UI/NewUI/UI1-3_slices/ui13_formal_continue_text.png"),
 	&"restart": preload("res://Art/UI/NewUI/UI1-3_slices/ui13_formal_restart_text.png"),
 }
 const ITEM_TOOLTIP_OVERLAY_SCENE := preload("res://Scenes/Components/immediate_item_tooltip_overlay.tscn")
+const TEXT_GOLD := "\u91d1\u5e01\uff1a%d"
+const TEXT_MARKET_REFRESH := "\u5237\u65b0\uff08%d\u91d1\uff09"
+const TEXT_SELECTED_ROLE := "\u5f53\u524d\u89d2\u8272\uff1a%s  \u751f\u547d %d/%d"
+const TEXT_EXPANSION_DEFAULT := "\u62d3\u5c55\u5757"
+const TEXT_EXPANSION_TOOLTIP_BONUS := "\u6269\u5c55\u5f53\u524d\u89d2\u8272\u7684\u53ef\u653e\u7f6e\u533a\u57df"
+const TEXT_EXPANSION_TOOLTIP_EFFECT := "\u62d6\u62fd\u5230\u68cb\u76d8\u4e0a\uff0c\u4e3a\u5bf9\u5e94\u89d2\u8272\u589e\u52a0\u65b0\u7684\u683c\u5b50\u3002"
+const TEXT_BONUS_HP := "\u751f\u547d %s"
+const TEXT_BONUS_ATTACK := "\u653b\u51fb %s"
+const TEXT_BONUS_DAMAGE := "\u9644\u52a0\u4f24\u5bb3 %s"
+const TEXT_BONUS_SPEED := "\u653b\u901f %s%%"
+const TEXT_BONUS_HPS := "\u6bcf\u79d2\u56de\u590d %s"
+const TEXT_BONUS_EXECUTE := "\u65a9\u6740\u7ebf %s%%"
+const TEXT_BONUS_NONE := "\u65e0\u57fa\u7840\u52a0\u6210"
+const TEXT_BONUS_SEPARATOR := "\uff0c"
+const TEXT_UNKNOWN := "\u672a\u77e5"
+const TEXT_BOUNTY_EMPTY := "\u8d4f\u91d1\uff1a-"
+const TEXT_STAGE_EMPTY := "\u9636\u6bb5\uff1a-"
+const TEXT_BOUNTY := "\u8d4f\u91d1\uff1a%d\u91d1"
+const TEXT_STAGE := "\u9636\u6bb5\uff1a%d / %d"
+const TEXT_MONSTER_STATS := "\u751f\u547d %d  \u653b\u51fb %.1f  \u95f4\u9694 %.1f\u79d2"
+const TEXT_ROUTE := "\u8282\u70b9 %d / %d\uff1a%s"
+const TEXT_CURRENT_NODE := "\u5f53\u524d\u8282\u70b9\uff1a%s"
+const TEXT_RISK := "\u5371\u9669\u5ea6\uff1a%s"
+const TEXT_NODE_MARKET := "\u5e02\u573a"
+const TEXT_NODE_BATTLE := "\u6218\u6597"
+const TEXT_NODE_REST := "\u4f11\u6574"
+const TEXT_NODE_BOSS := "Boss\u6218"
+const TEXT_RISK_UNKNOWN := "\u672a\u77e5"
+const TEXT_RISK_OVERWHELM := "\u7893\u538b"
+const TEXT_RISK_STABLE := "\u7a33\u5b9a"
+const TEXT_RISK_CLOSE := "\u63a5\u8fd1"
+const TEXT_RISK_DANGEROUS := "\u5371\u9669"
+const TEXT_RISK_FATAL := "\u81f4\u547d"
 
 @onready var gold_label: Label = %GoldLabel
 @onready var route_label: Label = %RouteLabel
@@ -133,15 +168,15 @@ func _refresh() -> void:
 	_last_node_type = current_node_type
 	_role_names = run_state.get_character_display_names()
 	_update_market_panel_state(run_state.get_current_node_type() == run_state.NODE_MARKET)
-	gold_label.text = "金币：%d" % run_state.current_gold
+	gold_label.text = TEXT_GOLD % run_state.current_gold
 	route_label.text = _build_route_label(run_state)
-	node_label.text = "当前节点：%s" % _display_name_for_node(current_node_type)
-	risk_label.text = "危险度：%s" % _estimate_risk_label()
+	node_label.text = TEXT_CURRENT_NODE % _display_name_for_node(current_node_type)
+	risk_label.text = TEXT_RISK % _estimate_risk_label()
 	selected_item_label.text = run_state.get_selected_item_summary_safe()
 	action_button.text = ""
 	_refresh_action_button_visual()
 	market_refresh_button.disabled = current_node_type != run_state.NODE_MARKET
-	market_refresh_button.text = "刷新（%d金）" % run_state.get_current_refresh_cost()
+	market_refresh_button.text = TEXT_MARKET_REFRESH % run_state.get_current_refresh_cost()
 	restore_button.disabled = current_node_type != run_state.NODE_REST
 	_refresh_selected_role(run_state.selected_character_id)
 	_refresh_market_strip()
@@ -149,7 +184,6 @@ func _refresh() -> void:
 	_refresh_board()
 	_refresh_next_monster_panel()
 	_refresh_synergy_panel()
-
 func _update_market_panel_state(should_open: bool) -> void:
 	if _intro_animating:
 		_market_panel_is_open = should_open
@@ -245,7 +279,7 @@ func _play_intro_animation() -> void:
 func _refresh_selected_role(character_id: StringName) -> void:
 	var run_state: Node = _run_state()
 	var health: Dictionary = run_state.get_character_health_display(character_id)
-	selected_role_label.text = "当前角色：%s  生命 %d/%d" % [
+	selected_role_label.text = TEXT_SELECTED_ROLE % [
 		String(_role_names.get(character_id, String(character_id))),
 		int(health.get("current_hp", 0)),
 		int(health.get("max_hp", 0)),
@@ -253,7 +287,6 @@ func _refresh_selected_role(character_id: StringName) -> void:
 	for role_id in tab_buttons.keys():
 		tab_buttons[role_id].disabled = role_id == character_id
 		tab_buttons[role_id].text = ""
-
 func _refresh_market_strip() -> void:
 	var run_state: Node = _run_state()
 	var entries: Array[Dictionary] = []
@@ -313,11 +346,10 @@ func _apply_food_tooltip(entry: Dictionary, definition: FoodDefinition) -> void:
 	entry["tooltip_shape_cells"] = definition.shape_cells.duplicate()
 
 func _apply_expansion_tooltip(entry: Dictionary) -> void:
-	entry["tooltip_name"] = String(entry.get("display_name", "拓展块"))
-	entry["tooltip_base_bonus"] = "扩展当前角色的可放置区域"
-	entry["tooltip_special_effect"] = "拖拽到棋盘上，为对应角色增加新的格子。"
+	entry["tooltip_name"] = String(entry.get("display_name", TEXT_EXPANSION_DEFAULT))
+	entry["tooltip_base_bonus"] = TEXT_EXPANSION_TOOLTIP_BONUS
+	entry["tooltip_special_effect"] = TEXT_EXPANSION_TOOLTIP_EFFECT
 	entry["tooltip_shape_cells"] = entry.get("shape_cells", []).duplicate()
-
 func _resolve_expansion_icon_texture(entry: Dictionary) -> Texture2D:
 	var role_lookup: Dictionary = _expansion_lunchbox_textures.get(entry.get("target_character_id", &""), {})
 	if role_lookup.is_empty():
@@ -342,21 +374,20 @@ func _shape_size_key(shape_cells: Array) -> StringName:
 func _build_food_bonus_text(definition: FoodDefinition) -> String:
 	var parts: PackedStringArray = []
 	if definition.hp_bonus != 0:
-		parts.append("生命 %s" % _format_signed_value(float(definition.hp_bonus), 0))
+		parts.append(TEXT_BONUS_HP % _format_signed_value(float(definition.hp_bonus), 0))
 	if not is_zero_approx(definition.attack_bonus):
-		parts.append("攻击 %s" % _format_signed_value(definition.attack_bonus))
+		parts.append(TEXT_BONUS_ATTACK % _format_signed_value(definition.attack_bonus))
 	if not is_zero_approx(definition.bonus_damage):
-		parts.append("附加伤害 %s" % _format_signed_value(definition.bonus_damage))
+		parts.append(TEXT_BONUS_DAMAGE % _format_signed_value(definition.bonus_damage))
 	if not is_zero_approx(definition.attack_speed_percent):
-		parts.append("攻速 %s%%" % _format_signed_value(definition.attack_speed_percent))
+		parts.append(TEXT_BONUS_SPEED % _format_signed_value(definition.attack_speed_percent))
 	if not is_zero_approx(definition.heal_per_second):
-		parts.append("每秒回复 %s" % _format_signed_value(definition.heal_per_second))
+		parts.append(TEXT_BONUS_HPS % _format_signed_value(definition.heal_per_second))
 	if not is_zero_approx(definition.execute_threshold_percent):
-		parts.append("斩杀线 %s%%" % _format_signed_value(definition.execute_threshold_percent))
+		parts.append(TEXT_BONUS_EXECUTE % _format_signed_value(definition.execute_threshold_percent))
 	if parts.is_empty():
-		return "无基础加成"
-	return "，".join(parts)
-
+		return TEXT_BONUS_NONE
+	return TEXT_BONUS_SEPARATOR.join(parts)
 func _format_signed_value(value: float, decimals: int = 1) -> String:
 	var abs_value: float = absf(value)
 	var text := ""
@@ -379,37 +410,36 @@ func _refresh_board() -> void:
 	item_tooltip_overlay.hide_tooltip()
 	board_view.refresh_board(run_state.get_selected_character_state(), preview_cells, run_state.food_lookup, _food_textures)
 
+
 func _refresh_next_monster_panel() -> void:
 	var summary: Dictionary = _run_state().get_next_monster_summary()
 	if summary.is_empty():
-		next_monster_name_label.text = "未知"
-		next_monster_bounty_label.text = "赏金：-"
-		next_monster_stage_label.text = "阶段：-"
+		next_monster_name_label.text = TEXT_UNKNOWN
+		next_monster_bounty_label.text = TEXT_BOUNTY_EMPTY
+		next_monster_stage_label.text = TEXT_STAGE_EMPTY
 		next_monster_stats_label.text = "-"
 		next_monster_skill_label.text = "-"
 		monster_tooltip_panel.visible = false
 		return
 	next_monster_name_label.text = "%s / %s" % [String(summary.get("display_name", "")), String(summary.get("category_name", ""))]
-	next_monster_bounty_label.text = "赏金：%d金" % _get_next_battle_reward()
-	next_monster_stage_label.text = "阶段：%d / %d" % [_run_state().current_route_index + 1, _get_total_stage_count()]
-	next_monster_stats_label.text = "生命 %d  攻击 %.1f  间隔 %.1f秒" % [
+	next_monster_bounty_label.text = TEXT_BOUNTY % _get_next_battle_reward()
+	next_monster_stage_label.text = TEXT_STAGE % [_run_state().current_route_index + 1, _get_total_stage_count()]
+	next_monster_stats_label.text = TEXT_MONSTER_STATS % [
 		int(summary.get("hp", 0)),
 		float(summary.get("attack", 0.0)),
 		float(summary.get("attack_interval", 0.0)),
 	]
 	next_monster_skill_label.text = String(summary.get("skill_summary", ""))
 	monster_tooltip_panel.visible = false
-
 func _build_route_label(run_state: Node) -> String:
 	var total_nodes: int = 0
 	if run_state.stage_flow_config != null:
 		total_nodes = run_state.stage_flow_config.route_nodes.size()
-	return "节点 %d / %d：%s" % [
+	return TEXT_ROUTE % [
 		int(run_state.current_route_index) + 1,
 		total_nodes,
 		_display_name_for_node(run_state.get_current_node_type()),
 	]
-
 func _get_total_stage_count() -> int:
 	var run_state: Node = _run_state()
 	if run_state.stage_flow_config == null:
@@ -428,13 +458,13 @@ func _get_next_battle_reward() -> int:
 func _display_name_for_node(node_type: StringName) -> String:
 	match node_type:
 		&"market":
-			return "市场"
+			return TEXT_NODE_MARKET
 		&"battle":
-			return "战斗"
+			return TEXT_NODE_BATTLE
 		&"rest":
-			return "休整"
+			return TEXT_NODE_REST
 		&"boss_battle":
-			return "Boss战"
+			return TEXT_NODE_BOSS
 		_:
 			return String(node_type)
 
@@ -453,7 +483,6 @@ func _refresh_synergy_panel() -> void:
 			break
 	_active_synergy_ids = new_active_ids
 	synergy_panel.set_summary(summary, role_name)
-
 func _on_selected_character_changed(character_id: StringName) -> void:
 	_refresh_selected_role(character_id)
 	_refresh()
@@ -642,19 +671,18 @@ func _estimate_risk_label() -> String:
 			total_power += food.attack_speed_percent / 10.0
 	var monster: MonsterDefinition = run_state.get_current_monster_definition()
 	if monster == null:
-		return "未知"
+		return TEXT_RISK_UNKNOWN
 	var monster_power: float = monster.base_attack * 2.0 + monster.base_hp / 6.0
 	var ratio: float = total_power / maxf(monster_power, 1.0)
 	if ratio >= 1.8:
-		return "碾压"
+		return TEXT_RISK_OVERWHELM
 	if ratio >= 1.2:
-		return "稳定"
+		return TEXT_RISK_STABLE
 	if ratio >= 0.85:
-		return "接近"
+		return TEXT_RISK_CLOSE
 	if ratio >= 0.6:
-		return "危险"
-	return "致命"
-
+		return TEXT_RISK_DANGEROUS
+	return TEXT_RISK_FATAL
 func _on_role_tab_pressed(character_id: StringName) -> void:
 	_ui_sfx().play_button()
 	item_tooltip_overlay.hide_tooltip()

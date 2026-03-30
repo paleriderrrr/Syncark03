@@ -6,9 +6,16 @@ signal hover_started(entry: Dictionary, global_rect: Rect2)
 signal hover_ended
 
 @onready var background_rect: TextureRect = $Background
+@onready var rarity_bar: ColorRect = %RarityBar
+@onready var rarity_badge: Panel = %RarityBadge
+@onready var rarity_label: Label = %RarityLabel
+@onready var discount_badge: Panel = %DiscountBadge
+@onready var discount_label: Label = %DiscountLabel
 @onready var icon_rect: TextureRect = %IconRect
 @onready var name_label: Label = %NameLabel
+@onready var count_badge: Panel = %CountBadge
 @onready var count_label: Label = %CountLabel
+@onready var price_badge: Panel = %PriceBadge
 @onready var price_label: Label = %PriceLabel
 
 var entry: Dictionary = {}
@@ -32,18 +39,31 @@ func configure(
 	drop_forward_target = new_drop_forward_target
 	var resolved_texture: Texture2D = entry.get("icon_texture", texture) as Texture2D
 	name_label.text = String(entry.get("display_name", ""))
+	name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	count_label.text = "x%d" % int(entry.get("count", 0))
+	count_badge.visible = int(entry.get("count", 0)) > 0
 	if entry.has("display_price"):
 		price_label.text = "%d G" % int(entry["display_price"])
 	elif entry.has("unit_price"):
 		price_label.text = "%d G" % int(entry["unit_price"])
 	else:
 		price_label.text = ""
+	price_badge.visible = not price_label.text.is_empty()
+	var discount_percent: int = int(entry.get("discount_percent", 0))
+	discount_badge.visible = discount_percent > 0
+	discount_label.text = "-%d%%" % discount_percent if discount_percent > 0 else ""
 	icon_rect.texture = resolved_texture
 	icon_rect.visible = resolved_texture != null
 	background_rect.texture = background_texture
 	background_rect.visible = background_texture != null
+	var rarity: StringName = entry.get("rarity", &"common")
+	var rarity_color: Color = _rarity_color(rarity)
+	rarity_bar.color = rarity_color
+	rarity_badge.visible = not String(entry.get("rarity_label", _rarity_label(rarity))).is_empty()
+	rarity_label.text = String(entry.get("rarity_label", _rarity_label(rarity)))
 	name_label.add_theme_color_override("font_color", Color.WHITE)
+	rarity_label.add_theme_color_override("font_color", Color.WHITE)
+	discount_label.add_theme_color_override("font_color", Color.WHITE)
 	count_label.add_theme_color_override("font_color", Color.WHITE)
 	price_label.add_theme_color_override("font_color", Color.WHITE)
 	tooltip_text = ""
@@ -125,3 +145,25 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 func _ui_sfx() -> Node:
 	return get_node("/root/UiSfxPlayer")
+
+func _rarity_color(rarity: StringName) -> Color:
+	match rarity:
+		&"common":
+			return Color(0.74, 0.74, 0.74, 0.95)
+		&"rare":
+			return Color(0.27, 0.58, 0.93, 0.95)
+		&"epic":
+			return Color(0.82, 0.42, 0.91, 0.95)
+		_:
+			return Color(0.74, 0.74, 0.74, 0.95)
+
+func _rarity_label(rarity: StringName) -> String:
+	match rarity:
+		&"common":
+			return "Common"
+		&"rare":
+			return "Rare"
+		&"epic":
+			return "Epic"
+		_:
+			return ""

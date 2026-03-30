@@ -1142,6 +1142,7 @@ func get_market_package_entries() -> Array[Dictionary]:
 				"count": int(offer.get("quantity", 0)),
 				"category": definition.category,
 				"rarity": definition.rarity,
+				"discount_percent": int(round((1.0 - float(offer.get("discount", 1.0))) * 100.0)),
 				"display_price": effective_price,
 				"unit_price": int(offer["price"]),
 			})
@@ -1155,6 +1156,7 @@ func get_market_package_entries() -> Array[Dictionary]:
 				"count": 1,
 				"category": &"expansion",
 				"rarity": &"rare",
+				"discount_percent": 0,
 				"display_price": effective_price,
 				"unit_price": int(offer["price"]),
 				"target_character_id": offer["target_character_id"],

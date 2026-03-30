@@ -1,16 +1,16 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://hyp5082ugvlc"]
 
-[ext_resource type="Script" path="res://Scripts/UI/settings_screen.gd" id="1_settings"]
-[ext_resource type="Texture2D" path="res://Art/UI/设置底图.png" id="2_bg"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/settings/settings_volume_icon.png" id="3_volume"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/settings/settings_slider_track.png" id="4_track"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/settings/settings_slider_knob.png" id="5_knob"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/settings/settings_action_button.png" id="6_button"]
-[ext_resource type="Texture2D" path="res://Art/UI/Slices/settings/settings_close_button.png" id="7_close"]
+[ext_resource type="Script" uid="uid://bfxj0g5o1na1m" path="res://Scripts/UI/settings_screen.gd" id="1_settings"]
+[ext_resource type="Texture2D" uid="uid://bwou5ho132r7v" path="res://Art/UI/设置底图.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://c3yeme15j4mlc" path="res://Art/UI/Slices/settings/settings_volume_icon.png" id="3_volume"]
+[ext_resource type="Texture2D" uid="uid://e0aspr764jnv" path="res://Art/UI/Slices/settings/settings_slider_track.png" id="4_track"]
+[ext_resource type="Texture2D" uid="uid://blaqytcfrb04w" path="res://Art/UI/Slices/settings/settings_slider_knob.png" id="5_knob"]
+[ext_resource type="Texture2D" uid="uid://wp5536porx75" path="res://Art/UI/Slices/settings/settings_action_button.png" id="6_button"]
+[ext_resource type="Texture2D" uid="uid://doa3hh6q8l3ca" path="res://Art/UI/Slices/settings/settings_close_button.png" id="7_close"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_clear"]
 
-[node name="SettingsScreen" type="Control"]
+[node name="SettingsScreen" type="Control" unique_id=376911421]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,7 +19,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_settings")
 
-[node name="Backdrop" type="ColorRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=277221804]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,7 +28,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=720124779]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -36,11 +36,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelRoot" type="Control" parent="CenterContainer"]
-layout_mode = 2
+[node name="PanelRoot" type="Control" parent="CenterContainer" unique_id=410618112]
 custom_minimum_size = Vector2(761, 893)
+layout_mode = 2
 
-[node name="Background" type="TextureRect" parent="CenterContainer/PanelRoot"]
+[node name="Background" type="TextureRect" parent="CenterContainer/PanelRoot" unique_id=384079698]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -51,27 +51,28 @@ texture = ExtResource("2_bg")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TitleLabel" type="Label" parent="CenterContainer/PanelRoot"]
+[node name="TitleLabel" type="Label" parent="CenterContainer/PanelRoot" unique_id=796527681]
 layout_mode = 0
-offset_left = 216.0
-offset_top = 98.0
-offset_right = 548.0
-offset_bottom = 152.0
-theme_override_font_sizes/font_size = 36
-text = "Settings"
+offset_left = 212.0
+offset_top = 32.0
+offset_right = 544.0
+offset_bottom = 108.0
+theme_override_font_sizes/font_size = 64
+text = "设置"
 horizontal_alignment = 1
 
-[node name="VolumeLabel" type="Label" parent="CenterContainer/PanelRoot"]
+[node name="VolumeLabel" type="Label" parent="CenterContainer/PanelRoot" unique_id=366136468]
 layout_mode = 0
-offset_left = 214.0
-offset_top = 178.0
-offset_right = 550.0
-offset_bottom = 220.0
-theme_override_font_sizes/font_size = 24
-text = "Volume"
+offset_left = 210.0
+offset_top = 155.0
+offset_right = 546.0
+offset_bottom = 204.0
+theme_override_colors/font_color = Color(0.14, 0.122033335, 0.091, 1)
+theme_override_font_sizes/font_size = 48
+text = "声音"
 horizontal_alignment = 1
 
-[node name="VolumeIcon" type="TextureRect" parent="CenterContainer/PanelRoot"]
+[node name="VolumeIcon" type="TextureRect" parent="CenterContainer/PanelRoot" unique_id=1011968873]
 layout_mode = 0
 offset_left = 68.0
 offset_top = 206.0
@@ -81,7 +82,7 @@ texture = ExtResource("3_volume")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="VolumeTrack" type="TextureRect" parent="CenterContainer/PanelRoot"]
+[node name="VolumeTrack" type="TextureRect" parent="CenterContainer/PanelRoot" unique_id=1855115616]
 layout_mode = 0
 offset_left = 156.0
 offset_top = 218.0
@@ -91,22 +92,20 @@ texture = ExtResource("4_track")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="VolumeSlider" type="HSlider" parent="CenterContainer/PanelRoot"]
+[node name="VolumeSlider" type="HSlider" parent="CenterContainer/PanelRoot" unique_id=2091564506]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 152.0
 offset_top = 196.0
 offset_right = 640.0
 offset_bottom = 314.0
-max_value = 100.0
-value = 100.0
-step = 1.0
 theme_override_icons/grabber = ExtResource("5_knob")
 theme_override_icons/grabber_highlight = ExtResource("5_knob")
 theme_override_styles/grabber_area = SubResource("StyleBoxEmpty_clear")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxEmpty_clear")
+value = 100.0
 
-[node name="RestartButton" type="TextureButton" parent="CenterContainer/PanelRoot"]
+[node name="RestartButton" type="TextureButton" parent="CenterContainer/PanelRoot" unique_id=1061682231]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 118.0
@@ -114,74 +113,74 @@ offset_top = 360.0
 offset_right = 646.0
 offset_bottom = 510.0
 texture_normal = ExtResource("6_button")
-texture_hover = ExtResource("6_button")
 texture_pressed = ExtResource("6_button")
+texture_hover = ExtResource("6_button")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="Label" type="Label" parent="CenterContainer/PanelRoot/RestartButton"]
+[node name="Label" type="Label" parent="CenterContainer/PanelRoot/RestartButton" unique_id=868046660]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 32
-text = "Restart Run"
+theme_override_font_sizes/font_size = 48
+text = "重新开始"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="EditorButton" type="TextureButton" parent="CenterContainer/PanelRoot"]
+[node name="EditorButton" type="TextureButton" parent="CenterContainer/PanelRoot" unique_id=595115273]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 117.0
+offset_top = 520.0
+offset_right = 645.0
+offset_bottom = 670.0
+texture_normal = ExtResource("6_button")
+texture_pressed = ExtResource("6_button")
+texture_hover = ExtResource("6_button")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="CenterContainer/PanelRoot/EditorButton" unique_id=2004385659]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 48
+text = "返回游戏"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BackButton" type="TextureButton" parent="CenterContainer/PanelRoot" unique_id=429532066]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 118.0
-offset_top = 530.0
+offset_top = 677.0
 offset_right = 646.0
-offset_bottom = 680.0
+offset_bottom = 827.0
 texture_normal = ExtResource("6_button")
-texture_hover = ExtResource("6_button")
 texture_pressed = ExtResource("6_button")
+texture_hover = ExtResource("6_button")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="Label" type="Label" parent="CenterContainer/PanelRoot/EditorButton"]
+[node name="Label" type="Label" parent="CenterContainer/PanelRoot/BackButton" unique_id=1788088460]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 32
-text = "Back To Editor"
+theme_override_font_sizes/font_size = 48
+text = "返回主菜单"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BackButton" type="TextureButton" parent="CenterContainer/PanelRoot"]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 118.0
-offset_top = 700.0
-offset_right = 646.0
-offset_bottom = 850.0
-texture_normal = ExtResource("6_button")
-texture_hover = ExtResource("6_button")
-texture_pressed = ExtResource("6_button")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="Label" type="Label" parent="CenterContainer/PanelRoot/BackButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 32
-text = "Back To Title"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="CloseButton" type="TextureButton" parent="CenterContainer/PanelRoot"]
+[node name="CloseButton" type="TextureButton" parent="CenterContainer/PanelRoot" unique_id=1043357211]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 615.0
@@ -189,7 +188,7 @@ offset_top = 18.0
 offset_right = 718.0
 offset_bottom = 118.0
 texture_normal = ExtResource("7_close")
-texture_hover = ExtResource("7_close")
 texture_pressed = ExtResource("7_close")
+texture_hover = ExtResource("7_close")
 ignore_texture_size = true
 stretch_mode = 5

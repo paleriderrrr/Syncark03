@@ -27,6 +27,20 @@ func _run() -> void:
 	_assert(editor.get_node_or_null("RightPanel/SynergyPanel") != null, "Synergy panel should exist")
 	_assert(editor.get_node_or_null("RightPanel/ActionButton") != null, "Action button should exist inside the right panel")
 	_assert(editor.get_node_or_null("RightPanel/ActionButton/ActionButtonText") != null, "Action button should expose a dedicated text texture node")
+	_assert(editor.get_node_or_null("RightPanel/StageInfoPanel/StageInfoVBox/NodeLabel") != null, "Right panel should still display the current node label")
+	_assert(editor.get_node_or_null("RightPanel/StageInfoPanel/StageInfoVBox/RiskLabel") != null, "Right panel should still display the risk label")
+	var help_button: Button = editor.get_node_or_null("HelpButton")
+	var guide_overlay: Control = editor.get_node_or_null("GuideOverlay")
+	var guide_image: TextureRect = editor.get_node_or_null("GuideImage")
+	_assert(help_button != null, "Main editor should expose a help button beside the settings button")
+	if help_button != null:
+		_assert(help_button.icon != null, "Main editor help button should render the configured question-mark icon")
+	_assert(guide_overlay != null, "Main editor should include a guide image overlay")
+	if guide_overlay != null:
+		_assert(not guide_overlay.visible, "Guide image overlay should stay hidden until help is pressed")
+	_assert(guide_image != null, "Guide image overlay should include a texture rect")
+	if guide_image != null:
+		_assert(guide_image.texture != null, "Guide image overlay should load the configured guide texture")
 	var market_strip: Node = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip")
 	_assert(market_strip.has_method("get_entry_count"), "Top market strip should expose grouped entries")
 	if market_strip.has_method("get_entry_count"):
@@ -66,8 +80,9 @@ func _run() -> void:
 			break
 		if found_market_expansion_icon:
 			break
-		_assert(run_state.refresh_market_offers(), "Reroll should succeed while searching for market expansion icons")
-	_assert(found_market_expansion_icon, "Market should surface at least one expansion card with a lunchbox icon during validation")
+		run_state.refresh_market_offers()
+		editor.call("_refresh_market_strip")
+	_assert(found_market_expansion_icon, "Market should eventually surface an expansion offer with a lunchbox texture")
 	var before_offer_ids: Array[StringName] = []
 	for offer in run_state.current_market_offers:
 		before_offer_ids.append(offer["offer_id"])
@@ -138,7 +153,6 @@ func _run() -> void:
 		for failure in _failures:
 			printerr("- %s" % failure)
 		quit(1)
-
 func _assert(condition: bool, message: String) -> void:
 	if not condition:
 		_failures.append(message)

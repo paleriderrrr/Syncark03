@@ -6,8 +6,8 @@ signal entry_hover_started(entry: Dictionary, global_rect: Rect2)
 signal entry_hover_ended
 
 const CARD_SCENE := preload("res://Scenes/Components/item_icon_card.tscn")
-const CARD_WIDTH := 132
-const CARD_GAP := 14
+const CARD_WIDTH := 156
+const CARD_GAP := 18
 
 @export var card_background_texture: Texture2D
 
