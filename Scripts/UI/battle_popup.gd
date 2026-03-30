@@ -64,8 +64,10 @@ func _ui_sfx() -> Node:
 func _ready() -> void:
 	close_button.text = "Close"
 	close_button.pressed.connect(_on_close_pressed)
+	close_requested.connect(_on_close_pressed)
 	popup_hide.connect(_on_popup_hidden)
 	set_process(true)
+	popup_window = false
 	_cache_actor_base_positions()
 
 func open_battle() -> void:

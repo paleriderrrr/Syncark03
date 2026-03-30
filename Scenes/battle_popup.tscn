@@ -9,12 +9,15 @@
 [ext_resource type="Texture2D" uid="uid://ck2lqq3tvkopk" path="res://Art/PaperCharacters/猎人纸片.png" id="7_7llj4"]
 [ext_resource type="Texture2D" uid="uid://r3ofrxbuqmhi" path="res://Art/PaperCharacters/法师纸片.png" id="8_kuq81"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_battle_popup"]
+
 [node name="BattlePopup" type="PopupPanel" unique_id=1367356641]
 unique_name_in_owner = true
 oversampling_override = 1.0
 size = Vector2i(1540, 780)
 visible = true
 script = ExtResource("1_popup")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_battle_popup")
 
 [node name="WindowArt" type="TextureRect" parent="." unique_id=1956742066]
 anchors_preset = 15
