@@ -22,7 +22,7 @@ category = &"dessert"
 base_hp = 360
 base_attack = 15.0
 attack_interval = 1.2
-skill_summary = "带有[满足]效果。每5秒恢复等同于5秒内所受伤害一半的血量；每次受击时降低伤害来源角色1点攻击力，单角色最多5点。"
+skill_summary = "【奶甜甜】每5秒恢复20生命值。\n【软绵绵】每次受击时降低对自己造成伤害的角色的1点攻击力，单个角色至多5点。"
 target_rule = &"default_frontline"
 
 [sub_resource type="Resource" id="MonsterDefinition_meat"]

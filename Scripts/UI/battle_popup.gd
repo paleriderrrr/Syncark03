@@ -243,7 +243,7 @@ func _process_battle_event(line: String) -> void:
 		return
 	if content.contains(" deals ") and content.contains(" damage to "):
 		await _process_damage_event(content)
-	elif content.contains(" restores ") and content.ends_with(" HP."):
+	elif content.contains(" restores ") and content.contains(" HP"):
 		_process_heal_event(content)
 	elif content.contains(" lands a critical hit for "):
 		await _process_critical_event(content)
@@ -294,10 +294,14 @@ func _process_heal_event(content: String) -> void:
 	if first_split.size() != 2:
 		return
 	var source_name: String = first_split[0]
-	var amount: float = float(String(first_split[1]).trim_suffix(" HP."))
+	var heal_tail: String = String(first_split[1])
+	var hp_index: int = heal_tail.find(" HP")
+	if hp_index == -1:
+		return
+	var amount: float = float(heal_tail.substr(0, hp_index))
 	_apply_heal_to_target(source_name, amount)
 	_spawn_floating_text(_resolve_target_node(source_name), "+%.1f" % amount, HEAL_COLOR)
-	if _is_monster_name(source_name) and content.contains("through Satisfaction"):
+	if _is_monster_name(source_name):
 		_spawn_notice_text("%s skill" % source_name)
 
 func _process_critical_event(content: String) -> void:
