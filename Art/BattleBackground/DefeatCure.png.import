@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d0qi5m7tuidku"
-path="res://.godot/imported/讨伐成功.png-39e7cd69d857a532677c31ce3ec84a2a.ctex"
+uid="uid://hb1ei7eckpx3"
+path="res://.godot/imported/DefeatCure.png-080224c7152ba69a38ec1ad4adeb25dc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/BattleBackground/讨伐成功.png"
-dest_files=["res://.godot/imported/讨伐成功.png-39e7cd69d857a532677c31ce3ec84a2a.ctex"]
+source_file="res://Art/BattleBackground/DefeatCure.png"
+dest_files=["res://.godot/imported/DefeatCure.png-080224c7152ba69a38ec1ad4adeb25dc.ctex"]
 
 [params]
 

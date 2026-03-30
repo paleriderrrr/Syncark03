@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cwkov86shqr1n"
-path="res://.godot/imported/讨伐成功纯净版.png-31d8907c3b242fe01888bbd12581575d.ctex"
+path="res://.godot/imported/VictoryCure.png-b4d6dc05eeacb5f90a241ef8c4a7f582.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/BattleBackground/讨伐成功纯净版.png"
-dest_files=["res://.godot/imported/讨伐成功纯净版.png-31d8907c3b242fe01888bbd12581575d.ctex"]
+source_file="res://Art/BattleBackground/VictoryCure.png"
+dest_files=["res://.godot/imported/VictoryCure.png-b4d6dc05eeacb5f90a241ef8c4a7f582.ctex"]
 
 [params]
 
