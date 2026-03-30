@@ -320,9 +320,9 @@ stretch_mode = 5
 custom_minimum_size = Vector2(0, 132)
 layout_mode = 0
 offset_left = 47.199074
-offset_top = 665.55255
+offset_top = 740.04565
 offset_right = 1531.1991
-offset_bottom = 797.55255
+offset_bottom = 872.04565
 
 [node name="TimelineMargin" type="MarginContainer" parent="Margin/RootVBox/TimelinePanel" unique_id=417045836]
 layout_mode = 2

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dpjwawppnbn2u"]
 
-[ext_resource type="Script" uid="uid://cmnqwh22dhtcn" uid="uid://cmnqwh22dhtcn" path="res://Scripts/UI/Components/item_icon_card.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cmnqwh22dhtcn" path="res://Scripts/UI/Components/item_icon_card.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://bgm3gwcogagmy" path="res://Art/Fonts/handwriting.ttf" id="2_qghfr"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_card"]
@@ -46,7 +46,6 @@ offset_right = 156.0
 offset_bottom = 164.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
-script = ExtResource("1_script")
 
 [node name="RarityLabel" type="Label" parent="RarityBadge" unique_id=78743209]
 unique_name_in_owner = true
@@ -139,7 +138,7 @@ offset_bottom = 164.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 
-[node name="PriceLabel" type="Label" parent="PriceBadge" unique_id=1905376052 unique_id=853139539]
+[node name="PriceLabel" type="Label" parent="PriceBadge" unique_id=853139539]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
