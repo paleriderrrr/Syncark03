@@ -8,7 +8,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var board := BentoBoardView.new()
 	_assert(board.get_food_background_alpha() <= 0.22, "Food background alpha should stay subtle")
-	_assert(board.get_grid_background_alpha() <= 0.03, "Grid background alpha should be nearly transparent")
+	_assert(board.get_grid_background_alpha() <= 0.13, "Grid background alpha should stay readable without overpowering the board")
 	_assert(board.get_cell_corner_radius() >= 10.0, "Cell drawing should use rounded corners")
 	_assert(board.draws_food_outline() == false, "Food cells should no longer draw square outlines")
 	_finish()

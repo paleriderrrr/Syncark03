@@ -645,19 +645,27 @@ func move_base_board(to_anchor: Vector2i) -> bool:
 	state_changed.emit()
 	return true
 
-func select_pending_expansion(instance_id: StringName) -> void:
-	var state: Dictionary = get_selected_character_state()
-	for item in state.get("pending_expansions", []):
-		if item["instance_id"] == instance_id:
-			selected_item = {
-				"source": &"expansion",
-				"instance_id": instance_id,
-				"rotation": int(item.get("rotation", 0)),
-				"drag_session": false,
-			}
-			selected_item_changed.emit()
-			state_changed.emit()
-			return
+func select_pending_expansion(instance_id: StringName, target_character_id: StringName = &"") -> bool:
+	var owner_character_id: StringName = _resolve_pending_expansion_owner(instance_id, target_character_id)
+	if owner_character_id == &"":
+		return false
+	var pending: Dictionary = _find_pending_expansion(owner_character_id, instance_id)
+	if pending.is_empty():
+		return false
+	var character_changed: bool = selected_character_id != owner_character_id
+	selected_character_id = owner_character_id
+	selected_item = {
+		"source": &"pending_expansion",
+		"instance_id": instance_id,
+		"rotation": int(pending.get("rotation", 0)),
+		"drag_session": false,
+		"target_character_id": owner_character_id,
+	}
+	if character_changed:
+		selected_character_changed.emit(selected_character_id)
+	selected_item_changed.emit()
+	state_changed.emit()
+	return true
 
 func clear_selection() -> void:
 	selected_item = {}
@@ -702,10 +710,16 @@ func get_selected_item_cells() -> Array[Vector2i]:
 		if offer_expansion.is_empty():
 			return []
 		return ShapeUtils.rotate_cells(_clone_cells(offer_expansion.get("shape_cells", [])), int(selected_item["rotation"]))
-	var pending: Dictionary = _find_pending_expansion(selected_character_id, selected_item["instance_id"])
-	if pending.is_empty():
-		return []
-	return ShapeUtils.rotate_cells(_clone_cells(pending["shape_cells"]), int(selected_item["rotation"]))
+	if source == &"pending_expansion" or source == &"expansion":
+		var pending_character_id: StringName = selected_item.get("target_character_id", selected_character_id)
+		var pending: Dictionary = _find_pending_expansion(pending_character_id, selected_item["instance_id"])
+		if pending.is_empty():
+			pending_character_id = _resolve_pending_expansion_owner(selected_item["instance_id"], pending_character_id)
+			pending = _find_pending_expansion(pending_character_id, selected_item["instance_id"])
+		if pending.is_empty():
+			return []
+		return ShapeUtils.rotate_cells(_clone_cells(pending["shape_cells"]), int(selected_item["rotation"]))
+	return []
 
 func _find_inventory_item(instance_id: StringName) -> Dictionary:
 	for item in shared_inventory:
@@ -719,6 +733,18 @@ func _find_pending_expansion(character_id: StringName, instance_id: StringName) 
 		if item["instance_id"] == instance_id:
 			return item
 	return {}
+
+func _resolve_pending_expansion_owner(instance_id: StringName, preferred_character_id: StringName = &"") -> StringName:
+	if preferred_character_id != &"":
+		var preferred_pending: Dictionary = _find_pending_expansion(preferred_character_id, instance_id)
+		if not preferred_pending.is_empty():
+			return preferred_character_id
+	for character_id_variant in character_states.keys():
+		var character_id: StringName = character_id_variant
+		var pending: Dictionary = _find_pending_expansion(character_id, instance_id)
+		if not pending.is_empty():
+			return character_id
+	return &""
 
 func _find_market_offer(offer_id: StringName) -> Dictionary:
 	for offer_variant in current_market_offers:
@@ -765,8 +791,8 @@ func can_place_selected_item(anchor: Vector2i) -> bool:
 					var other_cell: Vector2i = other_cell_variant
 					occupied_by_others.append(other_cell)
 			return not ShapeUtils.overlaps(occupied_by_others, placed_cells)
-		&"expansion", &"market_expansion":
-			if selected_item.get("source", &"") == &"market_expansion" and selected_item.get("target_character_id", &"") != selected_character_id:
+		&"pending_expansion", &"expansion", &"market_expansion":
+			if selected_item.get("target_character_id", selected_character_id) != selected_character_id:
 				return false
 			if ShapeUtils.overlaps(state["active_cells"], placed_cells):
 				return false
@@ -845,8 +871,9 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 		})
 		_remove_pending_expansion(selected_character_id, placed_expansion["instance_id"])
 		_rebuild_active_cells(state)
-	else:
-		var pending: Dictionary = _find_pending_expansion(selected_character_id, selected_item["instance_id"])
+	elif selected_item["source"] == &"pending_expansion" or selected_item["source"] == &"expansion":
+		var pending_owner_id: StringName = selected_item.get("target_character_id", selected_character_id)
+		var pending: Dictionary = _find_pending_expansion(pending_owner_id, selected_item["instance_id"])
 		if pending.is_empty():
 			return false
 		state["placed_expansions"].append({
@@ -856,8 +883,10 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 			"anchor": anchor,
 			"cells": placed_cells,
 		})
-		_remove_pending_expansion(selected_character_id, pending["instance_id"])
+		_remove_pending_expansion(pending_owner_id, pending["instance_id"])
 		_rebuild_active_cells(state)
+	else:
+		return false
 	state_changed.emit()
 	clear_selection()
 	return true
@@ -1003,7 +1032,13 @@ func get_selected_item_summary() -> String:
 			return "未选择物品"
 		var definition: FoodDefinition = get_food_definition(item["definition_id"])
 		return "放置食物: %s" % definition.display_name
-	var expansion: Dictionary = _find_pending_expansion(selected_character_id, selected_item["instance_id"])
+	if selected_item["source"] == &"market_expansion":
+		var market_expansion: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
+		if market_expansion.is_empty():
+			return "鏈€夋嫨鐗╁搧"
+		return "鏀剧疆楗洅鎷撳睍: %s" % String(market_expansion.get("label", ""))
+	var expansion_owner_id: StringName = selected_item.get("target_character_id", selected_character_id)
+	var expansion: Dictionary = _find_pending_expansion(expansion_owner_id, selected_item["instance_id"])
 	if expansion.is_empty():
 		return "未选择物品"
 	return "放置饭盒拓展: %s" % expansion["label"]
@@ -1041,8 +1076,9 @@ func get_selected_item_summary_safe() -> String:
 				return "鏈€夋嫨鐗╁搧"
 			var placed_definition: FoodDefinition = get_food_definition(placed_food.get("definition_id", &""))
 			return "鏀剧疆椋熺墿: %s" % (placed_definition.display_name if placed_definition != null else "")
-		&"expansion":
-			var pending_expansion: Dictionary = _find_pending_expansion(selected_character_id, selected_item.get("instance_id", &""))
+		&"pending_expansion", &"expansion":
+			var pending_owner_id: StringName = selected_item.get("target_character_id", selected_character_id)
+			var pending_expansion: Dictionary = _find_pending_expansion(pending_owner_id, selected_item.get("instance_id", &""))
 			if pending_expansion.is_empty():
 				return "鏈€夋嫨鐗╁搧"
 			return "鏀剧疆楗洅鎷撳睍: %s" % String(pending_expansion.get("label", ""))

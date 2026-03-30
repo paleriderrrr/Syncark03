@@ -86,8 +86,7 @@ func _begin_drag_action() -> void:
 		&"market_offer":
 			run_state.begin_market_offer_action(drag_payload.get("offer_id", &""))
 		&"pending_expansion":
-			run_state.select_pending_expansion(drag_payload.get("instance_id", &""))
-			if not run_state.selected_item.is_empty():
+			if run_state.select_pending_expansion(drag_payload.get("instance_id", &""), drag_payload.get("target_character_id", &"")):
 				run_state.selected_item["drag_session"] = true
 				run_state.selected_item_changed.emit()
 				run_state.state_changed.emit()

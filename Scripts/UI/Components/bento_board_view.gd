@@ -9,7 +9,7 @@ signal hover_food_cleared
 
 const GRID_WIDTH := 8
 const GRID_HEIGHT := 6
-const GRID_CELL_COLOR := Color(1.0, 1.0, 1.0, 0.02)
+const GRID_CELL_COLOR := Color(1.0, 1.0, 1.0, 0.12)
 const VALID_PREVIEW_COLOR := Color(0.44, 0.9, 0.52, 0.55)
 const INVALID_PREVIEW_COLOR := Color(0.92, 0.36, 0.36, 0.55)
 const FOOD_BACKGROUND_ALPHA := 0.18
@@ -372,7 +372,10 @@ func _payload_uses_selected_item(payload: Dictionary, run_state: Node) -> bool:
 		&"market_offer", &"market_expansion":
 			return run_state.selected_item.get("offer_id", &"") == payload.get("offer_id", &"")
 		&"pending_expansion":
-			return run_state.selected_item.get("instance_id", &"") == payload.get("instance_id", &"")
+			return (
+				run_state.selected_item.get("instance_id", &"") == payload.get("instance_id", &"")
+				and [&"pending_expansion", &"expansion"].has(run_state.selected_item.get("source", &""))
+			)
 		&"board_food":
 			return run_state.selected_item.get("instance_id", &"") == payload.get("instance_id", &"")
 		_:

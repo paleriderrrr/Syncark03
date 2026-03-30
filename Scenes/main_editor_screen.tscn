@@ -536,6 +536,7 @@ text = "阶段：1/14"
 
 [node name="MonsterTooltipPanel" type="PanelContainer" parent="RightPanel" unique_id=1842622011]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 offset_left = -138.0
 offset_top = 396.0

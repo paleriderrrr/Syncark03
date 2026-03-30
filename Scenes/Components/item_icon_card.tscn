@@ -1,61 +1,54 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://sbpn7csbuv0u"]
 
-[ext_resource type="Script" path="res://Scripts/UI/Components/item_icon_card.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cmnqwh22dhtcn" path="res://Scripts/UI/Components/item_icon_card.gd" id="1_script"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_card"]
 
-[node name="ItemIconCard" type="PanelContainer"]
+[node name="ItemIconCard" type="PanelContainer" unique_id=554272439]
 custom_minimum_size = Vector2(132, 136)
-mouse_filter = 0
-script = ExtResource("1_script")
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
+script = ExtResource("1_script")
 
-[node name="Background" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="Background" type="TextureRect" parent="." unique_id=1147348672]
+layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 4
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Margin" type="MarginContainer" parent="." unique_id=479295272]
 layout_mode = 2
 theme_override_constants/margin_left = 6
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 6
 theme_override_constants/margin_bottom = 6
 
-[node name="VBox" type="VBoxContainer" parent="Margin"]
+[node name="VBox" type="VBoxContainer" parent="Margin" unique_id=1320008600]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="IconRect" type="TextureRect" parent="Margin/VBox"]
+[node name="IconRect" type="TextureRect" parent="Margin/VBox" unique_id=487085138]
 unique_name_in_owner = true
-layout_mode = 2
 custom_minimum_size = Vector2(112, 76)
+layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="NameLabel" type="Label" parent="Margin/VBox"]
+[node name="NameLabel" type="Label" parent="Margin/VBox" unique_id=906280853]
 unique_name_in_owner = true
 layout_mode = 2
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="MetaHBox" type="HBoxContainer" parent="Margin/VBox"]
+[node name="MetaHBox" type="HBoxContainer" parent="Margin/VBox" unique_id=1591123448]
 layout_mode = 2
 
-[node name="CountLabel" type="Label" parent="Margin/VBox/MetaHBox"]
+[node name="CountLabel" type="Label" parent="Margin/VBox/MetaHBox" unique_id=685699600]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "x0"
 
-[node name="PriceLabel" type="Label" parent="Margin/VBox/MetaHBox"]
+[node name="PriceLabel" type="Label" parent="Margin/VBox/MetaHBox" unique_id=853139539]
 unique_name_in_owner = true
 layout_mode = 2
 horizontal_alignment = 2
-text = ""
