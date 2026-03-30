@@ -34,6 +34,18 @@ func _run() -> void:
 	run_state.start_new_run()
 	await process_frame
 
+	var warrior_state: Dictionary = run_state.get_character_state(&"warrior")
+	warrior_state["hp_ratio"] = 0.5
+	run_state.shared_inventory.append(run_state.generate_item_instance(&"red_berry"))
+	var hp_food: Dictionary = run_state.shared_inventory[run_state.shared_inventory.size() - 1]
+	run_state.select_inventory_item(hp_food["instance_id"])
+	_assert(run_state.try_place_selected_item(Vector2i.ZERO), "Should place HP bonus food for health reconciliation test")
+	var adjusted_health: Dictionary = run_state.get_character_health_display(&"warrior")
+	_assert(int(adjusted_health.get("max_hp", 0)) == 188, "HP bonus food should raise warrior max HP to 188")
+	_assert(int(adjusted_health.get("current_hp", 0)) == 98, "HP bonus food should also raise current HP by preserved-missing-HP rule")
+	run_state.start_new_run()
+	await process_frame
+
 	run_state.shared_inventory.append(run_state.generate_item_instance(&"red_berry"))
 	var inventory_item: Dictionary = run_state.shared_inventory[run_state.shared_inventory.size() - 1]
 	run_state.select_inventory_item(inventory_item["instance_id"])

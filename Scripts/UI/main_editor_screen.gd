@@ -32,6 +32,10 @@ const TEXT_BONUS_HPS := "\u6bcf\u79d2\u56de\u590d %s"
 const TEXT_BONUS_EXECUTE := "\u65a9\u6740\u7ebf %s%%"
 const TEXT_BONUS_NONE := "\u65e0\u57fa\u7840\u52a0\u6210"
 const TEXT_BONUS_SEPARATOR := "\uff0c"
+const GUIDE_TEXTURES: Array[Texture2D] = [
+	preload("res://Art/UI/tutor1.png"),
+	preload("res://Art/UI/tutor2.png"),
+]
 const TEXT_UNKNOWN := "\u672a\u77e5"
 const TEXT_BOUNTY_EMPTY := "\u8d4f\u91d1\uff1a-"
 const TEXT_STAGE_EMPTY := "\u9636\u6bb5\uff1a-"
@@ -77,6 +81,7 @@ const TEXT_ROLE_TAB_STATS := "HP %d/%d\nATK %s\nINT %ss"
 @onready var action_button_text: TextureRect = %ActionButtonText
 @onready var guide_overlay: Control = %GuideOverlay
 @onready var guide_backdrop: ColorRect = %GuideBackdrop
+@onready var guide_image: TextureRect = %GuideImage
 @onready var wanted_poster_rect: TextureRect = %WantedPosterRect
 @onready var next_monster_name_label: Label = %NextMonsterNameLabel
 @onready var next_monster_bounty_label: Label = %NextMonsterBountyLabel
@@ -112,6 +117,7 @@ var _intro_tween: Tween
 var _intro_animating: bool = false
 var _last_node_type: StringName = &""
 var _active_synergy_ids: Dictionary = {}
+var _guide_page_index: int = 0
 var item_tooltip_overlay: ImmediateItemTooltipOverlay
 var synergy_tooltip_overlay: ImmediateSynergyTooltipOverlay
 
@@ -713,14 +719,28 @@ func _on_help_pressed() -> void:
 	_show_guide_overlay()
 
 func _show_guide_overlay() -> void:
+	_guide_page_index = 0
+	_apply_guide_page()
 	guide_overlay.visible = true
 
 func _hide_guide_overlay() -> void:
 	guide_overlay.visible = false
 
+func _advance_guide_overlay() -> void:
+	_guide_page_index += 1
+	if _guide_page_index >= GUIDE_TEXTURES.size():
+		_hide_guide_overlay()
+		return
+	_apply_guide_page()
+
+func _apply_guide_page() -> void:
+	if GUIDE_TEXTURES.is_empty():
+		return
+	guide_image.texture = GUIDE_TEXTURES[_guide_page_index]
+
 func _on_guide_backdrop_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_hide_guide_overlay()
+		_advance_guide_overlay()
 		get_viewport().set_input_as_handled()
 
 func _on_settings_pressed() -> void:
