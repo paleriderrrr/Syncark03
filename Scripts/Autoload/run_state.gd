@@ -1417,7 +1417,7 @@ func _apply_battle_victory(report: Dictionary) -> void:
 		current_gold += stage_flow_config.normal_battle_reward_gold[battle_index]
 		current_gold += int(report.get("bonus_gold", 0))
 	grant_battle_drops(defeated_monster, battle_index)
-	_restore_defeated_characters_to_victory_floor(report)
+	_apply_victory_character_recovery(report)
 	for character_id in character_states.keys():
 		character_states[character_id]["placed_foods"].clear()
 	if current_route_index >= stage_flow_config.route_nodes.size() - 1:
@@ -1437,7 +1437,7 @@ func _resolve_defeated_monster(report: Dictionary) -> MonsterDefinition:
 			return report_monster
 	return get_current_monster_definition()
 
-func _restore_defeated_characters_to_victory_floor(report: Dictionary) -> void:
+func _apply_victory_character_recovery(report: Dictionary) -> void:
 	if not report.has("characters"):
 		return
 	for actor_variant in report["characters"]:
@@ -1445,9 +1445,12 @@ func _restore_defeated_characters_to_victory_floor(report: Dictionary) -> void:
 		var character_id: StringName = actor.get("id", &"")
 		if character_id == &"" or not character_states.has(character_id):
 			continue
+		var recovered_ratio: float = float(character_states[character_id].get("hp_ratio", 0.0))
 		if bool(actor.get("alive", false)):
-			continue
-		character_states[character_id]["hp_ratio"] = 0.25
+			recovered_ratio += 0.25
+		else:
+			recovered_ratio = 0.25
+		character_states[character_id]["hp_ratio"] = clampf(recovered_ratio, 0.0, 1.0)
 
 func grant_battle_drops(monster: MonsterDefinition, battle_index: int) -> void:
 	if monster == null:
