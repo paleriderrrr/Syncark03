@@ -12,33 +12,47 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="ItemIconCard" type="PanelContainer" unique_id=281851868]
+[node name="ItemIconCard" type="Control" unique_id=281851868]
 custom_minimum_size = Vector2(156, 164)
+layout_mode = 3
+anchors_preset = 0
 offset_right = 156.0
 offset_bottom = 164.0
-theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 script = ExtResource("1_script")
 
-[node name="Background" type="TextureRect" parent="." unique_id=373685472]
-layout_mode = 2
+[node name="Content" type="Control" parent="." unique_id=281851869]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Background" type="TextureRect" parent="Content" unique_id=373685472]
 visible = false
+layout_mode = 0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="RarityBar" type="ColorRect" parent="." unique_id=831774101]
+[node name="RarityBar" type="ColorRect" parent="Content" unique_id=831774101]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
 mouse_filter = 2
 color = Color(0.75, 0.75, 0.75, 0.95)
 
-[node name="RarityBadge" type="Panel" parent="." unique_id=190200428]
+[node name="RarityBadge" type="Panel" parent="Content" unique_id=190200428]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 56.0
+offset_bottom = 28.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 
-[node name="RarityLabel" type="Label" parent="RarityBadge" unique_id=78743209]
+[node name="RarityLabel" type="Label" parent="Content/RarityBadge" unique_id=78743209]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -46,44 +60,53 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 15
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DiscountBadge" type="Panel" parent="." unique_id=179769470]
+[node name="DiscountBadge" type="Panel" parent="Content" unique_id=179769470]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_discount_badge")
 
-[node name="DiscountLabel" type="Label" parent="DiscountBadge" unique_id=1404867047]
+[node name="DiscountLabel" type="Label" parent="Content/DiscountBadge" unique_id=1404867047]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -1.0
-offset_top = -17.0
-offset_right = 128.0
-offset_bottom = -134.0
+offset_left = 65.0
+offset_top = -10.0
+offset_right = 194.0
+offset_bottom = 30.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_colors/font_color = Color(0.152, 0.24293338, 0.4, 1)
 theme_override_fonts/font = ExtResource("2_qghfr")
 theme_override_font_sizes/font_size = 40
 text = "-20%"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="IconRect" type="TextureRect" parent="." unique_id=1828858474]
+[node name="IconRect" type="TextureRect" parent="Content" unique_id=1828858474]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
+offset_left = 23.0
+offset_top = 27.0
+offset_right = 123.0
+offset_bottom = 127.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="NameLabel" type="Label" parent="." unique_id=602264525]
+[node name="NameLabel" type="Label" parent="Content" unique_id=602264525]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
+offset_left = 21.0
+offset_top = 133.0
+offset_right = 124.0
+offset_bottom = 160.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 22
@@ -92,41 +115,44 @@ horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
 
-[node name="CountBadge" type="Panel" parent="." unique_id=163751742]
+[node name="CountBadge" type="Panel" parent="Content" unique_id=163751742]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 
-[node name="CountLabel" type="Label" parent="CountBadge" unique_id=290250527]
+[node name="CountLabel" type="Label" parent="Content/CountBadge" unique_id=290250527]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = 144.0
+offset_left = 5.0
+offset_top = 132.0
+offset_right = 20.0
+offset_bottom = 156.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 20
 text = "x1"
 vertical_alignment = 1
 
-[node name="PriceBadge" type="Panel" parent="." unique_id=1270211533]
+[node name="PriceBadge" type="Panel" parent="Content" unique_id=1270211533]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 
-[node name="PriceLabel" type="Label" parent="PriceBadge" unique_id=853139539]
+[node name="PriceLabel" type="Label" parent="Content/PriceBadge" unique_id=853139539]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 142.0
-offset_right = -3.0
-offset_bottom = 2.0
+offset_left = 125.5
+offset_top = 133.0
+offset_right = 153.5
+offset_bottom = 157.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 20

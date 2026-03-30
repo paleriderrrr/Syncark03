@@ -16,16 +16,16 @@ func _run() -> void:
 	assert(overlay != null, "Synergy tooltip overlay should exist")
 	assert(not overlay.visible, "Synergy tooltip overlay should start hidden")
 	panel.emit_signal("synergy_hover_started", {
-		"category_name": "蔬果",
-		"synergy_name": "果酸反伤",
+		"category_name": "Fruit",
+		"synergy_name": "Acid Counter",
 		"count": 2,
-		"effect_text": "腐蚀接触的敌怪",
+		"effect_text": "Corrode touching enemies",
 	}, Rect2(Vector2(100, 100), Vector2(56, 56)))
 	await process_frame
 	assert(overlay.visible, "Synergy tooltip overlay should become visible on hover")
 	var name_label: Label = overlay.get_node("%SynergyTooltipNameLabel")
 	var count_label: Label = overlay.get_node("%SynergyTooltipCountLabel")
-	assert(name_label.text == "果酸反伤", "Synergy tooltip should show the synergy name")
+	assert(name_label.text == "Acid Counter", "Synergy tooltip should show the synergy name")
 	assert(count_label.text.contains("x2"), "Synergy tooltip should show the current count")
 	panel.emit_signal("synergy_hover_ended")
 	await process_frame
