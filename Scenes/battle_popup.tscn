@@ -8,8 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://cgy4s55u1ipym" path="res://Art/PaperCharacters/剑盾纸片.png" id="5_dd2x6"]
 [ext_resource type="Texture2D" uid="uid://ck2lqq3tvkopk" path="res://Art/PaperCharacters/猎人纸片.png" id="7_7llj4"]
 [ext_resource type="Texture2D" uid="uid://r3ofrxbuqmhi" path="res://Art/PaperCharacters/法师纸片.png" id="8_kuq81"]
-
-[ext_resource type="Texture2D" uid="uid://dcvoqe0ie7qv0" path="res://Art/BattleBackground/victory.png" id="9_tdt7w"]
+[ext_resource type="Texture2D" uid="uid://d0qi5m7tuidku" path="res://Art/BattleBackground/victory.png" id="9_tdt7w"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_battle_popup"]
 
@@ -18,17 +17,13 @@ unique_name_in_owner = true
 oversampling_override = 1.0
 size = Vector2i(1540, 780)
 visible = true
-script = ExtResource("1_popup")
 theme_override_styles/panel = SubResource("StyleBoxEmpty_battle_popup")
+script = ExtResource("1_popup")
 
 [node name="WindowArt" type="TextureRect" parent="." unique_id=1956742066]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = -4.0
-offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -40,10 +35,6 @@ stretch_mode = 5
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = -4.0
-offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.94102347, 0.9262602)
@@ -125,10 +116,10 @@ stretch_mode = 6
 [node name="Hero1Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=77219137]
 unique_name_in_owner = true
 anchors_preset = 0
-offset_left = 426.13177
-offset_top = 69.09506
-offset_right = 626.13184
-offset_bottom = 381.09506
+offset_left = 472.88937
+offset_top = 62.6174
+offset_right = 672.8894
+offset_bottom = 374.6174
 scale = Vector2(1.8932682, 1.7647917)
 
 [node name="Hero1PortraitFrame" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor" unique_id=216216529]
@@ -170,9 +161,9 @@ horizontal_alignment = 1
 [node name="Hero2Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1686591380]
 unique_name_in_owner = true
 anchors_preset = 0
-offset_left = 182.77972
+offset_left = 229.53732
 offset_top = 62.617386
-offset_right = 382.77972
+offset_right = 429.53732
 offset_bottom = 374.61737
 scale = Vector2(1.8932682, 1.7647917)
 
@@ -215,9 +206,9 @@ horizontal_alignment = 1
 [node name="Hero3Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1911396048]
 unique_name_in_owner = true
 anchors_preset = 0
-offset_left = -37.193546
+offset_left = 9.564053
 offset_top = 62.617386
-offset_right = 162.80646
+offset_right = 209.56406
 offset_bottom = 374.61737
 scale = Vector2(1.8932682, 1.7647917)
 

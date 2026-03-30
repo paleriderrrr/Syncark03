@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://diqvekhe82fbx"
+path="res://.godot/imported/Win sound 13.wav-716d17aa28f594d32bae939f7f57f8ab.sample"
+
+[deps]
+
+source_file="res://Audio/SFXver02/Win sound 13.wav"
+dest_files=["res://.godot/imported/Win sound 13.wav-716d17aa28f594d32bae939f7f57f8ab.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
