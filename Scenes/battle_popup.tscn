@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://uqipbhpx82be"]
+[gd_scene format=3 uid="uid://b0wr73a7c5kgm"]
 
 [ext_resource type="Script" uid="uid://bo7fqs2u0n8c3" path="res://Scripts/UI/battle_popup.gd" id="1_popup"]
 [ext_resource type="Texture2D" uid="uid://bw43og74rivm0" path="res://Art/BattleBackground/大弹窗.png" id="2_2gaqe"]
@@ -145,17 +145,18 @@ flip_h = true
 [node name="Hero1ArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor" unique_id=389206012]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 248.0
-offset_right = 200.0
-offset_bottom = 276.0
+offset_left = -0.5612901
+offset_top = 217.17104
+offset_right = 199.4387
+offset_bottom = 245.17104
 horizontal_alignment = 1
 
 [node name="Hero1ArenaHpLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor" unique_id=343357928]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 280.0
+offset_top = 238.15955
 offset_right = 200.0
-offset_bottom = 308.0
+offset_bottom = 266.15955
 horizontal_alignment = 1
 
 [node name="Hero2Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1686591380]
@@ -190,17 +191,18 @@ flip_h = true
 [node name="Hero2ArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero2Actor" unique_id=656101168]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 248.0
-offset_right = 200.0
-offset_bottom = 276.0
+offset_left = -0.5612901
+offset_top = 217.17104
+offset_right = 199.4387
+offset_bottom = 245.17104
 horizontal_alignment = 1
 
 [node name="Hero2ArenaHpLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero2Actor" unique_id=287392192]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 280.0
+offset_top = 238.15955
 offset_right = 200.0
-offset_bottom = 308.0
+offset_bottom = 266.15955
 horizontal_alignment = 1
 
 [node name="Hero3Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1911396048]
@@ -239,17 +241,18 @@ flip_h = true
 [node name="Hero3ArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor" unique_id=1095082292]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 248.0
-offset_right = 200.0
-offset_bottom = 276.0
+offset_left = -0.5612901
+offset_top = 217.17104
+offset_right = 199.4387
+offset_bottom = 245.17104
 horizontal_alignment = 1
 
 [node name="Hero3ArenaHpLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor" unique_id=639391590]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 280.0
+offset_top = 238.15955
 offset_right = 200.0
-offset_bottom = 308.0
+offset_bottom = 266.15955
 horizontal_alignment = 1
 
 [node name="MonsterActor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1409564179]
@@ -282,17 +285,18 @@ stretch_mode = 5
 [node name="MonsterArenaNameLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/MonsterActor" unique_id=2126076361]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 286.0
+offset_top = 249.78125
 offset_right = 300.0
-offset_bottom = 314.0
+offset_bottom = 277.78125
 horizontal_alignment = 1
 
 [node name="MonsterArenaHpLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage/MonsterActor" unique_id=430761775]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 318.0
-offset_right = 300.0
-offset_bottom = 346.0
+offset_left = 0.6704945
+offset_top = 270.19345
+offset_right = 300.6705
+offset_bottom = 298.19345
 horizontal_alignment = 1
 
 [node name="BattleFloatLayer" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=511132240]
@@ -322,7 +326,7 @@ layout_mode = 0
 offset_left = 47.199074
 offset_top = 740.04565
 offset_right = 1531.1991
-offset_bottom = 872.04565
+offset_bottom = 953.8085
 
 [node name="TimelineMargin" type="MarginContainer" parent="Margin/RootVBox/TimelinePanel" unique_id=417045836]
 layout_mode = 2
@@ -342,12 +346,12 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
-text = "Timeline"
+text = "时间"
 
 [node name="PlaybackTimeLabel" type="Label" parent="Margin/RootVBox/TimelinePanel/TimelineMargin/TimelineVBox/EventHeader" unique_id=475470284]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Time 0.0s"
+text = "0.0s"
 
 [node name="BattleLog" type="RichTextLabel" parent="Margin/RootVBox/TimelinePanel/TimelineMargin/TimelineVBox" unique_id=1990560618]
 unique_name_in_owner = true

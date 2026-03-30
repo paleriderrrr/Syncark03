@@ -14,6 +14,7 @@
 [ext_resource type="Shader" uid="uid://dpbv4qvckqsb7" path="res://Shaders/title_center_fog.gdshader" id="13_center_fog_shader"]
 [ext_resource type="Texture2D" uid="uid://bgorvo3jje18w" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_exit_sign_button.png" id="13_ycay6"]
 [ext_resource type="Shader" uid="uid://b5xfan3u8nvwj" path="res://Shaders/title_edge_fog.gdshader" id="14_edge_fog_shader"]
+[ext_resource type="Texture2D" uid="uid://guasockb8x2q" path="res://Art/UI/UI_formal/开始白边.png" id="15_bsy20"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_center_fog"]
 shader = ExtResource("13_center_fog_shader")
@@ -39,19 +40,16 @@ shader = ExtResource("12_glow_shader")
 render_priority = 0
 shader = ExtResource("12_glow_shader")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_start_glow"]
-render_priority = 0
-shader = ExtResource("12_glow_shader")
-shader_parameter/glow_color = Color(1, 1, 1, 1)
-shader_parameter/glow_size = 18.0
-shader_parameter/glow_intensity = 8.0
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_edge_fog"]
 shader = ExtResource("14_edge_fog_shader")
 shader_parameter/fog_color = Color(1, 1, 1, 1)
 shader_parameter/fog_alpha = 0.4
 shader_parameter/edge_width = 0.05
 shader_parameter/edge_softness = 0.1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_start_glow"]
+render_priority = 0
+shader = ExtResource("12_glow_shader")
 
 [node name="TitleScreen" type="Control" unique_id=1535692023]
 layout_mode = 3
@@ -68,6 +66,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = 19.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -296,6 +295,6 @@ offset_top = 534.0
 offset_right = 1426.0
 offset_bottom = 868.0
 texture_normal = ExtResource("11_start")
-texture_pressed = ExtResource("11_start")
-texture_hover = ExtResource("11_start")
+texture_pressed = ExtResource("15_bsy20")
+texture_hover = ExtResource("15_bsy20")
 stretch_mode = 0

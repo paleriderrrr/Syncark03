@@ -54,8 +54,8 @@ func configure(
 	discount_label.text = "-%d%%" % discount_percent if discount_percent > 0 else ""
 	icon_rect.texture = resolved_texture
 	icon_rect.visible = resolved_texture != null
-	background_rect.texture = background_texture
-	background_rect.visible = background_texture != null
+	background_rect.texture = null
+	background_rect.visible = false
 	var rarity: StringName = entry.get("rarity", &"common")
 	var rarity_color: Color = _rarity_color(rarity)
 	rarity_bar.color = rarity_color

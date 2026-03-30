@@ -8,6 +8,16 @@ const ACTION_BUTTON_TEXT_TEXTURES := {
 	&"restart": preload("res://Art/UI/NewUI/UI1-3_slices/ui13_formal_restart_text.png"),
 }
 const ITEM_TOOLTIP_OVERLAY_SCENE := preload("res://Scenes/Components/immediate_item_tooltip_overlay.tscn")
+const SYNERGY_TOOLTIP_OVERLAY_SCENE := preload("res://Scenes/Components/immediate_synergy_tooltip_overlay.tscn")
+const DEFAULT_WANTED_POSTER_TEXTURE := preload("res://Art/UI/NewUI/ui1_2_wanted_poster.png")
+const WANTED_POSTER_TEXTURES := {
+	&"fruit_tree_king": preload("res://Art/Wanted/tree.png"),
+	&"cream_overlord": preload("res://Art/Wanted/cream.png"),
+	&"charging_beast": preload("res://Art/Wanted/cowdragon.png"),
+	&"water_giant": preload("res://Art/Wanted/water.png"),
+	&"bread_knight": preload("res://Art/Wanted/bread.png"),
+	&"spice_wizard": preload("res://Art/Wanted/mushroom.png"),
+}
 const TEXT_GOLD := "\u91d1\u5e01\uff1a%d"
 const TEXT_MARKET_REFRESH := "\u5237\u65b0\uff08%d\u91d1\uff09"
 const TEXT_SELECTED_ROLE := "\u5f53\u524d\u89d2\u8272\uff1a%s  \u751f\u547d %d/%d"
@@ -36,11 +46,11 @@ const TEXT_NODE_BATTLE := "\u6218\u6597"
 const TEXT_NODE_REST := "\u4f11\u6574"
 const TEXT_NODE_BOSS := "Boss\u6218"
 const TEXT_RISK_UNKNOWN := "\u672a\u77e5"
-const TEXT_RISK_OVERWHELM := "\u7893\u538b"
-const TEXT_RISK_STABLE := "\u7a33\u5b9a"
-const TEXT_RISK_CLOSE := "\u63a5\u8fd1"
-const TEXT_RISK_DANGEROUS := "\u5371\u9669"
-const TEXT_RISK_FATAL := "\u81f4\u547d"
+const TEXT_RISK_OVERWHELM := "\u6e38\u5203\u6709\u4f59"
+const TEXT_RISK_STABLE := "\u7a33\u64cd\u80dc\u5238"
+const TEXT_RISK_CLOSE := "\u52bf\u5747\u529b\u654c"
+const TEXT_RISK_DANGEROUS := "\u9669\u8c61\u73af\u751f"
+const TEXT_RISK_FATAL := "\u4e5d\u6b7b\u4e00\u751f"
 
 @onready var gold_label: Label = %GoldLabel
 @onready var route_label: Label = %RouteLabel
@@ -59,9 +69,13 @@ const TEXT_RISK_FATAL := "\u81f4\u547d"
 @onready var inventory_drop_zone: InventoryDropZone = %InventoryDropZone
 @onready var inventory_strip: ItemStrip = %InventoryStrip
 @onready var settings_button: Button = %SettingsButton
+@onready var help_button: Button = %HelpButton
 @onready var restore_button: Button = %RestoreButton
 @onready var action_button: Button = %ActionButton
 @onready var action_button_text: TextureRect = %ActionButtonText
+@onready var guide_overlay: Control = %GuideOverlay
+@onready var guide_backdrop: ColorRect = %GuideBackdrop
+@onready var guide_close_button: Button = %GuideCloseButton
 @onready var wanted_poster_rect: TextureRect = %WantedPosterRect
 @onready var next_monster_name_label: Label = %NextMonsterNameLabel
 @onready var next_monster_bounty_label: Label = %NextMonsterBountyLabel
@@ -93,6 +107,7 @@ var _intro_animating: bool = false
 var _last_node_type: StringName = &""
 var _active_synergy_ids: Dictionary = {}
 var item_tooltip_overlay: ImmediateItemTooltipOverlay
+var synergy_tooltip_overlay: ImmediateSynergyTooltipOverlay
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -108,6 +123,9 @@ func _ready() -> void:
 	item_tooltip_overlay = ITEM_TOOLTIP_OVERLAY_SCENE.instantiate() as ImmediateItemTooltipOverlay
 	item_tooltip_overlay.name = "ItemTooltipOverlay"
 	add_child(item_tooltip_overlay)
+	synergy_tooltip_overlay = SYNERGY_TOOLTIP_OVERLAY_SCENE.instantiate() as ImmediateSynergyTooltipOverlay
+	synergy_tooltip_overlay.name = "SynergyTooltipOverlay"
+	add_child(synergy_tooltip_overlay)
 	gold_label.add_theme_color_override("font_color", Color.WHITE)
 	selected_item_label.add_theme_color_override("font_color", Color.WHITE)
 	market_refresh_button.add_theme_color_override("font_color", Color.WHITE)
@@ -139,13 +157,18 @@ func _ready() -> void:
 	inventory_strip.entry_clicked.connect(_on_inventory_entry_clicked)
 	inventory_strip.entry_hover_started.connect(_on_strip_item_hover_started)
 	inventory_strip.entry_hover_ended.connect(_on_strip_item_hover_ended)
+	synergy_panel.synergy_hover_started.connect(_on_synergy_hover_started)
+	synergy_panel.synergy_hover_ended.connect(_on_synergy_hover_ended)
 	inventory_drop_zone.drop_received.connect(_on_inventory_strip_drop_requested)
 	inventory_drop_zone.accepted_sources = [&"market_offer", &"board_food", &"market_expansion"]
 	inventory_strip.card_drop_sources = [&"market_offer", &"board_food", &"market_expansion"]
 	inventory_strip.card_drop_target = inventory_drop_zone
 	settings_button.pressed.connect(_on_settings_pressed)
+	help_button.pressed.connect(_on_help_pressed)
 	restore_button.pressed.connect(_on_restore_pressed)
 	action_button.pressed.connect(_on_action_pressed)
+	guide_close_button.pressed.connect(_hide_guide_overlay)
+	guide_backdrop.gui_input.connect(_on_guide_backdrop_gui_input)
 	tab_buttons[&"warrior"].pressed.connect(func() -> void: _on_role_tab_pressed(&"warrior"))
 	tab_buttons[&"hunter"].pressed.connect(func() -> void: _on_role_tab_pressed(&"hunter"))
 	tab_buttons[&"mage"].pressed.connect(func() -> void: _on_role_tab_pressed(&"mage"))
@@ -155,7 +178,9 @@ func _ready() -> void:
 	wanted_poster_rect.mouse_entered.connect(_on_monster_hover_entered)
 	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
 	monster_tooltip_panel.visible = false
+	guide_overlay.visible = false
 	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
 	battle_modal_blocker.visible = false
 	_refresh()
 	_play_intro_animation()
@@ -245,6 +270,11 @@ func _play_intro_animation() -> void:
 			"node": settings_button,
 			"target": settings_button.position,
 			"start": settings_button.position + Vector2(-120.0, 120.0),
+		},
+		{
+			"node": help_button,
+			"target": help_button.position,
+			"start": help_button.position + Vector2(-120.0, 120.0),
 		},
 	]
 	for entry_variant in panel_entries:
@@ -409,12 +439,14 @@ func _refresh_board() -> void:
 	if not run_state.selected_item.is_empty() and not bool(run_state.selected_item.get("drag_session", false)):
 		preview_cells = run_state.get_selected_item_cells()
 	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
 	board_view.refresh_board(run_state.get_selected_character_state(), preview_cells, run_state.food_lookup, _food_textures)
 
 
 func _refresh_next_monster_panel() -> void:
 	var summary: Dictionary = _run_state().get_next_monster_summary()
 	if summary.is_empty():
+		wanted_poster_rect.texture = DEFAULT_WANTED_POSTER_TEXTURE
 		next_monster_name_label.text = TEXT_UNKNOWN
 		next_monster_bounty_label.text = TEXT_BOUNTY_EMPTY
 		next_monster_stage_label.text = TEXT_STAGE_EMPTY
@@ -431,6 +463,7 @@ func _refresh_next_monster_panel() -> void:
 		float(summary.get("attack_interval", 0.0)),
 	]
 	next_monster_skill_label.text = String(summary.get("skill_summary", ""))
+	wanted_poster_rect.texture = WANTED_POSTER_TEXTURES.get(summary.get("id", &""), DEFAULT_WANTED_POSTER_TEXTURE) as Texture2D
 	monster_tooltip_panel.visible = false
 func _build_route_label(run_state: Node) -> String:
 	var total_nodes: int = 0
@@ -506,16 +539,19 @@ func _on_board_cell_clicked(cell: Vector2i) -> void:
 	var run_state: Node = _run_state()
 	if not run_state.selected_item.is_empty():
 		item_tooltip_overlay.hide_tooltip()
+		synergy_tooltip_overlay.hide_tooltip()
 		if run_state.try_place_selected_item(cell):
 			_ui_sfx().play_place()
 
 func _on_board_cell_right_clicked(cell: Vector2i) -> void:
 	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
 	if _run_state().remove_item_at_cell(cell):
 		_ui_sfx().play_place()
 
 func _on_board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary) -> void:
 	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
 	var run_state: Node = _run_state()
 	match drag_data.get("source", &""):
 		&"market_offer":
@@ -573,6 +609,7 @@ func _on_board_hover_food_changed(item: Dictionary, global_rect: Rect2) -> void:
 	if definition == null:
 		item_tooltip_overlay.hide_tooltip()
 		return
+	synergy_tooltip_overlay.hide_tooltip()
 	var entry: Dictionary = {
 		"display_name": definition.display_name,
 		"definition_id": definition.id,
@@ -584,13 +621,22 @@ func _on_board_hover_food_cleared() -> void:
 	item_tooltip_overlay.hide_tooltip()
 
 func _on_strip_item_hover_started(entry: Dictionary, global_rect: Rect2) -> void:
+	synergy_tooltip_overlay.hide_tooltip()
 	item_tooltip_overlay.show_entry(entry, global_rect)
 
 func _on_strip_item_hover_ended() -> void:
 	item_tooltip_overlay.hide_tooltip()
 
+func _on_synergy_hover_started(entry: Dictionary, global_rect: Rect2) -> void:
+	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.show_entry(entry, global_rect)
+
+func _on_synergy_hover_ended() -> void:
+	synergy_tooltip_overlay.hide_tooltip()
+
 func _on_inventory_strip_drop_requested(drag_data: Dictionary) -> void:
 	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
 	var run_state: Node = _run_state()
 	match drag_data.get("source", &""):
 		&"market_offer":
@@ -617,15 +663,34 @@ func _on_restore_pressed() -> void:
 	_ui_sfx().play_button()
 	_run_state().try_restore_snapshot()
 
+func _on_help_pressed() -> void:
+	_ui_sfx().play_button()
+	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
+	_show_guide_overlay()
+
+func _show_guide_overlay() -> void:
+	guide_overlay.visible = true
+
+func _hide_guide_overlay() -> void:
+	guide_overlay.visible = false
+
+func _on_guide_backdrop_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_hide_guide_overlay()
+		get_viewport().set_input_as_handled()
+
 func _on_settings_pressed() -> void:
 	_ui_sfx().play_button()
 	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
 	_run_state().set_settings_return_scene("res://Scenes/main_editor_screen.tscn")
 	get_tree().change_scene_to_file("res://Scenes/settings_screen.tscn")
 
 func _on_action_pressed() -> void:
 	_ui_sfx().play_button()
 	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
 	_run_state().perform_primary_action()
 
 func _refresh_action_button_visual() -> void:
@@ -634,6 +699,7 @@ func _refresh_action_button_visual() -> void:
 
 func _on_market_refresh_pressed() -> void:
 	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
 	if _run_state().refresh_market_offers():
 		_ui_sfx().play_button()
 	else:
@@ -691,9 +757,15 @@ func _estimate_risk_label() -> String:
 func _on_role_tab_pressed(character_id: StringName) -> void:
 	_ui_sfx().play_button()
 	item_tooltip_overlay.hide_tooltip()
+	synergy_tooltip_overlay.hide_tooltip()
 	_run_state().select_character(character_id)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if guide_overlay.visible:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			_hide_guide_overlay()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
 		_run_state().rotate_selected_item()
 		get_viewport().set_input_as_handled()
