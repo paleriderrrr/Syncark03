@@ -34,6 +34,8 @@ const RESULT_BANNER_DROP_TIME := 0.42
 const RESULT_BANNER_SETTLE_TIME := 0.14
 const RESULT_BANNER_OVERSHOOT := 18.0
 
+@export var show_timeline_panel: bool = false
+
 @onready var title_label: Label = %TitleLabel
 @onready var route_label: Label = %BattleRouteLabel
 @onready var hero_actor_nodes: Array[Control] = [%Hero1Actor, %Hero2Actor, %Hero3Actor]
@@ -44,6 +46,7 @@ const RESULT_BANNER_OVERSHOOT := 18.0
 @onready var playback_time_label: Label = %PlaybackTimeLabel
 @onready var battle_log: RichTextLabel = %BattleLog
 @onready var result_label: Label = %ResultLabel
+@onready var timeline_panel: Control = $Margin/RootVBox/TimelinePanel
 @onready var battle_float_layer: Control = %BattleFloatLayer
 @onready var result_banner: TextureRect = %ResultBanner
 @onready var monster_actor: Control = %MonsterActor
@@ -73,6 +76,7 @@ func _ui_sfx() -> Node:
 	return get_node("/root/UiSfxPlayer")
 
 func _ready() -> void:
+	_apply_timeline_panel_visibility()
 	close_button.text = "Close"
 	close_button.pressed.connect(_on_close_pressed)
 	close_requested.connect(_on_close_pressed)
@@ -113,6 +117,9 @@ func _prepare_playback() -> void:
 	_reset_all_attack_animations()
 	_reset_result_banner()
 	_refresh_battle_visual_state()
+
+func _apply_timeline_panel_visibility() -> void:
+	timeline_panel.visible = show_timeline_panel
 
 func _play_report(report: Dictionary) -> void:
 	var previous_time: float = 0.0
