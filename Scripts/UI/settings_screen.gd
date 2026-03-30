@@ -1,9 +1,10 @@
 extends Control
 
 @onready var volume_slider: HSlider = %VolumeSlider
-@onready var restart_button: Button = %RestartButton
-@onready var editor_button: Button = %EditorButton
-@onready var back_button: Button = %BackButton
+@onready var restart_button: TextureButton = %RestartButton
+@onready var editor_button: TextureButton = %EditorButton
+@onready var back_button: TextureButton = %BackButton
+@onready var close_button: TextureButton = %CloseButton
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -19,7 +20,9 @@ func _ready() -> void:
 	restart_button.pressed.connect(_on_restart_pressed)
 	editor_button.pressed.connect(_on_editor_pressed)
 	back_button.pressed.connect(_on_back_pressed)
-	volume_slider.value = 100.0
+	close_button.pressed.connect(_on_close_pressed)
+	volume_slider.value_changed.connect(_on_volume_changed)
+	volume_slider.set_value_no_signal(_run_state().get_master_volume_percent())
 
 func _on_restart_pressed() -> void:
 	_ui_sfx().play_button()
@@ -32,3 +35,11 @@ func _on_back_pressed() -> void:
 func _on_editor_pressed() -> void:
 	_ui_sfx().play_button()
 	get_tree().change_scene_to_file("res://Scenes/main_editor_screen.tscn")
+
+func _on_close_pressed() -> void:
+	_ui_sfx().play_button()
+	var return_path: String = _run_state().consume_settings_return_scene("res://Scenes/title_screen.tscn")
+	get_tree().change_scene_to_file(return_path)
+
+func _on_volume_changed(value: float) -> void:
+	_run_state().set_master_volume_percent(value)

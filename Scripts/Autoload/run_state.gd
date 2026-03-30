@@ -71,6 +71,8 @@ var spice_purchase_refund: int = 0
 var battle_reports: Array[Dictionary] = []
 var pre_battle_snapshot: Dictionary = {}
 var run_finished: bool = false
+var settings_return_scene_path: String = "res://Scenes/title_screen.tscn"
+var master_volume_percent: float = 100.0
 
 var _instance_counter: int = 1
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -78,6 +80,7 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 func _ready() -> void:
 	_rng.randomize()
 	_load_static_data()
+	apply_master_volume()
 	start_new_run()
 
 func _load_static_data() -> void:
@@ -126,6 +129,31 @@ func start_new_run() -> void:
 	state_changed.emit()
 	selected_character_changed.emit(selected_character_id)
 	selected_item_changed.emit()
+
+func set_settings_return_scene(path: String) -> void:
+	settings_return_scene_path = path
+
+func consume_settings_return_scene(fallback_path: String) -> String:
+	var path: String = settings_return_scene_path
+	if path.is_empty():
+		path = fallback_path
+	settings_return_scene_path = fallback_path
+	return path
+
+func set_master_volume_percent(value: float) -> void:
+	master_volume_percent = clampf(value, 0.0, 100.0)
+	apply_master_volume()
+
+func get_master_volume_percent() -> float:
+	return master_volume_percent
+
+func apply_master_volume() -> void:
+	var bus_index: int = AudioServer.get_bus_index(&"Master")
+	if bus_index < 0:
+		return
+	var linear_value: float = master_volume_percent / 100.0
+	var db_value: float = linear_to_db(linear_value) if linear_value > 0.0 else -80.0
+	AudioServer.set_bus_volume_db(bus_index, db_value)
 
 func _init_character_states() -> void:
 	for definition in character_roster.characters:

@@ -4,11 +4,11 @@ class_name BentoBoardView
 signal cell_clicked(cell: Vector2i)
 signal cell_right_clicked(cell: Vector2i)
 signal board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary)
+signal hover_food_changed(item: Dictionary, global_rect: Rect2)
+signal hover_food_cleared
 
 const GRID_WIDTH := 8
 const GRID_HEIGHT := 6
-const BASE_CELL_COLOR := Color(0.88, 0.78, 0.62, 0.18)
-const EXPANSION_CELL_COLOR := Color(0.62, 0.82, 0.9, 0.16)
 const BLOCKED_CELL_COLOR := Color(0.22, 0.24, 0.28, 0.08)
 const VALID_PREVIEW_COLOR := Color(0.44, 0.9, 0.52, 0.55)
 const INVALID_PREVIEW_COLOR := Color(0.92, 0.36, 0.36, 0.55)
@@ -21,8 +21,12 @@ var _character_state: Dictionary = {}
 var _preview_cells: Array[Vector2i] = []
 var _food_lookup: Dictionary = {}
 var _texture_lookup: Dictionary = {}
+var _food_board_texture_lookup: Dictionary = {}
+var _base_lunchbox_textures: Dictionary = {}
+var _expansion_lunchbox_textures: Dictionary = {}
 var _hover_cells: Array[Vector2i] = []
 var _hover_valid: bool = false
+var _hovered_food_instance_id: StringName = &""
 
 func _ready() -> void:
 	_apply_cell_metrics()
@@ -39,6 +43,22 @@ func set_food_textures(texture_lookup: Dictionary) -> void:
 	_texture_lookup = texture_lookup.duplicate(false)
 	queue_redraw()
 
+func set_food_board_textures(texture_lookup: Dictionary) -> void:
+	_food_board_texture_lookup = texture_lookup.duplicate(true)
+	queue_redraw()
+
+func set_lunchbox_textures(base_lookup: Dictionary, expansion_lookup: Dictionary) -> void:
+	_base_lunchbox_textures = base_lookup.duplicate(false)
+	_expansion_lunchbox_textures = expansion_lookup.duplicate(true)
+	queue_redraw()
+
+func has_base_lunchbox_texture(character_id: StringName) -> bool:
+	return _base_lunchbox_textures.has(character_id)
+
+func has_expansion_lunchbox_texture(character_id: StringName, size_key: StringName) -> bool:
+	var role_lookup: Dictionary = _expansion_lunchbox_textures.get(character_id, {})
+	return role_lookup.has(size_key)
+
 func refresh_board(character_state: Dictionary, preview_cells: Array[Vector2i], food_lookup: Dictionary, texture_lookup: Dictionary = {}) -> void:
 	_character_state = character_state.duplicate(true)
 	_preview_cells = preview_cells.duplicate()
@@ -52,22 +72,14 @@ func _apply_cell_metrics() -> void:
 	custom_minimum_size = Vector2(GRID_WIDTH * cell_pixel_size, GRID_HEIGHT * cell_pixel_size)
 
 func _draw() -> void:
-	var expansion_lookup: Dictionary = {}
-	for expansion in _character_state.get("placed_expansions", []):
-		for expansion_cell_variant in expansion.get("cells", []):
-			var expansion_cell: Vector2i = expansion_cell_variant
-			expansion_lookup["%d:%d" % [expansion_cell.x, expansion_cell.y]] = "expansion"
-	var active_lookup: Dictionary = ShapeUtils.cells_to_lookup(_typed_cells(_character_state.get("active_cells", [])))
 	for y in range(GRID_HEIGHT):
 		for x in range(GRID_WIDTH):
 			var cell_rect := Rect2(Vector2(x * cell_pixel_size, y * cell_pixel_size), Vector2(cell_pixel_size, cell_pixel_size))
-			var key := "%d:%d" % [x, y]
-			var color: Color = BLOCKED_CELL_COLOR
-			if active_lookup.has(key):
-				color = BASE_CELL_COLOR
-				if expansion_lookup.has(key):
-					color = EXPANSION_CELL_COLOR
-			draw_rect(cell_rect, color, true)
+			draw_rect(cell_rect, BLOCKED_CELL_COLOR, true)
+	var character_id: StringName = _character_state.get("id", &"")
+	_draw_base_lunchbox(character_id)
+	for expansion in _character_state.get("placed_expansions", []):
+		_draw_expansion_lunchbox(character_id, expansion)
 	for item in _character_state.get("placed_foods", []):
 		_draw_food_item(item)
 	var overlay_color: Color = VALID_PREVIEW_COLOR if _hover_valid else INVALID_PREVIEW_COLOR
@@ -77,20 +89,75 @@ func _draw() -> void:
 		_draw_overlay_cell(cell, VALID_PREVIEW_COLOR)
 
 func _draw_food_item(item: Dictionary) -> void:
-	var bounds: Rect2 = _get_cells_bounds(item.get("cells", []))
+	var cells: Array[Vector2i] = _typed_cells(item.get("cells", []))
+	var bounds: Rect2 = _get_cells_bounds(cells)
 	var definition: FoodDefinition = _food_lookup.get(item.get("definition_id", &""), null) as FoodDefinition
 	var rarity_color: Color = _color_for_rarity(definition.rarity if definition != null else &"common")
-	draw_rect(bounds.grow(-6.0), rarity_color, true)
-	draw_rect(bounds.grow(-6.0), Color(0.1, 0.1, 0.1, 0.85), false, 2.0)
-	var texture: Texture2D = _texture_lookup.get(item.get("definition_id", &""), null) as Texture2D
-	if texture != null:
-		draw_texture_rect(texture, bounds.grow(-10.0), false)
+	_draw_food_shape_background(cells, rarity_color)
+	var rotation_lookup: Dictionary = _food_board_texture_lookup.get(item.get("definition_id", &""), {})
+	var baked_texture: Texture2D = rotation_lookup.get(posmod(int(item.get("rotation", 0)), 4), null) as Texture2D
+	if baked_texture != null:
+		draw_texture_rect(baked_texture, bounds, false)
+	elif _texture_lookup.has(item.get("definition_id", &"")):
+		draw_texture_rect(_texture_lookup[item.get("definition_id", &"")], bounds, false)
 	elif definition != null and not definition.display_name.is_empty():
 		draw_string(get_theme_default_font(), bounds.position + Vector2(10, bounds.size.y * 0.55), definition.display_name.left(2), HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x - 20, 18, Color.BLACK)
+
+func _draw_base_lunchbox(character_id: StringName) -> void:
+	var texture: Texture2D = _base_lunchbox_textures.get(character_id, null) as Texture2D
+	if texture == null:
+		return
+	var base_cells: Array[Vector2i] = ShapeUtils.translate_cells(_typed_cells(_character_state.get("base_shape", [])), _character_state.get("base_anchor", Vector2i.ZERO))
+	var bounds: Rect2 = _get_cells_bounds(base_cells)
+	draw_texture_rect(texture, bounds, false)
+
+func _draw_expansion_lunchbox(character_id: StringName, expansion: Dictionary) -> void:
+	var role_lookup: Dictionary = _expansion_lunchbox_textures.get(character_id, {})
+	if role_lookup.is_empty():
+		return
+	var size_key: StringName = _size_key_for_cells(expansion.get("cells", []))
+	var texture: Texture2D = role_lookup.get(size_key, null) as Texture2D
+	if texture == null:
+		return
+	draw_texture_rect(texture, _get_cells_bounds(expansion.get("cells", [])), false)
+
+func _size_key_for_cells(cells: Array) -> StringName:
+	if cells.is_empty():
+		return &""
+	var bounds: Rect2 = _get_cells_bounds(cells)
+	var width_cells: int = int(round(bounds.size.x / float(cell_pixel_size)))
+	var height_cells: int = int(round(bounds.size.y / float(cell_pixel_size)))
+	return StringName("%dx%d" % [width_cells, height_cells])
 
 func _draw_overlay_cell(cell: Vector2i, color: Color) -> void:
 	var cell_rect := Rect2(Vector2(cell.x * cell_pixel_size, cell.y * cell_pixel_size), Vector2(cell_pixel_size, cell_pixel_size))
 	draw_rect(cell_rect.grow(-4.0), color, true)
+
+func _draw_food_shape_background(cells: Array[Vector2i], rarity_color: Color) -> void:
+	var cell_lookup: Dictionary = ShapeUtils.cells_to_lookup(cells)
+	for cell in cells:
+		var rect: Rect2 = _food_cell_rect(cell)
+		draw_rect(rect, rarity_color, true)
+		_draw_food_cell_outline(cell, rect, cell_lookup)
+
+func _draw_food_cell_outline(cell: Vector2i, rect: Rect2, cell_lookup: Dictionary) -> void:
+	var stroke: Color = Color(0.1, 0.1, 0.1, 0.85)
+	var stroke_width: float = 2.0
+	var top_left: Vector2 = rect.position
+	var top_right: Vector2 = rect.position + Vector2(rect.size.x, 0.0)
+	var bottom_left: Vector2 = rect.position + Vector2(0.0, rect.size.y)
+	var bottom_right: Vector2 = rect.position + rect.size
+	if not cell_lookup.has("%d:%d" % [cell.x, cell.y - 1]):
+		draw_line(top_left, top_right, stroke, stroke_width)
+	if not cell_lookup.has("%d:%d" % [cell.x, cell.y + 1]):
+		draw_line(bottom_left, bottom_right, stroke, stroke_width)
+	if not cell_lookup.has("%d:%d" % [cell.x - 1, cell.y]):
+		draw_line(top_left, bottom_left, stroke, stroke_width)
+	if not cell_lookup.has("%d:%d" % [cell.x + 1, cell.y]):
+		draw_line(top_right, bottom_right, stroke, stroke_width)
+
+func _food_cell_rect(cell: Vector2i) -> Rect2:
+	return Rect2(Vector2(cell.x * cell_pixel_size, cell.y * cell_pixel_size), Vector2(cell_pixel_size, cell_pixel_size))
 
 func _get_cells_bounds(cells: Array) -> Rect2:
 	if cells.is_empty():
@@ -110,8 +177,53 @@ func _get_cells_bounds(cells: Array) -> Rect2:
 		Vector2((max_x - min_x + 1) * cell_pixel_size, (max_y - min_y + 1) * cell_pixel_size)
 	)
 
+static func compute_food_cover_source_region(texture_size: Vector2, target_size: Vector2) -> Rect2:
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0 or target_size.x <= 0.0 or target_size.y <= 0.0:
+		return Rect2(Vector2.ZERO, texture_size)
+	var texture_ratio: float = texture_size.x / texture_size.y
+	var target_ratio: float = target_size.x / target_size.y
+	if texture_ratio > target_ratio:
+		var crop_width: float = texture_size.y * target_ratio
+		var crop_x: float = (texture_size.x - crop_width) * 0.5
+		return Rect2(Vector2(crop_x, 0.0), Vector2(crop_width, texture_size.y))
+	var crop_height: float = texture_size.x / target_ratio
+	var crop_y: float = (texture_size.y - crop_height) * 0.5
+	return Rect2(Vector2(0.0, crop_y), Vector2(texture_size.x, crop_height))
+
+static func compute_food_cell_source_region(cell: Vector2i, cells: Array[Vector2i], source_region: Rect2) -> Rect2:
+	if cells.is_empty():
+		return source_region
+	var min_x: int = cells[0].x
+	var max_x: int = cells[0].x
+	var min_y: int = cells[0].y
+	var max_y: int = cells[0].y
+	for occupied_cell in cells:
+		min_x = min(min_x, occupied_cell.x)
+		max_x = max(max_x, occupied_cell.x)
+		min_y = min(min_y, occupied_cell.y)
+		max_y = max(max_y, occupied_cell.y)
+	var width_cells: float = float(max_x - min_x + 1)
+	var height_cells: float = float(max_y - min_y + 1)
+	var relative_x: float = float(cell.x - min_x) / width_cells
+	var relative_y: float = float(cell.y - min_y) / height_cells
+	var width_fraction: float = 1.0 / width_cells
+	var height_fraction: float = 1.0 / height_cells
+	return Rect2(
+		Vector2(
+			source_region.position.x + source_region.size.x * relative_x,
+			source_region.position.y + source_region.size.y * relative_y
+		),
+		Vector2(
+			source_region.size.x * width_fraction,
+			source_region.size.y * height_fraction
+		)
+	)
+
 func _gui_input(event: InputEvent) -> void:
 	if read_only:
+		return
+	if event is InputEventMouseMotion:
+		_update_food_hover(event.position)
 		return
 	if event is InputEventMouseButton and event.pressed:
 		var cell: Vector2i = _position_to_cell(event.position)
@@ -160,6 +272,8 @@ func _notification(what: int) -> void:
 		_hover_cells.clear()
 		_hover_valid = false
 		queue_redraw()
+	elif what == NOTIFICATION_MOUSE_EXIT:
+		_clear_food_hover()
 
 func _build_drag_payload(cell: Vector2i) -> Dictionary:
 	for item in _character_state.get("placed_foods", []):
@@ -314,6 +428,37 @@ func _position_to_cell(position: Vector2) -> Vector2i:
 
 func _is_cell_in_bounds(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.y >= 0 and cell.x < GRID_WIDTH and cell.y < GRID_HEIGHT
+
+func _update_food_hover(position: Vector2) -> void:
+	var cell: Vector2i = _position_to_cell(position)
+	if not _is_cell_in_bounds(cell):
+		_clear_food_hover()
+		return
+	var item: Dictionary = _find_food_at_cell(cell)
+	if item.is_empty():
+		_clear_food_hover()
+		return
+	var instance_id: StringName = item.get("instance_id", &"")
+	if _hovered_food_instance_id == instance_id:
+		return
+	_hovered_food_instance_id = instance_id
+	var local_rect: Rect2 = _get_cells_bounds(item.get("cells", []))
+	var global_rect := Rect2(get_global_position() + local_rect.position, local_rect.size)
+	hover_food_changed.emit(item.duplicate(true), global_rect)
+
+func _clear_food_hover() -> void:
+	if _hovered_food_instance_id == &"":
+		return
+	_hovered_food_instance_id = &""
+	hover_food_cleared.emit()
+
+func _find_food_at_cell(cell: Vector2i) -> Dictionary:
+	var key: String = "%d:%d" % [cell.x, cell.y]
+	for item_variant in _character_state.get("placed_foods", []):
+		var item: Dictionary = item_variant
+		if ShapeUtils.cells_to_lookup(item.get("cells", [])).has(key):
+			return item
+	return {}
 
 func _color_for_rarity(rarity: StringName) -> Color:
 	match rarity:

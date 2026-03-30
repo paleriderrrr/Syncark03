@@ -21,7 +21,7 @@ func _run() -> void:
 	_assert(editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/WarriorTabButton") != null, "Warrior role tab should exist")
 	_assert(editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/warriorPreviewBoard") == null, "Legacy warrior preview board should be removed")
 	var warrior_tab: Button = editor.get_node("LeftPanel/LeftCenter/LeftVBox/WarriorTabButton")
-	_assert(warrior_tab.text.contains("HP "), "Role tab should show inherited HP text")
+	_assert(warrior_tab.icon != null, "Role tab should render an icon-based tag")
 	_assert(editor.get_node_or_null("RightPanel/NextMonsterPanel") != null, "Next monster panel should exist")
 	_assert(editor.get_node_or_null("RightPanel/MonsterTooltipPanel") != null, "Monster tooltip panel should exist")
 	_assert(editor.get_node_or_null("RightPanel/SynergyPanel") != null, "Synergy panel should exist")
@@ -47,6 +47,19 @@ func _run() -> void:
 	_assert(editor.get_node_or_null("BottomInventoryPanel/InventoryDropZone/InventoryStrip/VBox/Scroll") == null, "Bottom inventory strip should no longer use a ScrollContainer")
 	_assert(editor.get_node_or_null("BottomInventoryPanel/InventoryDropZone/InventoryStrip/VBox/StripHBox/Viewport") != null, "Bottom inventory strip should use a fixed viewport")
 	_assert(editor.get_node_or_null("CenterPanel/BoardFrame/BoardCenter/BentoBoardView") != null, "Board should be centered inside the editor area")
+	var board_view: Node = editor.get_node("CenterPanel/BoardFrame/BoardCenter/BentoBoardView")
+	_assert(board_view.has_method("set_lunchbox_textures"), "Board view should accept lunchbox texture lookups")
+	_assert(board_view.has_method("has_base_lunchbox_texture"), "Board view should expose base lunchbox texture availability")
+	_assert(board_view.has_method("has_expansion_lunchbox_texture"), "Board view should expose expansion lunchbox texture availability")
+	if board_view.has_method("has_base_lunchbox_texture"):
+		_assert(bool(board_view.call("has_base_lunchbox_texture", &"warrior")), "Board view should load a warrior base lunchbox texture")
+		_assert(bool(board_view.call("has_base_lunchbox_texture", &"hunter")), "Board view should load a hunter base lunchbox texture")
+		_assert(bool(board_view.call("has_base_lunchbox_texture", &"mage")), "Board view should load a mage base lunchbox texture")
+	if board_view.has_method("has_expansion_lunchbox_texture"):
+		_assert(bool(board_view.call("has_expansion_lunchbox_texture", &"warrior", &"1x1")), "Board view should load warrior 1x1 expansion texture")
+		_assert(bool(board_view.call("has_expansion_lunchbox_texture", &"warrior", &"2x2")), "Board view should load warrior 2x2 expansion texture")
+		_assert(bool(board_view.call("has_expansion_lunchbox_texture", &"warrior", &"1x4")), "Board view should load warrior 1x4 expansion texture")
+		_assert(bool(board_view.call("has_expansion_lunchbox_texture", &"warrior", &"2x4")), "Board view should load warrior 2x4 expansion texture")
 	_assert(run_state.has_method("get_action_button_visual_key"), "RunState should expose a visual key for the action button")
 	if run_state.has_method("get_action_button_visual_key"):
 		_assert(run_state.call("get_action_button_visual_key") == &"continue", "Market node should map to continue visual")
@@ -60,12 +73,12 @@ func _run() -> void:
 		_assert(run_state.call("get_action_button_visual_key") == &"restart", "Finished runs should map to restart visual")
 		run_state.run_finished = false
 		run_state.current_route_index = 0
-	await process_frame
-	await process_frame
+	await create_timer(1.0).timeout
 	var viewport_rect := Rect2(Vector2.ZERO, editor.get_viewport().get_visible_rect().size)
-	_assert(_rect_inside_viewport(editor.get_node("StatusPanel").get_global_rect(), viewport_rect), "Status panel should remain inside the viewport")
-	_assert(_rect_inside_viewport(editor.get_node("TopMarketPanel").get_global_rect(), viewport_rect), "Top market panel should remain inside the viewport")
-	_assert(_rect_inside_viewport(editor.get_node("BottomInventoryPanel").get_global_rect(), viewport_rect), "Bottom inventory panel should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("TopMarketPanel/GoldIcon").get_global_rect(), viewport_rect), "Gold icon should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("RightPanel/StageInfoPanel").get_global_rect(), viewport_rect), "Stage info panel should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip").get_global_rect(), viewport_rect), "Top market strip should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("BottomInventoryPanel/InventoryDropZone/InventoryStrip").get_global_rect(), viewport_rect), "Bottom inventory strip should remain inside the viewport")
 	run_state.current_gold = 999
 	run_state.current_market_index = 4
 	for _i in range(10):

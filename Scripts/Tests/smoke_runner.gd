@@ -21,9 +21,9 @@ func _run() -> void:
 	_assert(run_state.character_roster.characters.size() == 3, "Character roster should contain 3 roles")
 	_assert(run_state.food_catalog.foods.size() == 54, "Food catalog should contain 54 foods")
 	_assert(run_state.current_market_offers.size() == 5, "First market should generate 5 offers")
-	_assert(editor.get_node_or_null("Margin/RootVBox/MainHBox/LeftPanel/LeftVBox/WarriorTabButton") != null, "Warrior tab should be visible")
-	_assert(editor.get_node_or_null("Margin/RootVBox/TopMarketPanel/TopMarketStrip") != null, "Top market strip should be visible")
-	_assert(editor.get_node_or_null("Margin/RootVBox/BottomInventoryPanel/InventoryStrip") != null, "Bottom inventory strip should be visible")
+	_assert(editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/WarriorTabButton") != null, "Warrior tab should be visible")
+	_assert(editor.get_node_or_null("TopMarketPanel/TopMarketVBox/TopMarketStrip") != null, "Top market strip should be visible")
+	_assert(editor.get_node_or_null("BottomInventoryPanel/InventoryDropZone/InventoryStrip") != null, "Bottom inventory strip should be visible")
 
 	var bought_offer: bool = false
 	for offer in run_state.current_market_offers:
@@ -34,8 +34,9 @@ func _run() -> void:
 	_assert(bought_offer, "Smoke test should be able to buy at least one food offer")
 	_assert(not run_state.shared_inventory.is_empty(), "Inventory should contain purchased food")
 
-	var first_item: Dictionary = run_state.shared_inventory[0]
-	run_state.select_inventory_item(first_item["instance_id"])
+	var known_item: Dictionary = run_state.generate_item_instance(&"red_berry")
+	run_state.shared_inventory.append(known_item)
+	run_state.select_inventory_item(known_item["instance_id"])
 	var placed: bool = false
 	for rotation in range(4):
 		if rotation > 0:

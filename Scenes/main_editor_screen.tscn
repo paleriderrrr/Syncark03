@@ -12,11 +12,11 @@
 [ext_resource type="Script" uid="uid://bmulngcjm5nc" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
 [ext_resource type="Texture2D" uid="uid://bc74ak8pfe8q0" path="res://Art/UI/NewUI/ui1_2_role_tab_mid.png" id="8_tijtm"]
 [ext_resource type="Texture2D" uid="uid://b8f04p7jexi2c" path="res://Art/UI/NewUI/ui2_2_panel_bottom_red.png" id="9_fwcvo"]
-[ext_resource type="Texture2D" uid="uid://cgkifvocrjgpj" path="res://Art/UI/NewUI/ui1_2_role_tab_top.png" id="10_hkonf"]
 [ext_resource type="Texture2D" uid="uid://b3slmqoqlubn2" path="res://Art/UI/NewUI/ui1_2_board_wood.png" id="11_45gjs"]
 [ext_resource type="Texture2D" uid="uid://da2qea6expn6s" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_role_tab_bottom_purple.png" id="12_80818"]
 [ext_resource type="Texture2D" uid="uid://nwa0115tugbr" path="res://Art/UI/NewUI/告示.png" id="13_3wget"]
 [ext_resource type="Texture2D" uid="uid://se3u2duh8jvu" path="res://Art/UI/NewUI/ui1_2_wanted_poster.png" id="13_hkonf"]
+[ext_resource type="Texture2D" uid="uid://ckpeww6batoig" path="res://Art/UI/Slices/ui1_role_tag_green_character.png" id="13_qli1y"]
 [ext_resource type="Texture2D" uid="uid://bp8upp5fdi2kh" path="res://Art/UI/NewUI/物品商店底图.png" id="14_shop_card"]
 [ext_resource type="FontFile" uid="uid://bgm3gwcogagmy" path="res://Art/Fonts/handwriting.ttf" id="15_80818"]
 [ext_resource type="Texture2D" uid="uid://7yfxwssbspu7" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_continue_text.png" id="15_action_text"]
@@ -143,6 +143,7 @@ offset_left = 94.0
 offset_top = 18.0
 offset_right = 268.0
 offset_bottom = 61.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 36
 text = "閲戝竵锛?"
 
@@ -224,7 +225,7 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_fonts/font = ExtResource("15_80818")
-theme_override_font_sizes/font_size = 36
+theme_override_font_sizes/font_size = 28
 text = "鍒锋柊"
 icon = ExtResource("4_fwcvo")
 flat = true
@@ -316,12 +317,12 @@ expand_icon = true
 [node name="MageTabButton" type="Button" parent="LeftPanel/LeftCenter/LeftVBox" unique_id=215687389]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 20.853197
-offset_top = 339.617
-offset_right = 320.8532
-offset_bottom = 489.617
+offset_left = 25.487244
+offset_top = 299.51147
+offset_right = 337.20493
+offset_bottom = 488.2428
 scale = Vector2(0.9886, 0.8371975)
-icon = ExtResource("10_hkonf")
+icon = ExtResource("13_qli1y")
 flat = true
 expand_icon = true
 
@@ -466,10 +467,10 @@ autowrap_mode = 3
 [node name="SynergyPanel" parent="RightPanel" unique_id=1134522113 instance=ExtResource("5_synergy")]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = -324.0
-offset_top = 121.0
-offset_right = -229.0
-offset_bottom = 397.0
+offset_left = -461.0
+offset_top = 15.0
+offset_right = -234.0
+offset_bottom = 547.0
 
 [node name="StageInfoPanel" type="Control" parent="RightPanel" unique_id=201420001]
 anchors_preset = 0

@@ -43,6 +43,9 @@ const ACTION_BUTTON_TEXT_TEXTURES := {
 }
 
 var _food_textures: Dictionary = {}
+var _food_board_textures: Dictionary = {}
+var _base_lunchbox_textures: Dictionary = {}
+var _expansion_lunchbox_textures: Dictionary = {}
 var _role_names: Dictionary = {}
 var _market_panel_open_position := Vector2.ZERO
 var _market_panel_closed_position := Vector2.ZERO
@@ -52,6 +55,7 @@ var _intro_tween: Tween
 var _intro_animating: bool = false
 var _last_node_type: StringName = &""
 var _active_synergy_ids: Dictionary = {}
+var _board_hover_tooltip: PopupPanel = null
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -63,8 +67,10 @@ func _ui_sfx() -> Node:
 	return get_node("/root/UiSfxPlayer")
 
 func _ready() -> void:
-	ProjectSettings.set_setting("gui/timers/tooltip_delay_sec", 0.01)
 	_bgm_player().play_non_battle()
+	gold_label.add_theme_color_override("font_color", Color.WHITE)
+	selected_item_label.add_theme_color_override("font_color", Color.WHITE)
+	market_refresh_button.add_theme_color_override("font_color", Color.WHITE)
 	_market_panel_open_position = top_market_panel.position
 	_market_panel_closed_position = Vector2(_market_panel_open_position.x, -top_market_panel.size.y - 24.0)
 	top_market_panel.position = _market_panel_closed_position
@@ -72,6 +78,9 @@ func _ready() -> void:
 	var run_state: Node = _run_state()
 	run_state.ensure_initialized()
 	_food_textures = FoodVisuals.build_food_texture_lookup()
+	_food_board_textures = FoodVisuals.build_food_board_texture_lookup()
+	_base_lunchbox_textures = LunchboxVisuals.build_role_base_texture_lookup()
+	_expansion_lunchbox_textures = LunchboxVisuals.build_role_expansion_texture_lookup()
 	_role_names = run_state.get_character_display_names()
 	run_state.state_changed.connect(_refresh)
 	run_state.selected_character_changed.connect(_on_selected_character_changed)
@@ -80,6 +89,8 @@ func _ready() -> void:
 	board_view.cell_clicked.connect(_on_board_cell_clicked)
 	board_view.cell_right_clicked.connect(_on_board_cell_right_clicked)
 	board_view.board_drop_requested.connect(_on_board_drop_requested)
+	board_view.hover_food_changed.connect(_on_board_hover_food_changed)
+	board_view.hover_food_cleared.connect(_on_board_hover_food_cleared)
 	top_market_strip.entry_clicked.connect(_on_market_entry_clicked)
 	market_refresh_button.pressed.connect(_on_market_refresh_pressed)
 	inventory_strip.entry_clicked.connect(_on_inventory_entry_clicked)
@@ -94,6 +105,8 @@ func _ready() -> void:
 	tab_buttons[&"hunter"].pressed.connect(func() -> void: _on_role_tab_pressed(&"hunter"))
 	tab_buttons[&"mage"].pressed.connect(func() -> void: _on_role_tab_pressed(&"mage"))
 	board_view.set_food_textures(_food_textures)
+	board_view.set_food_board_textures(_food_board_textures)
+	board_view.set_lunchbox_textures(_base_lunchbox_textures, _expansion_lunchbox_textures)
 	wanted_poster_rect.mouse_entered.connect(_on_monster_hover_entered)
 	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
 	monster_tooltip_panel.visible = false
@@ -336,6 +349,7 @@ func _refresh_board() -> void:
 	var preview_cells: Array[Vector2i] = []
 	if not run_state.selected_item.is_empty():
 		preview_cells = run_state.get_selected_item_cells()
+	_hide_board_hover_tooltip()
 	board_view.refresh_board(run_state.get_selected_character_state(), preview_cells, run_state.food_lookup, _food_textures)
 
 func _refresh_next_monster_panel() -> void:
@@ -438,10 +452,12 @@ func _on_board_cell_clicked(cell: Vector2i) -> void:
 			_ui_sfx().play_place()
 
 func _on_board_cell_right_clicked(cell: Vector2i) -> void:
+	_hide_board_hover_tooltip()
 	if _run_state().remove_item_at_cell(cell):
 		_ui_sfx().play_place()
 
 func _on_board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary) -> void:
+	_hide_board_hover_tooltip()
 	var run_state: Node = _run_state()
 	match drag_data.get("source", &""):
 		&"market_offer":
@@ -483,6 +499,22 @@ func _on_board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary) -> v
 				_ui_sfx().play_place()
 	_refresh()
 
+func _on_board_hover_food_changed(item: Dictionary, global_rect: Rect2) -> void:
+	var run_state: Node = _run_state()
+	var definition: FoodDefinition = run_state.get_food_definition(item.get("definition_id", &""))
+	if definition == null:
+		_hide_board_hover_tooltip()
+		return
+	var entry: Dictionary = {
+		"display_name": definition.display_name,
+		"definition_id": definition.id,
+	}
+	_apply_food_tooltip(entry, definition)
+	_show_board_hover_tooltip(entry, global_rect)
+
+func _on_board_hover_food_cleared() -> void:
+	_hide_board_hover_tooltip()
+
 func _on_inventory_strip_drop_requested(drag_data: Dictionary) -> void:
 	var run_state: Node = _run_state()
 	match drag_data.get("source", &""):
@@ -509,6 +541,7 @@ func _on_restore_pressed() -> void:
 
 func _on_settings_pressed() -> void:
 	_ui_sfx().play_button()
+	_run_state().set_settings_return_scene("res://Scenes/main_editor_screen.tscn")
 	get_tree().change_scene_to_file("res://Scenes/settings_screen.tscn")
 
 func _on_action_pressed() -> void:
@@ -535,6 +568,38 @@ func _on_monster_hover_entered() -> void:
 
 func _on_monster_hover_exited() -> void:
 	monster_tooltip_panel.visible = false
+
+func _show_board_hover_tooltip(entry: Dictionary, source_rect: Rect2) -> void:
+	var root: Window = get_tree().root
+	if root == null:
+		return
+	if not is_instance_valid(_board_hover_tooltip):
+		_board_hover_tooltip = PopupPanel.new()
+		_board_hover_tooltip.transparent_bg = true
+		root.add_child(_board_hover_tooltip)
+	for child in _board_hover_tooltip.get_children():
+		child.queue_free()
+	var panel_content: PanelContainer = ItemTooltipBuilder.build_tooltip_panel(entry)
+	_board_hover_tooltip.add_child(panel_content)
+	panel_content.position = Vector2.ZERO
+	await get_tree().process_frame
+	var tooltip_size: Vector2 = panel_content.get_combined_minimum_size()
+	_board_hover_tooltip.size = tooltip_size
+	var viewport_rect: Rect2 = get_viewport_rect()
+	var popup_position := Vector2(source_rect.end.x + 12.0, source_rect.position.y)
+	if popup_position.x + tooltip_size.x > viewport_rect.size.x - 8.0:
+		popup_position.x = source_rect.position.x - tooltip_size.x - 12.0
+	if popup_position.x < 8.0:
+		popup_position.x = 8.0
+	if popup_position.y + tooltip_size.y > viewport_rect.size.y - 8.0:
+		popup_position.y = viewport_rect.size.y - tooltip_size.y - 8.0
+	if popup_position.y < 8.0:
+		popup_position.y = 8.0
+	_board_hover_tooltip.popup(Rect2i(popup_position, tooltip_size))
+
+func _hide_board_hover_tooltip() -> void:
+	if is_instance_valid(_board_hover_tooltip):
+		_board_hover_tooltip.hide()
 
 func _estimate_risk_label() -> String:
 	var total_power: float = 0.0

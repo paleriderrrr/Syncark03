@@ -6,13 +6,18 @@ const ATTACK_ANIMATION_TIME := 0.3
 const ATTACK_JUMP_HEIGHT := 36.0
 const FLOAT_TEXT_TIME := 0.8
 const FLOAT_TEXT_RISE := 42.0
+const DAMAGE_FLOAT_TEXT_RISE := 54.0
 const MAX_VISIBLE_LOG_LINES := 8
 const DAMAGE_COLOR := Color(1.0, 0.37, 0.32)
 const HEAL_COLOR := Color(0.45, 1.0, 0.58)
 const NOTICE_COLOR := Color(1.0, 0.94, 0.60)
+const DAMAGE_OUTLINE_COLOR := Color(1.0, 1.0, 1.0, 0.95)
 const DOWN_TINT := Color(0.45, 0.45, 0.45, 0.9)
 const NORMAL_TINT := Color.WHITE
 const FLOAT_FONT := preload("res://Art/Fonts/handwriting.ttf")
+const DEFAULT_FLOAT_FONT_SIZE := 22
+const DAMAGE_FLOAT_FONT_SIZE := 48
+const DAMAGE_FLOAT_OUTLINE_SIZE := 10
 const MONSTER_TEXTURE_TREE := preload("res://Art/PaperEnemies/tree.png")
 const MONSTER_TEXTURE_CREAM := preload("res://Art/PaperEnemies/cream.png")
 const MONSTER_TEXTURE_COWDRAGON := preload("res://Art/PaperEnemies/cowdragon.png")
@@ -272,7 +277,15 @@ func _process_damage_event(content: String) -> void:
 	var target_name: String = String(second_split[1]).trim_suffix(".")
 	await _play_attack_animation(source_name)
 	_apply_damage_to_target(target_name, amount)
-	_spawn_floating_text(_resolve_target_node(target_name), "-%.1f" % amount, DAMAGE_COLOR)
+	_spawn_floating_text(
+		_resolve_target_node(target_name),
+		"-%.1f" % amount,
+		DAMAGE_COLOR,
+		DAMAGE_FLOAT_FONT_SIZE,
+		DAMAGE_FLOAT_TEXT_RISE,
+		DAMAGE_OUTLINE_COLOR,
+		DAMAGE_FLOAT_OUTLINE_SIZE
+	)
 
 func _process_heal_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" restores ", false, 1)
@@ -302,7 +315,15 @@ func _process_retaliate_event(content: String) -> void:
 	var amount: float = float(String(first_split[1]).trim_suffix(" damage."))
 	await _play_attack_animation(source_name)
 	_apply_damage_to_target(String(_display_monster.get("name", "")), amount)
-	_spawn_floating_text(monster_actor, "-%.1f" % amount, DAMAGE_COLOR)
+	_spawn_floating_text(
+		monster_actor,
+		"-%.1f" % amount,
+		DAMAGE_COLOR,
+		DAMAGE_FLOAT_FONT_SIZE,
+		DAMAGE_FLOAT_TEXT_RISE,
+		DAMAGE_OUTLINE_COLOR,
+		DAMAGE_FLOAT_OUTLINE_SIZE
+	)
 
 func _process_execute_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" executes ", false, 1)
@@ -501,24 +522,38 @@ func _reset_all_attack_animations() -> void:
 		node.scale = animation.get("base_scale", node.scale)
 	_active_attack_animations.clear()
 
-func _spawn_floating_text(target_node: Control, text: String, color: Color) -> void:
+func _spawn_floating_text(
+	target_node: Control,
+	text: String,
+	color: Color,
+	font_size: int = DEFAULT_FLOAT_FONT_SIZE,
+	rise: float = FLOAT_TEXT_RISE,
+	outline_color: Color = Color.TRANSPARENT,
+	outline_size: int = 0
+) -> void:
 	if target_node == null:
 		return
 	var label := Label.new()
 	label.text = text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.size = Vector2(180, 36)
+	label.size = Vector2(maxf(180.0, font_size * 6.0), maxf(36.0, font_size * 1.9))
 	label.add_theme_font_override("font", FLOAT_FONT)
-	label.add_theme_font_size_override("font_size", 22)
-	label.modulate = color
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	if outline_size > 0:
+		label.add_theme_constant_override("outline_size", outline_size)
+		label.add_theme_color_override("font_outline_color", outline_color)
+	label.modulate = Color.WHITE
+	label.scale = Vector2(0.82, 0.82)
 	battle_float_layer.add_child(label)
 	var target_rect: Rect2 = target_node.get_global_rect()
 	var layer_rect: Rect2 = battle_float_layer.get_global_rect()
 	label.position = target_rect.get_center() - layer_rect.position - label.size * 0.5
 	var tween: Tween = create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(label, "position", label.position + Vector2(0.0, -FLOAT_TEXT_RISE), FLOAT_TEXT_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "position", label.position + Vector2(0.0, -rise), FLOAT_TEXT_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(label, "modulate:a", 0.0, FLOAT_TEXT_TIME).from(1.0)
 	tween.chain().tween_callback(label.queue_free)
 

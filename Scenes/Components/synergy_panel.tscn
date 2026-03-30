@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://Scripts/UI/Components/synergy_panel.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://Art/UI/NewUI/主食icon.png" id="2_staple"]
@@ -10,8 +10,8 @@
 
 [ext_resource type="FontFile" path="res://Art/Fonts/handwriting.ttf" id="8_font"]
 
-[node name="SynergyPanel" type="PanelContainer"]
-custom_minimum_size = Vector2(0, 240)
+[node name="SynergyPanel" type="Control"]
+custom_minimum_size = Vector2(0, 480)
 script = ExtResource("1_script")
 
 [node name="Background" type="TextureRect" parent="."]
@@ -27,31 +27,31 @@ stretch_mode = 6
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 16
 
 [node name="RoleLabel" type="Label" parent="Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.258824, 0.14902, 0.0862745, 1)
 theme_override_fonts/font = ExtResource("8_font")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 48
 text = "Current Role"
 horizontal_alignment = 1
 
 [node name="StapleRow" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 20
 
 [node name="StapleIcon" type="TextureRect" parent="Margin/VBox/StapleRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(28, 28)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 texture = ExtResource("2_staple")
 expand_mode = 1
@@ -62,17 +62,17 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("8_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 40
 text = "x0"
 vertical_alignment = 1
 
 [node name="MeatRow" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 20
 
 [node name="MeatIcon" type="TextureRect" parent="Margin/VBox/MeatRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(28, 28)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 texture = ExtResource("3_meat")
 expand_mode = 1
@@ -83,17 +83,17 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("8_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 40
 text = "x0"
 vertical_alignment = 1
 
 [node name="FruitRow" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 20
 
 [node name="FruitIcon" type="TextureRect" parent="Margin/VBox/FruitRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(28, 28)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 texture = ExtResource("4_fruit")
 expand_mode = 1
@@ -104,17 +104,17 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("8_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 40
 text = "x0"
 vertical_alignment = 1
 
 [node name="DessertRow" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 20
 
 [node name="DessertIcon" type="TextureRect" parent="Margin/VBox/DessertRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(28, 28)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 texture = ExtResource("5_dessert")
 expand_mode = 1
@@ -125,17 +125,17 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("8_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 40
 text = "x0"
 vertical_alignment = 1
 
 [node name="DrinkRow" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 20
 
 [node name="DrinkIcon" type="TextureRect" parent="Margin/VBox/DrinkRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(28, 28)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 texture = ExtResource("6_drink")
 expand_mode = 1
@@ -146,17 +146,17 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("8_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 40
 text = "x0"
 vertical_alignment = 1
 
 [node name="SpiceRow" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 20
 
 [node name="SpiceIcon" type="TextureRect" parent="Margin/VBox/SpiceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(28, 28)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 texture = ExtResource("7_spice")
 expand_mode = 1
@@ -167,6 +167,6 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("8_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 40
 text = "x0"
 vertical_alignment = 1

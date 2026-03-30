@@ -612,3 +612,130 @@
 - Blockers: The null-instance crash is resolved and the title-screen runner now passes. Separate non-blocking headless warnings remain for the title scene's center-fog shader UID and dummy-renderer shader support.
 - Files Touched: Scenes/title_screen.tscn, Docs/07_progress_log.md
 - Notes: This round restored structural consistency between title_screen.tscn, title_screen.gd, and title_screen_runner.gd instead of adding null-guard workarounds.
+### 2026-03-30 01:24
+- Completed: Switched the editor's dark-surface text to white at runtime for the top gold label, selected-item hint, market refresh button, and market/inventory card labels plus tooltip labels, improving readability on black/deep backgrounds without depending on the still-dirty scene text lines.
+- In Progress: Manual confirmation that the white text reads cleanly on the dark market strip and item cards in-editor.
+- Next: Open the editor and inspect the top market strip, selected-item status, and market/inventory cards to confirm all black-backed text now renders white.
+- Blockers: No new compile blocker remains for this dark-surface text pass.
+- Files Touched: 07_progress_log.md
+- Notes: This round deliberately applied color overrides in script to avoid touching additional scene lines that still contain legacy mojibake text content.
+### 2026-03-30 14:02
+- Completed: Identified and renamed a high-confidence subset of Food art files from camera-style IMG_* names to food-database English ids, then switched FoodVisuals to load renamed icons by file stem so the editor/runtime texture lookup now follows the database naming scheme.
+- In Progress: Manual spot-check of renamed food art in the editor and lab views, especially the newly mapped staple/dessert/meat icons.
+- Next: Open the editor or food-effect lab and verify renamed icons render for the newly mapped foods; then decide how to resolve the remaining ambiguous Food images that are still left as IMG_* files.
+- Blockers: Four Food images remain intentionally unresolved because their correspondence is still ambiguous from the artwork alone: IMG_0183.PNG, IMG_0184.PNG, IMG_0186.PNG, IMG_0192.PNG.
+- Files Touched: Art/Food, Scripts/UI/food_visuals.gd, Scripts/Tests/food_visuals_runner.gd, Docs/07_progress_log.md
+- Notes: This round renamed only the high-confidence matches and left ambiguous images untouched rather than binding them to the wrong food ids.
+### 2026-03-30 01:37
+- Completed: Extracted the green role-tag bar with character art from Art/UI/UI1-4.png into a standalone transparent sprite and preserved the boundary by cropping with safety padding plus only removing near-pure black background pixels.
+- In Progress: Manual visual confirmation that the extracted tag edge, shadow, and outline remain intact when placed over a non-black background.
+- Next: Inspect Art/UI/Slices/ui1_role_tag_green_character.png in Godot and use it as the green character-tag source where needed.
+- Blockers: No known extraction blocker remains for the green role-tag slice.
+- Files Touched: 07_progress_log.md
+- Notes: Output asset path is Art/UI/Slices/ui1_role_tag_green_character.png; existing base tag slices were left untouched.
+### 2026-03-30 14:11
+- Completed: Resolved the last four previously ambiguous Food icons and renamed them to the matching database ids: iced_black_tea, soda, honey_drink, and amber_tea. Re-imported the renamed assets so the full currently identified Food art set now loads through the database-aligned naming path.
+- In Progress: Manual visual confirmation that these four drink icons now appear correctly anywhere the editor/lab renders Food textures.
+- Next: Open the editor or food lab and inspect the four newly confirmed drink icons in context.
+- Blockers: No known blocker remains on the currently identified Food-art naming pass.
+- Files Touched: Art/Food, Docs/07_progress_log.md
+- Notes: The remaining gap is no longer naming but coverage: Art/Food still contains fewer total source images than the 54-entry food database, so some foods still necessarily fall back to non-art presentation until more source art exists.
+### 2026-03-30 00:12
+- Completed: Rebuilt the settings scene around static scene-authored textures instead of runtime texture assignment, using 设置底图.png as the panel background and cropped 设置UI.png slices for the volume row, slider knob, and action buttons.
+- In Progress: Manual visual validation of the final spacing, especially the slider alignment and button text placement against the new hand-drawn art.
+- Next: Open Scenes/settings_screen.tscn, verify the new art layout, test the top-right close button returning to the previous page, and fine-tune spacing if any label overlaps the textured button cards.
+- Blockers: No known compile blocker remains for this settings-screen art deployment pass.
+- Files Touched: Scenes/settings_screen.tscn, Scripts/UI/settings_screen.gd, Scripts/UI/title_screen.gd, Scripts/UI/main_editor_screen.gd, Scripts/Autoload/run_state.gd, Scripts/Tests/settings_runner.gd, Art/UI/Slices/settings/*, Docs/07_progress_log.md
+- Notes: The close button now consumes an explicit return-scene path set before entering settings, so closing returns to the actual previous page instead of always jumping to title.
+### 2026-03-30 14:36
+- Completed: Reworked board food rendering so textures now fit the occupied grid shape instead of being stretched once across the full bounding rectangle. The new draw path computes one shared cover-crop source region from the food's occupied bounds, then slices that region per occupied cell, which lets long bars and Tetris-like shapes fill their own grid footprint without rectangular distortion.
+- In Progress: Manual visual confirmation in the live editor that irregular food shapes now read naturally on the board and use more of their allocated occupied cells.
+- Next: Open the editor and inspect several non-rectangular foods, especially long bars and offset/Tetris-like shapes, to confirm the new per-cell clipping feels correct.
+- Blockers: No known blocker remains for the new shape-aware draw path; ui_runner still exits cleanly without reliably printing PASS text, as before.
+- Files Touched: Scripts/UI/Components/bento_board_view.gd, Scripts/Tests/food_shape_fit_runner.gd, Docs/07_progress_log.md
+- Notes: This change avoids heuristics by using a general algorithm: equal-aspect cover crop over the occupied bounding box, followed by exact per-cell source slicing for the actual occupied-cell set.
+### 2026-03-30 15:03
+- Completed: Replaced the board food shape-fit path with a continuous whole-image projection algorithm. Food textures are now first trimmed to their non-transparent content bounds, then cover-scaled across the occupied bounding box, and finally projected continuously over the occupied shape cells without per-cell inset seams. This keeps long bars, crosses, L/T shapes, and hole-bearing silhouettes visually coherent while using more of the available occupied area.
+- In Progress: Manual confirmation in the live editor that irregular foods now feel like one continuous image clipped by the occupied cells instead of a grid of separately padded tiles.
+- Next: Open the editor and inspect several irregular foods with transparent source padding to verify that the new alpha-trim step and full-cell projection produce the intended continuous look.
+- Blockers: No known blocker remains for the new continuous-projection algorithm; ui_runner still exits cleanly without reliably printing PASS text, unchanged from before.
+- Files Touched: Scripts/UI/Components/bento_board_view.gd, Scripts/Tests/food_shape_fit_runner.gd, Docs/07_progress_log.md
+- Notes: The new implementation is shape-general and does not special-case individual foods: it uses non-transparent texture bounds plus one shared cover source region over the occupied bounding box, then samples that region continuously across the actual occupied cells.
+### 2026-03-30 00:25
+- Completed: Wired the settings-screen volume slider to the real global audio output by storing master_volume_percent in RunState and applying it to Godot's Master bus through AudioServer, so both BGM and UI/SFX now follow the same slider.
+- In Progress: Manual validation of the audible volume curve and whether the chosen 0-100 to dB mapping feels natural across the low-volume range.
+- Next: Open the settings page, drag the volume slider while BGM is playing, and confirm both music and button SFX get quieter/louder immediately and persist when returning between scenes.
+- Blockers: No known compile blocker remains for the global-volume hookup.
+- Files Touched: Scripts/Autoload/run_state.gd, Scripts/UI/settings_screen.gd, Scripts/Tests/settings_runner.gd, Docs/07_progress_log.md
+- Notes: The slider now initializes from the stored run-state value via set_value_no_signal(), then every value change updates the Master bus dB directly instead of only changing a cosmetic UI number.
+### 2026-03-30 14:48
+- Completed: Enlarged battle damage floating text and added a white outline plus a short pop-in scale so "-xx" damage numbers read more clearly during combat playback without changing heal/notice text behavior.
+- In Progress: Manual visual confirmation that the new damage popup size and white outline feel strong enough in the live battle UI.
+- Next: Open a battle and inspect damage popups against the combat background; tune size or outline thickness if they still feel too subtle.
+- Blockers: No known compile blocker remains for this battle floating-text readability pass.
+- Files Touched: Scripts/UI/battle_popup.gd, Docs/07_progress_log.md
+- Notes: Only damage popups use the larger font and white outline; heal and notice popups keep the previous scale to preserve information hierarchy.
+### 2026-03-30 15:24
+- Completed: Added a pre-baked board-food render cache and switched BentoBoardView to consume one baked texture per food/rotation/cell-size instead of recomputing per-cell texture slices on every redraw. The cache trims transparent texture padding, cover-projects the source art over the occupied bounds, bakes four rotation variants, and reuses those textures during drag redraws.
+- In Progress: Manual confirmation in the live editor that dragging foods across the lunchbox now feels materially smoother while preserving the continuous whole-image look for irregular shapes.
+- Next: Open the editor, drag several irregular foods repeatedly across the board, and compare responsiveness before/after while checking that rotated items still render with the correct silhouette.
+- Blockers: No known blocker remains for the pre-bake cache path; ui_runner still exits cleanly without reliably printing PASS text, unchanged from earlier rounds.
+- Files Touched: Scripts/UI/food_board_render_cache.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/main_editor_screen.gd, Scripts/Tests/food_board_render_cache_runner.gd, Scripts/Tests/food_shape_fit_runner.gd, Docs/07_progress_log.md
+- Notes: This optimization uses a faithful general algorithm rather than drag-time heuristics: each board food is rendered once per rotation and cell size, then drawn as a single cached texture during high-frequency hover/drag redraws.
+### 2026-03-30 15:02
+- Completed: Removed the default black panel base from the main editor SynergyPanel by switching its root away from PanelContainer, so the synergy area now renders as a lighter overlay with only its icons/text content.
+- In Progress: Manual visual confirmation that the synergy panel now reads cleanly against the right-side art without losing legibility.
+- Next: Open the main editor and inspect the right-side synergy area; if it still feels too heavy, continue by adding a lighter dedicated painted backing rather than a default engine panel.
+- Blockers: No known compile blocker remains for this synergy-panel visual cleanup.
+- Files Touched: Scenes/Components/synergy_panel.tscn, Scripts/UI/Components/synergy_panel.gd, Docs/07_progress_log.md
+- Notes: This pass removed the engine-default black base instead of layering a fallback hack; the panel now depends on explicit scene content only.
+### 2026-03-30 15:08
+- Completed: Doubled the SynergyPanel presentation scale at the scene level by doubling its minimum height, margins, row spacing, icon size, and font sizes so the right-side synergy readout is much larger and easier to read.
+- In Progress: Manual visual confirmation that the enlarged synergy panel still fits the right-side editor layout cleanly.
+- Next: Open the main editor and inspect the enlarged synergy block; if it now crowds nearby right-side widgets, rebalance the right-column coordinates instead of shrinking the panel back down.
+- Blockers: No known compile blocker remains for this synergy scale-up pass.
+- Files Touched: Scenes/Components/synergy_panel.tscn, Docs/07_progress_log.md
+- Notes: The panel was scaled by explicit scene dimensions rather than a transform hack so icon and text rendering stay crisp.
+### 2026-03-30 16:01
+- Completed: Replaced the runtime board-food pre-bake path with resource-side board textures. Added an offline generator that bakes Art/Food source images into Art/FoodBoard/<id>_r0..r3.png assets, then switched the editor to load those assets directly at runtime instead of synchronously baking all food textures during main-editor startup.
+- In Progress: Manual confirmation in the live editor that entering the main editor is responsive again and that dragged foods still use the new whole-image irregular-shape presentation.
+- Next: Open the main editor, confirm startup no longer stalls, and drag several rotated irregular foods to verify the FoodBoard assets are being used correctly.
+- Blockers: No known blocker remains for the resource-side board texture pipeline; ui_runner still exits cleanly without reliably printing PASS text, unchanged from earlier rounds.
+- Files Touched: Tools/generate_food_board_assets.gd, Scripts/UI/food_visuals.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/main_editor_screen.gd, Scripts/Tests/food_board_assets_runner.gd, Art/FoodBoard, Docs/07_progress_log.md
+- Notes: The runtime bake cache is no longer on the main-editor startup path. Board rendering now reads pre-generated rotated assets from Art/FoodBoard while market/inventory thumbnails continue to use the original Art/Food sources.
+### 2026-03-30 00:39
+- Completed: Replaced the food-card hover details from Godot's delayed built-in tooltip flow with an immediate custom hover popup owned by ItemIconCard, so mouse enter now shows the detail panel right away and mouse exit hides it immediately.
+- In Progress: Manual feel validation that the new popup placement is comfortable on both the market strip and the shared inventory strip, especially near screen edges.
+- Next: Open the main editor, move the cursor across market and inventory food cards, and verify the detail popup appears instantly without the previous hover delay and never clips off-screen.
+- Blockers: No known compile blocker remains for the immediate food-hover tooltip pass.
+- Files Touched: Scripts/UI/Components/item_icon_card.gd, Scripts/UI/main_editor_screen.gd, Scripts/Tests/item_tooltip_runner.gd, Docs/07_progress_log.md
+- Notes: The old 	ooltip_delay_sec tuning is no longer relied upon for food cards; the card now builds the same detail content into a top-level popup panel on hover instead of waiting for the engine tooltip lifecycle.
+### 2026-03-30 00:45
+- Completed: Fixed the immediate food-hover popup regression by removing the invalid mouse_filter assignment from PopupPanel; the ignore-pointer behavior remains on the inner tooltip panel content instead of the window wrapper.
+- In Progress: Manual confirmation that the hover popup now opens without runtime errors and still does not steal cursor interaction from the strips below.
+- Next: Open the main editor, hover a food card, and verify the popup appears instantly without the PopupPanel.mouse_filter runtime error.
+- Blockers: No known compile blocker remains for this popup compatibility fix.
+- Files Touched: Scripts/UI/Components/item_icon_card.gd, Docs/07_progress_log.md
+- Notes: Root cause was a Godot 4 type mismatch: PopupPanel is no longer a Control with a writable mouse_filter, so that property must stay on the embedded panel content instead.
+### 2026-03-30 16:42
+- Completed: Rebased the outdated automated test baseline onto the current Godot UI structure. settings_runner now reuses real autoload singletons instead of creating conflicting duplicates, title_runner now validates the current icon-based title UI instead of removed legacy container paths, ui_runner now checks the current absolute-position main-editor layout, and smoke_runner now verifies the main loop with stable current-node paths and a deterministic placeable food item.
+- In Progress: Separating true product issues from environment-side warnings, especially the remaining ObjectDB/resource leak warnings on clean test exit and the title-screen shader error under Dummy renderer headless mode.
+- Next: Investigate the remaining test-exit leak warnings and decide whether title-screen shader tests should run under a non-dummy renderer path or be split from strict headless CI validation.
+- Blockers: No baseline assertion blocker remains in the updated settings_runner, ui_runner, smoke_runner, or title_runner; remaining stderr noise is now outside the outdated-path baseline issue itself.
+- Files Touched: Scripts/Tests/settings_runner.gd, Scripts/Tests/title_runner.gd, Scripts/Tests/ui_runner.gd, Scripts/Tests/smoke_runner.gd, Docs/07_progress_log.md
+- Notes: Verified updated runners now emit SETTINGS_TEST_PASS, UI_TEST_PASS, SMOKE_TEST_PASS, and TITLE_TEST_PASS when launched as standalone Godot test processes; the remaining title-screen shader stderr is a renderer-environment limitation, not a stale-scene-path test failure.
+### 2026-03-30 16:18
+- Completed: Updated the FoodBoard generation pipeline to solve only the base orientation and export the remaining three rotations as strict 90/180/270-degree rotations of that base result. Added a regression that validates the raw PNG outputs obey this exact rotated-copy rule, matching the chosen policy that food artwork rotates together with gameplay rotation.
+- In Progress: Manual confirmation that the new single-orientation generation still improves coverage for foods that were being clipped while keeping visual direction consistent after rotation.
+- Next: Inspect several rotated foods in the editor and confirm their direction feels consistent and their coverage improves without needing four separately optimized solutions.
+- Blockers: No known blocker remains for the single-orientation FoodBoard pipeline. Headless quit-after still shows the pre-existing dummy-renderer shader and exit-resource warnings unrelated to this asset-generation change.
+- Files Touched: Tools/generate_food_board_assets.gd, Scripts/Tests/food_board_assets_runner.gd, Art/FoodBoard, Docs/07_progress_log.md
+- Notes: Runtime loading behavior is unchanged; only the offline generation rule changed from four independent bakes to one solved base asset plus three rotated exports.
+### 2026-03-30 01:02
+- Completed: Added immediate hover popups for foods already placed on the lunchbox board by teaching BentoBoardView to detect hovered placed-food cells and forwarding that hit to the main editor, which now shows the same detail popup builder used by strip cards.
+- In Progress: Manual validation that board hover feels stable while moving quickly across adjacent foods and that the popup hides correctly during drag, remove, and refresh actions.
+- Next: Open the main editor, hover foods in the market, inventory, and already-placed lunchbox board, and verify all three contexts now show immediate popups with matching detail content.
+- Blockers: No known compile blocker remains for the placed-food hover popup pass.
+- Files Touched: Scripts/UI/Components/item_tooltip_builder.gd, Scripts/UI/Components/item_icon_card.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/main_editor_screen.gd, Scripts/Tests/board_hover_tooltip_runner.gd, Docs/07_progress_log.md
+- Notes: The board popup intentionally only targets placed foods, not base lunchboxes or expansion blocks, and it reuses the same tooltip content builder so the information stays consistent across strips and board cells.
+- 2026-03-30 16:44 食物桌面贴图改为零裁剪离线求解：FoodBoardRenderCache 新增 compute_zero_crop_dest_rect，基准朝向改为 contain + 20% 有界拉伸，禁止主体二次裁剪；FoodBoard 资源重生成并验证通过（food_board_zero_crop_runner / food_board_assets_runner / campaign_runner）。

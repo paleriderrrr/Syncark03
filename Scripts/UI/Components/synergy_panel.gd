@@ -1,4 +1,4 @@
-extends PanelContainer
+extends Control
 class_name SynergyPanel
 
 const HIGHLIGHT_THRESHOLD := 3
