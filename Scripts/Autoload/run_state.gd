@@ -232,6 +232,9 @@ func get_character_state(character_id: StringName) -> Dictionary:
 func get_food_definition(food_id: StringName) -> FoodDefinition:
 	return food_lookup.get(food_id) as FoodDefinition
 
+func get_monster_definition(monster_id: StringName) -> MonsterDefinition:
+	return monster_lookup.get(monster_id) as MonsterDefinition
+
 func get_current_monster_definition() -> MonsterDefinition:
 	if get_current_node_type() == NODE_BOSS_BATTLE:
 		return monster_lookup.get(&"nc2_auto_cooker") as MonsterDefinition
@@ -1093,10 +1096,11 @@ func get_character_health_display(character_id: StringName) -> Dictionary:
 
 func _apply_battle_victory(report: Dictionary) -> void:
 	var battle_index: int = get_completed_battle_count() - 1
+	var defeated_monster: MonsterDefinition = _resolve_defeated_monster(report)
 	if battle_index >= 0 and battle_index < stage_flow_config.normal_battle_reward_gold.size():
 		current_gold += stage_flow_config.normal_battle_reward_gold[battle_index]
 		current_gold += int(report.get("bonus_gold", 0))
-	grant_battle_drops(get_current_monster_definition(), battle_index)
+	grant_battle_drops(defeated_monster, battle_index)
 	_restore_defeated_characters_to_victory_floor(report)
 	for character_id in character_states.keys():
 		character_states[character_id]["placed_foods"].clear()
@@ -1108,6 +1112,14 @@ func _apply_battle_victory(report: Dictionary) -> void:
 			current_market_index = min(current_market_index + 1, 4)
 			current_reroll_count = 0
 			_generate_market_offers()
+
+func _resolve_defeated_monster(report: Dictionary) -> MonsterDefinition:
+	var monster_id: StringName = report.get("monster_id", &"")
+	if monster_id != &"":
+		var report_monster: MonsterDefinition = get_monster_definition(monster_id)
+		if report_monster != null:
+			return report_monster
+	return get_current_monster_definition()
 
 func _restore_defeated_characters_to_victory_floor(report: Dictionary) -> void:
 	if not report.has("characters"):
@@ -1127,10 +1139,7 @@ func grant_battle_drops(monster: MonsterDefinition, battle_index: int) -> void:
 	var target_value: int = 8
 	if battle_index >= 0 and battle_index < stage_flow_config.normal_drop_value_curve.size():
 		target_value = stage_flow_config.normal_drop_value_curve[battle_index]
-	var candidates: Array[FoodDefinition] = []
-	for definition in food_catalog.foods:
-		if definition.category == monster.category or definition.hybrid_categories.has(monster.category):
-			candidates.append(definition)
+	var candidates: Array[FoodDefinition] = get_battle_drop_candidates(monster)
 	if candidates.is_empty():
 		return
 	var current_value: int = 0
@@ -1138,6 +1147,15 @@ func grant_battle_drops(monster: MonsterDefinition, battle_index: int) -> void:
 		var definition: FoodDefinition = candidates[_rng.randi_range(0, candidates.size() - 1)]
 		shared_inventory.append(generate_item_instance(definition.id))
 		current_value += definition.gold_value
+
+func get_battle_drop_candidates(monster: MonsterDefinition) -> Array[FoodDefinition]:
+	var candidates: Array[FoodDefinition] = []
+	if monster == null or food_catalog == null:
+		return candidates
+	for definition in food_catalog.foods:
+		if definition.category == monster.category:
+			candidates.append(definition)
+	return candidates
 
 func try_restore_snapshot() -> bool:
 	if pre_battle_snapshot.is_empty():

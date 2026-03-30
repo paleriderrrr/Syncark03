@@ -34,6 +34,7 @@ const ACTION_BUTTON_TEXT_TEXTURES := {
 @onready var next_monster_skill_label: Label = %NextMonsterSkillLabel
 @onready var monster_tooltip_panel: PanelContainer = %MonsterTooltipPanel
 @onready var synergy_panel: Control = %SynergyPanel
+@onready var battle_modal_blocker: Control = %BattleModalBlocker
 @onready var battle_popup: BattlePopup = %BattlePopup
 
 @onready var tab_buttons: Dictionary = {
@@ -86,6 +87,7 @@ func _ready() -> void:
 	run_state.selected_character_changed.connect(_on_selected_character_changed)
 	run_state.selected_item_changed.connect(_refresh)
 	run_state.battle_requested.connect(_on_battle_requested)
+	battle_popup.popup_hide.connect(_on_battle_popup_hidden)
 	board_view.cell_clicked.connect(_on_board_cell_clicked)
 	board_view.cell_right_clicked.connect(_on_board_cell_right_clicked)
 	board_view.board_drop_requested.connect(_on_board_drop_requested)
@@ -110,6 +112,7 @@ func _ready() -> void:
 	wanted_poster_rect.mouse_entered.connect(_on_monster_hover_entered)
 	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
 	monster_tooltip_panel.visible = false
+	battle_modal_blocker.visible = false
 	_refresh()
 	_play_intro_animation()
 
@@ -559,7 +562,11 @@ func _on_market_refresh_pressed() -> void:
 		_ui_sfx().play_purchase_denied()
 
 func _on_battle_requested() -> void:
+	battle_modal_blocker.visible = true
 	battle_popup.open_battle()
+
+func _on_battle_popup_hidden() -> void:
+	battle_modal_blocker.visible = false
 
 func _on_monster_hover_entered() -> void:
 	if next_monster_stats_label.text == "-" and next_monster_skill_label.text == "-":

@@ -22,12 +22,18 @@ func _run() -> void:
 	await process_frame
 
 	var popup: BattlePopup = editor.get_node("BattlePopup") as BattlePopup
+	var blocker: Control = editor.get_node("BattleModalBlocker") as Control
 	popup.open_battle()
 	_assert(popup._is_playing, "Battle popup should enter playback instead of finishing instantly")
+	_assert(not popup.popup_window, "Battle popup should not use click-outside popup-window auto close")
+	_assert(blocker.visible, "Battle popup should block outside interaction while visible")
 	_assert(run_state.battle_reports.is_empty(), "Battle result should not be committed before playback finishes")
 	while popup._is_playing:
 		await process_frame
 	_assert(run_state.battle_reports.size() == 1, "Battle result should be committed after playback finishes")
+	popup.hide()
+	await process_frame
+	_assert(not blocker.visible, "Battle popup should release the outside blocker after closing")
 
 	editor.queue_free()
 	if _failures.is_empty():
