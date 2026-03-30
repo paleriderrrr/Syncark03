@@ -774,3 +774,5 @@
 - 2026-03-30 17:19 修复 main_editor_screen.tscn 场景解析：清除文件头 BOM，修复右侧 StageInfo 区损坏的 text 行，场景直载与 ui_runner/campaign_runner 恢复退出 0。
 - 2026-03-30 19:02 | 卡片背景透明化 | 已关闭食物卡片整张 Background 贴图层，并在 item_icon_card.gd 中停止给卡片背景赋纹理，市场/仓库物品卡片改为透明底，仅保留图标、色条与角标信息。
 - 2026-03-30 19:24 | 卡片残留整张底图根因修复 | 已确认问题不在 item_icon_card 模板，而在 main_editor_screen.tscn 中额外存在 MarketSlotGuide / WarehouseSlotGuide 槽位底图层，且市场/仓库条实例仍保留 card_background_texture 引用；现已移除这些残留背景来源，ui_runner 与 campaign_runner 通过。
+- 2026-03-30 19:41 | main备份并修卡片根节点 | 已先在 main 提交并推送当前 UI 工作区快照（cbfec71），随后将 item_icon_card 从 PanelContainer 改为 Control + Content 结构，切断 DiscountBadge 等角标被父级 Container 拉满整张卡片的问题；item_icon_card_runner、ui_runner、campaign_runner 均退出 0。
+- 2026-03-30 20:02 | 连携图标简洁悬停说明 | 已为 SynergyPanel 六类小图标接入即时 hover 说明层，展示类别名、连携名、当前计数、激活条件与效果文本；同时修复 item_icon_card.tscn 中四个角标文本节点的父路径错误，恢复食物 tooltip 回归测试通过。

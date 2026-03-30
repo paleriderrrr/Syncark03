@@ -1,11 +1,11 @@
-extends PanelContainer
+extends Control
 class_name ItemIconCard
 
 signal clicked(entry: Dictionary)
 signal hover_started(entry: Dictionary, global_rect: Rect2)
 signal hover_ended
 
-@onready var background_rect: TextureRect = $Background
+@onready var background_rect: TextureRect = $Content/Background
 @onready var rarity_bar: ColorRect = %RarityBar
 @onready var rarity_badge: Panel = %RarityBadge
 @onready var rarity_label: Label = %RarityLabel
