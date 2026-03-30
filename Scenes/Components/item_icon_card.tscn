@@ -21,6 +21,7 @@ script = ExtResource("1_script")
 
 [node name="Background" type="TextureRect" parent="." unique_id=373685472]
 layout_mode = 2
+visible = false
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6

@@ -772,3 +772,5 @@
 - 2026-03-30 17:08 右侧栏信息精简：删除 StageInfo 中的 NodeLabel，风险度并入 NextMonsterBountyLabel，StageInfoPanel 高度压缩以优化右栏排布；ui_runner 退出 0，campaign_runner 通过。
 - 2026-03-30 18:43 | 市场卡片去黑蒙版 | 已移除市场/仓库卡片中稀有度、数量、价格三处深色角标底板，仅保留缩小后的浅色折扣贴纸；数量与价格改为直接文字角标显示，减少大面积遮罩对食物图标的压暗影响。
 - 2026-03-30 17:19 修复 main_editor_screen.tscn 场景解析：清除文件头 BOM，修复右侧 StageInfo 区损坏的 text 行，场景直载与 ui_runner/campaign_runner 恢复退出 0。
+- 2026-03-30 19:02 | 卡片背景透明化 | 已关闭食物卡片整张 Background 贴图层，并在 item_icon_card.gd 中停止给卡片背景赋纹理，市场/仓库物品卡片改为透明底，仅保留图标、色条与角标信息。
+- 2026-03-30 19:24 | 卡片残留整张底图根因修复 | 已确认问题不在 item_icon_card 模板，而在 main_editor_screen.tscn 中额外存在 MarketSlotGuide / WarehouseSlotGuide 槽位底图层，且市场/仓库条实例仍保留 card_background_texture 引用；现已移除这些残留背景来源，ui_runner 与 campaign_runner 通过。
