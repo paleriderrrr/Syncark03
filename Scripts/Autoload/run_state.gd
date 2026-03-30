@@ -250,6 +250,25 @@ func get_completed_battle_count() -> int:
 			count += 1
 	return count
 
+func get_current_battle_sequence_index() -> int:
+	if get_current_node_type() == NODE_BOSS_BATTLE:
+		return normal_monster_order.size()
+	return get_completed_battle_count()
+
+func get_current_monster_multipliers() -> Dictionary:
+	var battle_index: int = get_current_battle_sequence_index()
+	var hp_multiplier: float = 1.0
+	var attack_multiplier: float = 1.0
+	if stage_flow_config != null:
+		if battle_index >= 0 and battle_index < stage_flow_config.monster_hp_multiplier_curve.size():
+			hp_multiplier = float(stage_flow_config.monster_hp_multiplier_curve[battle_index])
+		if battle_index >= 0 and battle_index < stage_flow_config.monster_attack_multiplier_curve.size():
+			attack_multiplier = float(stage_flow_config.monster_attack_multiplier_curve[battle_index])
+	return {
+		"hp": hp_multiplier,
+		"attack": attack_multiplier,
+	}
+
 func get_board_item_cells(character_id: StringName) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	var state: Dictionary = get_character_state(character_id)
@@ -1205,15 +1224,20 @@ func get_next_monster_summary() -> Dictionary:
 	var monster: MonsterDefinition = get_current_monster_definition()
 	if monster == null:
 		return {}
+	var multipliers: Dictionary = get_current_monster_multipliers()
+	var hp_multiplier: float = float(multipliers.get("hp", 1.0))
+	var attack_multiplier: float = float(multipliers.get("attack", 1.0))
 	return {
 		"id": monster.id,
 		"display_name": monster.display_name,
 		"category": monster.category,
 		"category_name": CATEGORY_DISPLAY_NAMES.get(monster.category, String(monster.category)),
-		"hp": monster.base_hp,
-		"attack": monster.base_attack,
+		"hp": float(monster.base_hp) * hp_multiplier,
+		"attack": float(monster.base_attack) * attack_multiplier,
 		"attack_interval": monster.attack_interval,
 		"skill_summary": monster.skill_summary,
+		"hp_multiplier": hp_multiplier,
+		"attack_multiplier": attack_multiplier,
 	}
 
 func get_synergy_summary(character_id: StringName) -> Dictionary:

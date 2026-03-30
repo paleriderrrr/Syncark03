@@ -33,7 +33,12 @@ func _simulate_internal(run_state: Object) -> Dictionary:
 
 	var characters: Array[Dictionary] = _build_characters(run_state)
 	var team_effects: Dictionary = _build_team_effects(characters)
-	var monster: Dictionary = _build_monster(run_state.get_current_monster_definition())
+	var monster_multipliers: Dictionary = run_state.get_current_monster_multipliers()
+	var monster: Dictionary = _build_monster(
+		run_state.get_current_monster_definition(),
+		float(monster_multipliers.get("hp", 1.0)),
+		float(monster_multipliers.get("attack", 1.0))
+	)
 	if monster.is_empty():
 		report["title"] = "鎴樻枟閰嶇疆缂哄け"
 		return report
@@ -170,17 +175,19 @@ func _build_team_effects(characters: Array[Dictionary]) -> Dictionary:
 			effects["fairy_speed_on_heal"] = true
 	return effects
 
-func _build_monster(definition: MonsterDefinition) -> Dictionary:
+func _build_monster(definition: MonsterDefinition, hp_multiplier: float = 1.0, attack_multiplier: float = 1.0) -> Dictionary:
 	if definition == null:
 		return {}
+	var scaled_max_hp: float = float(definition.base_hp) * maxf(hp_multiplier, 0.0)
+	var scaled_attack: float = float(definition.base_attack) * maxf(attack_multiplier, 0.0)
 	return {
 		"id": definition.id,
 		"name": definition.display_name,
 		"category": definition.category,
-		"max_hp": float(definition.base_hp),
-		"current_hp": float(definition.base_hp),
+		"max_hp": scaled_max_hp,
+		"current_hp": scaled_max_hp,
 		"alive": true,
-		"base_attack": float(definition.base_attack),
+		"base_attack": scaled_attack,
 		"attack_multiplier": 1.0,
 		"base_interval": float(definition.attack_interval),
 		"attack_speed_slow": 0.0,

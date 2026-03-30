@@ -17,6 +17,8 @@ func _run() -> void:
 		"count": 3,
 		"display_price": 4,
 		"discount_percent": 20,
+		"kind": &"food",
+		"category": &"fruit",
 		"rarity": &"rare",
 	}, null, {})
 	await process_frame
@@ -27,6 +29,8 @@ func _run() -> void:
 	var discount_label: Label = card.get_node("%DiscountLabel")
 	var discount_badge: Control = card.get_node("%DiscountBadge")
 	var rarity_badge: Control = card.get_node("%RarityBadge")
+	var category_badge: Control = card.get_node("%CategoryBadge")
+	var category_label: Label = card.get_node("%CategoryLabel")
 	var rarity_bar: ColorRect = card.get_node("%RarityBar")
 
 	_assert(name_label.text == "Lettuce Leaf", "Card name should render as a single explicit title")
@@ -38,12 +42,15 @@ func _run() -> void:
 	_assert(discount_badge.visible, "Discount badge should be visible when a discount exists")
 	_assert(discount_label.text == "-20%", "Discount badge should render percent off")
 	_assert(rarity_badge.visible, "Rarity badge should be visible for market cards")
+	_assert(category_badge.visible, "Category badge should be visible for food cards")
+	_assert(category_label.text == "蔬果", "Category badge should show the Chinese food category")
 	_assert(rarity_bar.color.a > 0.0, "Rarity bar should use a visible color")
 	_assert(rarity_bar.offset_bottom <= 12.0, "Card should not use a full solid rarity background")
 
 	card.configure({
 		"display_name": "Stored Berry",
 		"count": 7,
+		"entry_kind": &"expansion",
 		"rarity": &"common",
 	}, null, {})
 	await process_frame
@@ -51,6 +58,7 @@ func _run() -> void:
 	_assert(not discount_badge.visible, "Discount badge should hide when no discount exists")
 	_assert(price_label.text == "", "Price badge should hide text when no price exists")
 	_assert(count_label.text == "x7", "Inventory card should still show count badge")
+	_assert(not category_badge.visible, "Category badge should hide for non-food cards")
 
 	card.queue_free()
 	if _failures.is_empty():

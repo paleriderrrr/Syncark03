@@ -3,6 +3,7 @@ class_name ImmediateItemTooltipOverlay
 
 const VIEWPORT_PADDING := 8.0
 const POPUP_GAP := 12.0
+const FONT_SIZE_BOOST := 4
 
 @onready var title_label: Label = %ItemTooltipTitleLabel
 @onready var base_bonus_label: Label = %ItemTooltipBaseBonusLabel
@@ -17,6 +18,7 @@ func _ready() -> void:
 	top_level = true
 	z_as_relative = false
 	z_index = 100
+	_boost_label_font_sizes()
 	_shape_preview = ItemTooltipBuilder.TooltipShapePreview.new()
 	_shape_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	shape_host.add_child(_shape_preview)
@@ -51,3 +53,8 @@ func _reposition(source_rect: Rect2) -> void:
 	if popup_position.y < VIEWPORT_PADDING:
 		popup_position.y = VIEWPORT_PADDING
 	position = popup_position
+
+func _boost_label_font_sizes() -> void:
+	for label: Label in [title_label, base_bonus_label, special_effect_label, shape_title_label]:
+		var current_size: int = label.get_theme_font_size("font_size")
+		label.add_theme_font_size_override("font_size", current_size + FONT_SIZE_BOOST)

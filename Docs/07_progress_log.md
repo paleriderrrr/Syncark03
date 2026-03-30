@@ -776,3 +776,6 @@
 - 2026-03-30 19:24 | 卡片残留整张底图根因修复 | 已确认问题不在 item_icon_card 模板，而在 main_editor_screen.tscn 中额外存在 MarketSlotGuide / WarehouseSlotGuide 槽位底图层，且市场/仓库条实例仍保留 card_background_texture 引用；现已移除这些残留背景来源，ui_runner 与 campaign_runner 通过。
 - 2026-03-30 19:41 | main备份并修卡片根节点 | 已先在 main 提交并推送当前 UI 工作区快照（cbfec71），随后将 item_icon_card 从 PanelContainer 改为 Control + Content 结构，切断 DiscountBadge 等角标被父级 Container 拉满整张卡片的问题；item_icon_card_runner、ui_runner、campaign_runner 均退出 0。
 - 2026-03-30 20:02 | 连携图标简洁悬停说明 | 已为 SynergyPanel 六类小图标接入即时 hover 说明层，展示类别名、连携名、当前计数、激活条件与效果文本；同时修复 item_icon_card.tscn 中四个角标文本节点的父路径错误，恢复食物 tooltip 回归测试通过。
+- 2026-03-30 20:03 | 卡片左上信息分层 | 已将食物卡片左上区域改为两行：上方保留稀有度标签，下方新增中文食物种类标签；仅食物卡显示该类别行，扩展等非食物卡自动隐藏。item_icon_card_runner 与 campaign_runner 通过。
+- 2026-03-30 20:16 | 怪物悬浮说明改为向左展开 | 已将右侧怪物区的 MonsterTooltipPanel 改为根据 WantedPosterRect 位置动态摆放到左侧展开，避免继续向下挤压右栏；main_editor_load_runner 与 ui_runner 均退出 0。
+- 2026-03-30 20:31 | 食物与连携 popup 字号统一放大 | 已将 ImmediateItemTooltipOverlay 与 ImmediateSynergyTooltipOverlay 的标签字号按当前主题统一上调 4 号，并重写损坏的连携 tooltip 脚本为干净版本；main_editor_load_runner 与 ui_runner 均退出 0。

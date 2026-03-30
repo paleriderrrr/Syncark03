@@ -3,7 +3,8 @@ class_name ImmediateSynergyTooltipOverlay
 
 const VIEWPORT_PADDING := 8.0
 const POPUP_GAP := 12.0
-const ACTIVATION_RULE := "激活条件: 3个不同种同类别食物"
+const ACTIVATION_RULE := "激活条件: 3个不同种同类别食材"
+const FONT_SIZE_BOOST := 4
 
 @onready var category_label: Label = %SynergyTooltipCategoryLabel
 @onready var synergy_name_label: Label = %SynergyTooltipNameLabel
@@ -16,6 +17,7 @@ func _ready() -> void:
 	top_level = true
 	z_as_relative = false
 	z_index = 110
+	_boost_label_font_sizes()
 	activation_label.text = ACTIVATION_RULE
 	hide_tooltip()
 
@@ -44,3 +46,8 @@ func _reposition(source_rect: Rect2) -> void:
 	if popup_position.y < VIEWPORT_PADDING:
 		popup_position.y = VIEWPORT_PADDING
 	position = popup_position
+
+func _boost_label_font_sizes() -> void:
+	for label: Label in [category_label, synergy_name_label, count_label, activation_label, effect_label]:
+		var current_size: int = label.get_theme_font_size("font_size")
+		label.add_theme_font_size_override("font_size", current_size + FONT_SIZE_BOOST)
