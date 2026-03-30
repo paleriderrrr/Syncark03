@@ -229,6 +229,30 @@ func get_selected_character_state() -> Dictionary:
 func get_character_state(character_id: StringName) -> Dictionary:
 	return character_states.get(character_id, {})
 
+func _capture_character_health_snapshot(character_id: StringName) -> Dictionary:
+	var actor: Dictionary = CombatEngine.preview_character_actor(self, character_id)
+	if actor.is_empty():
+		return {}
+	var max_hp: float = maxf(float(actor.get("max_hp", 0.0)), 1.0)
+	var current_hp: float = clampf(float(actor.get("current_hp", 0.0)), 0.0, max_hp)
+	return {
+		"max_hp": max_hp,
+		"current_hp": current_hp,
+	}
+
+func _reconcile_character_health_after_board_change(character_id: StringName, before_health: Dictionary) -> void:
+	if before_health.is_empty() or not character_states.has(character_id):
+		return
+	var actor: Dictionary = CombatEngine.preview_character_actor(self, character_id)
+	if actor.is_empty():
+		return
+	var new_max_hp: float = maxf(float(actor.get("max_hp", 0.0)), 1.0)
+	var old_max_hp: float = maxf(float(before_health.get("max_hp", new_max_hp)), 1.0)
+	var old_current_hp: float = clampf(float(before_health.get("current_hp", new_max_hp)), 0.0, old_max_hp)
+	var preserved_missing_hp: float = maxf(0.0, old_max_hp - old_current_hp)
+	var target_current_hp: float = clampf(new_max_hp - preserved_missing_hp, 0.0, new_max_hp)
+	character_states[character_id]["hp_ratio"] = target_current_hp / new_max_hp
+
 func get_food_definition(food_id: StringName) -> FoodDefinition:
 	return food_lookup.get(food_id) as FoodDefinition
 
@@ -825,6 +849,7 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 	var local_cells: Array[Vector2i] = get_selected_item_cells()
 	var placed_cells: Array[Vector2i] = ShapeUtils.translate_cells(local_cells, anchor)
 	var state: Dictionary = get_selected_character_state()
+	var health_before_change: Dictionary = _capture_character_health_snapshot(selected_character_id)
 	if selected_item["source"] == &"inventory":
 		var inventory_item: Dictionary = _find_inventory_item(selected_item["instance_id"])
 		if inventory_item.is_empty():
@@ -869,6 +894,7 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 			placed_variant["anchor"] = anchor
 			placed_variant["cells"] = placed_cells
 			state["placed_foods"][index] = placed_variant
+			_reconcile_character_health_after_board_change(selected_character_id, health_before_change)
 			state_changed.emit()
 			clear_selection()
 			return true
@@ -906,6 +932,7 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 		_rebuild_active_cells(state)
 	else:
 		return false
+	_reconcile_character_health_after_board_change(selected_character_id, health_before_change)
 	state_changed.emit()
 	clear_selection()
 	return true
@@ -934,6 +961,7 @@ func _remove_pending_expansion(character_id: StringName, instance_id: StringName
 
 func remove_item_at_cell(cell: Vector2i) -> bool:
 	var state: Dictionary = get_selected_character_state()
+	var health_before_change: Dictionary = _capture_character_health_snapshot(selected_character_id)
 	for index in state["placed_foods"].size():
 		var item: Dictionary = state["placed_foods"][index]
 		if ShapeUtils.cells_to_lookup(item["cells"]).has("%d:%d" % [cell.x, cell.y]):
@@ -944,6 +972,7 @@ func remove_item_at_cell(cell: Vector2i) -> bool:
 				"reroll_bonus_count": int(item.get("reroll_bonus_count", 0)),
 			})
 			state["placed_foods"].remove_at(index)
+			_reconcile_character_health_after_board_change(selected_character_id, health_before_change)
 			state_changed.emit()
 			return true
 	for index in state["placed_expansions"].size():
@@ -960,12 +989,14 @@ func remove_item_at_cell(cell: Vector2i) -> bool:
 			})
 			state["placed_expansions"].remove_at(index)
 			_rebuild_active_cells(state)
+			_reconcile_character_health_after_board_change(selected_character_id, health_before_change)
 			state_changed.emit()
 			return true
 	return false
 
 func move_placed_food(from_cell: Vector2i, to_anchor: Vector2i) -> bool:
 	var state: Dictionary = get_selected_character_state()
+	var health_before_change: Dictionary = _capture_character_health_snapshot(selected_character_id)
 	for index in range(state["placed_foods"].size()):
 		var item: Dictionary = state["placed_foods"][index]
 		if not ShapeUtils.cells_to_lookup(item["cells"]).has("%d:%d" % [from_cell.x, from_cell.y]):
@@ -990,12 +1021,14 @@ func move_placed_food(from_cell: Vector2i, to_anchor: Vector2i) -> bool:
 		item["anchor"] = to_anchor
 		item["cells"] = placed_cells
 		state["placed_foods"][index] = item
+		_reconcile_character_health_after_board_change(selected_character_id, health_before_change)
 		state_changed.emit()
 		return true
 	return false
 
 func move_placed_expansion(from_cell: Vector2i, to_anchor: Vector2i) -> bool:
 	var state: Dictionary = get_selected_character_state()
+	var health_before_change: Dictionary = _capture_character_health_snapshot(selected_character_id)
 	for index in range(state["placed_expansions"].size()):
 		var item: Dictionary = state["placed_expansions"][index]
 		if not ShapeUtils.cells_to_lookup(item["cells"]).has("%d:%d" % [from_cell.x, from_cell.y]):
@@ -1018,6 +1051,7 @@ func move_placed_expansion(from_cell: Vector2i, to_anchor: Vector2i) -> bool:
 		item["cells"] = placed_cells
 		state["placed_expansions"][index] = item
 		_rebuild_active_cells(state)
+		_reconcile_character_health_after_board_change(selected_character_id, health_before_change)
 		state_changed.emit()
 		return true
 	return false

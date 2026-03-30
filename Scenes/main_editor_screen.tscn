@@ -26,6 +26,7 @@
 [ext_resource type="Texture2D" uid="uid://dqy8yyxju1ffo" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_help_icon.png" id="23_help_icon"]
 [ext_resource type="Texture2D" uid="uid://dgmo8udhv7she" path="res://Art/UI/NewUI/Carriage.png" id="27_oi5tu"]
 [ext_resource type="Texture2D" uid="uid://pnv0stxua51g" path="res://Art/UI/tutor1.png" id="28_tutor_1"]
+[ext_resource type="Texture2D" path="res://Art/UI/tutor2.png" id="29_tutor_2"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_inventory_drop_zone"]
 
