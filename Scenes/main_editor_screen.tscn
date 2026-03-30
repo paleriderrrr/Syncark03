@@ -10,9 +10,9 @@
 [ext_resource type="PackedScene" path="res://Scenes/Components/synergy_panel.tscn" id="5_synergy"]
 [ext_resource type="Texture2D" uid="uid://dr60km6grv5l7" path="res://Art/UI/Background.png" id="6_bg"]
 [ext_resource type="Script" uid="uid://bmulngcjm5nc" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
-[ext_resource type="Texture2D" uid="uid://bc74ak8pfe8q0" path="res://Art/UI/NewUI/ui1_2_role_tab_mid.png" id="8_tijtm"]
 [ext_resource type="Texture2D" uid="uid://b8f04p7jexi2c" path="res://Art/UI/NewUI/ui2_2_panel_bottom_red.png" id="9_fwcvo"]
 [ext_resource type="Texture2D" uid="uid://b3slmqoqlubn2" path="res://Art/UI/NewUI/ui1_2_board_wood.png" id="11_45gjs"]
+[ext_resource type="Texture2D" uid="uid://d1lxddtb6u1as" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_role_tab_mid_red.png" id="11_qli1y"]
 [ext_resource type="Texture2D" uid="uid://da2qea6expn6s" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_role_tab_bottom_purple.png" id="12_80818"]
 [ext_resource type="Texture2D" uid="uid://nwa0115tugbr" path="res://Art/UI/NewUI/告示.png" id="13_3wget"]
 [ext_resource type="Texture2D" uid="uid://se3u2duh8jvu" path="res://Art/UI/NewUI/ui1_2_wanted_poster.png" id="13_hkonf"]
@@ -109,7 +109,7 @@ anchors_preset = 0
 offset_left = 238.0
 offset_top = -50.0
 offset_right = 1670.0
-offset_bottom = 148.0
+offset_bottom = 174.0
 
 [node name="TopMarketBackground" type="TextureRect" parent="TopMarketPanel" unique_id=517598199]
 unique_name_in_owner = true
@@ -120,7 +120,7 @@ anchor_bottom = 1.0
 offset_left = -72.0
 offset_top = -3.0
 offset_right = -72.0
-offset_bottom = 141.0
+offset_bottom = 167.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -154,7 +154,7 @@ layout_mode = 0
 offset_left = 248.0
 offset_top = 50.0
 offset_right = 1362.0
-offset_bottom = 186.0
+offset_bottom = 212.0
 mouse_filter = 2
 theme_override_constants/separation = 12
 
@@ -214,9 +214,9 @@ grow_vertical = 2
 [node name="TopMarketActions" type="HBoxContainer" parent="TopMarketPanel/TopMarketVBox" unique_id=1575567653]
 layout_mode = 0
 offset_left = 51.0
-offset_top = 160.0
+offset_top = 184.0
 offset_right = 1141.0
-offset_bottom = 257.0
+offset_bottom = 281.0
 
 [node name="TopMarketSpacer" type="Control" parent="TopMarketPanel/TopMarketVBox/TopMarketActions" unique_id=1142158324]
 layout_mode = 2
@@ -238,8 +238,10 @@ layout_mode = 0
 offset_left = 14.0
 offset_top = 82.0
 offset_right = 954.0
-offset_bottom = 218.0
+offset_bottom = 262.0
 card_background_texture = ExtResource("14_shop_card")
+viewport_height = 180
+content_top_padding = 16
 
 [node name="LeftPanel" type="Control" parent="." unique_id=781811621]
 anchors_preset = 0
@@ -297,20 +299,21 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 25.487244
-offset_top = -11.946328
-offset_right = 325.48724
-offset_bottom = 138.05367
-icon = ExtResource("8_tijtm")
+offset_top = -43.51876
+offset_right = 315.11514
+offset_bottom = 134.82281
+scale = Vector2(1.0520798, 1.0612354)
+icon = ExtResource("11_qli1y")
 flat = true
 expand_icon = true
 
 [node name="HunterTabButton" type="Button" parent="LeftPanel/LeftCenter/LeftVBox" unique_id=1168102305]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 26.259584
-offset_top = 94.7173
-offset_right = 323.61087
-offset_bottom = 323.5456
+offset_left = 25.487244
+offset_top = 88.74414
+offset_right = 322.83853
+offset_bottom = 317.57245
 icon = ExtResource("12_80818")
 flat = true
 expand_icon = true
@@ -322,7 +325,7 @@ offset_left = 25.487244
 offset_top = 299.51147
 offset_right = 337.20493
 offset_bottom = 488.2428
-scale = Vector2(0.9886, 0.8371975)
+scale = Vector2(0.9437072, 0.9013539)
 icon = ExtResource("13_qli1y")
 flat = true
 expand_icon = true
@@ -568,7 +571,7 @@ autowrap_mode = 3
 
 [node name="SynergyPanel" parent="RightPanel" unique_id=1134522113 instance=ExtResource("5_synergy")]
 unique_name_in_owner = true
-anchors_preset = 0
+layout_mode = 0
 offset_left = -461.0
 offset_top = 15.0
 offset_right = -234.0

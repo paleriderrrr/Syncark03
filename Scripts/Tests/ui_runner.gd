@@ -43,6 +43,10 @@ func _run() -> void:
 		_assert(guide_image.texture != null, "Guide image overlay should load the configured guide texture")
 	var market_strip: Node = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip")
 	_assert(market_strip.has_method("get_entry_count"), "Top market strip should expose grouped entries")
+	var market_viewport: Control = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip/VBox/StripHBox/Viewport")
+	var market_card_row: HBoxContainer = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip/VBox/StripHBox/Viewport/CardRow")
+	_assert(market_viewport.custom_minimum_size.y >= 180.0, "Top market strip viewport should reserve enough height for full discount text")
+	_assert(is_equal_approx(market_card_row.position.y, 16.0), "Top market strip should add top padding so discount text stays inside the clipped viewport")
 	if market_strip.has_method("get_entry_count"):
 		_assert(int(market_strip.call("get_entry_count")) > 0, "Top market strip should render at least one grouped market entry")
 	var found_market_expansion_icon: bool = false

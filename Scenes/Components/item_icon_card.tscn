@@ -36,7 +36,6 @@ unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
-script = ExtResource("1_script")
 
 [node name="RarityLabel" type="Label" parent="RarityBadge" unique_id=78743209]
 unique_name_in_owner = true

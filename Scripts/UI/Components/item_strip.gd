@@ -10,6 +10,8 @@ const CARD_WIDTH := 156
 const CARD_GAP := 18
 
 @export var card_background_texture: Texture2D
+@export_range(164, 512, 1) var viewport_height: int = 164
+@export_range(0, 128, 1) var content_top_padding: int = 0
 
 @onready var title_label: Label = %TitleLabel
 @onready var viewport_control: Control = %Viewport
@@ -25,6 +27,7 @@ var card_drop_target: Node = null
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	_apply_layout_metrics()
 	prev_button.pressed.connect(_show_previous_page)
 	next_button.pressed.connect(_show_next_page)
 	viewport_control.resized.connect(_refresh_page_state)
@@ -83,13 +86,17 @@ func _refresh_page_state() -> void:
 	var page_stride: float = maxf(float(visible_slots * (CARD_WIDTH + CARD_GAP)), 1.0)
 	var target_offset: float = minf(float(_page_index) * page_stride, max_offset)
 	if content_width <= visible_width:
-		card_row.position.x = 0.0
+		card_row.position = Vector2(0.0, float(content_top_padding))
 	else:
-		card_row.position.x = -target_offset
+		card_row.position = Vector2(-target_offset, float(content_top_padding))
 	prev_button.disabled = _page_index <= 0
 	next_button.disabled = _page_index >= max_page
 	prev_button.visible = max_page > 0
 	next_button.visible = max_page > 0
+
+func _apply_layout_metrics() -> void:
+	custom_minimum_size.y = float(viewport_height)
+	viewport_control.custom_minimum_size.y = float(viewport_height)
 
 func _get_visible_slot_count() -> int:
 	var slot_width: int = CARD_WIDTH + CARD_GAP
