@@ -449,18 +449,18 @@ theme_override_constants/separation = 4
 [node name="NextMonsterStatsLabel" type="Label" parent="RightPanel/MonsterTooltipPanel/MonsterTooltipVBox" unique_id=788910731]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.211765, 0.137255, 0.0862745, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("15_80818")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 28
 text = "-"
 autowrap_mode = 3
 
 [node name="NextMonsterSkillLabel" type="Label" parent="RightPanel/MonsterTooltipPanel/MonsterTooltipVBox" unique_id=1071384364]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.25098, 0.156863, 0.0941176, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("15_80818")
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 27
 text = "-"
 autowrap_mode = 3
 

@@ -2,6 +2,8 @@ extends PanelContainer
 class_name ItemStrip
 
 signal entry_clicked(entry: Dictionary)
+signal entry_hover_started(entry: Dictionary, global_rect: Rect2)
+signal entry_hover_ended
 
 const CARD_SCENE := preload("res://Scenes/Components/item_icon_card.tscn")
 const CARD_WIDTH := 132
@@ -40,10 +42,14 @@ func set_entries(entries: Array[Dictionary], texture_lookup: Dictionary) -> void
 	_page_index = 0
 	for entry in entries:
 		var card: ItemIconCard = CARD_SCENE.instantiate() as ItemIconCard
-		var texture: Texture2D = texture_lookup.get(entry.get("definition_id", &""), null) as Texture2D
+		var texture: Texture2D = entry.get("icon_texture", null) as Texture2D
+		if texture == null:
+			texture = texture_lookup.get(entry.get("definition_id", &""), null) as Texture2D
 		card_row.add_child(card)
 		card.configure(entry, texture, entry.get("drag_payload", {}), card_drop_sources, card_drop_target, card_background_texture)
 		card.clicked.connect(_on_card_clicked)
+		card.hover_started.connect(_on_card_hover_started)
+		card.hover_ended.connect(_on_card_hover_ended)
 		_cards.append(card)
 	call_deferred("_refresh_page_state")
 
@@ -101,6 +107,12 @@ func _get_max_page_index_for_slots(visible_slots: int) -> int:
 
 func _on_card_clicked(entry: Dictionary) -> void:
 	entry_clicked.emit(entry)
+
+func _on_card_hover_started(entry: Dictionary, global_rect: Rect2) -> void:
+	entry_hover_started.emit(entry, global_rect)
+
+func _on_card_hover_ended() -> void:
+	entry_hover_ended.emit()
 
 func _ui_sfx() -> Node:
 	return get_node("/root/UiSfxPlayer")

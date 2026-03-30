@@ -9,9 +9,13 @@ signal hover_food_cleared
 
 const GRID_WIDTH := 8
 const GRID_HEIGHT := 6
-const BLOCKED_CELL_COLOR := Color(0.22, 0.24, 0.28, 0.08)
+const GRID_CELL_COLOR := Color(1.0, 1.0, 1.0, 0.02)
 const VALID_PREVIEW_COLOR := Color(0.44, 0.9, 0.52, 0.55)
 const INVALID_PREVIEW_COLOR := Color(0.92, 0.36, 0.36, 0.55)
+const FOOD_BACKGROUND_ALPHA := 0.18
+const CELL_CORNER_RADIUS := 14.0
+const FOOD_TEXTURE_INSET_RATIO := 0.08
+const FOOD_TEXTURE_INSET_MIN := 4.0
 
 @export var cell_pixel_size: int = 72
 @export var read_only: bool = false
@@ -63,6 +67,7 @@ func refresh_board(character_state: Dictionary, preview_cells: Array[Vector2i], 
 	_character_state = character_state.duplicate(true)
 	_preview_cells = preview_cells.duplicate()
 	_food_lookup = food_lookup
+	_clear_food_hover()
 	if not texture_lookup.is_empty():
 		_texture_lookup = texture_lookup.duplicate(false)
 	_apply_cell_metrics()
@@ -75,7 +80,7 @@ func _draw() -> void:
 	for y in range(GRID_HEIGHT):
 		for x in range(GRID_WIDTH):
 			var cell_rect := Rect2(Vector2(x * cell_pixel_size, y * cell_pixel_size), Vector2(cell_pixel_size, cell_pixel_size))
-			draw_rect(cell_rect, BLOCKED_CELL_COLOR, true)
+			_draw_rounded_cell(cell_rect, GRID_CELL_COLOR)
 	var character_id: StringName = _character_state.get("id", &"")
 	_draw_base_lunchbox(character_id)
 	for expansion in _character_state.get("placed_expansions", []):
@@ -96,10 +101,11 @@ func _draw_food_item(item: Dictionary) -> void:
 	_draw_food_shape_background(cells, rarity_color)
 	var rotation_lookup: Dictionary = _food_board_texture_lookup.get(item.get("definition_id", &""), {})
 	var baked_texture: Texture2D = rotation_lookup.get(posmod(int(item.get("rotation", 0)), 4), null) as Texture2D
+	var texture_rect: Rect2 = compute_food_texture_draw_rect(bounds, cell_pixel_size)
 	if baked_texture != null:
-		draw_texture_rect(baked_texture, bounds, false)
+		draw_texture_rect(baked_texture, texture_rect, false)
 	elif _texture_lookup.has(item.get("definition_id", &"")):
-		draw_texture_rect(_texture_lookup[item.get("definition_id", &"")], bounds, false)
+		draw_texture_rect(_texture_lookup[item.get("definition_id", &"")], texture_rect, false)
 	elif definition != null and not definition.display_name.is_empty():
 		draw_string(get_theme_default_font(), bounds.position + Vector2(10, bounds.size.y * 0.55), definition.display_name.left(2), HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x - 20, 18, Color.BLACK)
 
@@ -131,33 +137,24 @@ func _size_key_for_cells(cells: Array) -> StringName:
 
 func _draw_overlay_cell(cell: Vector2i, color: Color) -> void:
 	var cell_rect := Rect2(Vector2(cell.x * cell_pixel_size, cell.y * cell_pixel_size), Vector2(cell_pixel_size, cell_pixel_size))
-	draw_rect(cell_rect.grow(-4.0), color, true)
+	_draw_rounded_cell(cell_rect.grow(-4.0), color)
 
 func _draw_food_shape_background(cells: Array[Vector2i], rarity_color: Color) -> void:
-	var cell_lookup: Dictionary = ShapeUtils.cells_to_lookup(cells)
 	for cell in cells:
 		var rect: Rect2 = _food_cell_rect(cell)
-		draw_rect(rect, rarity_color, true)
-		_draw_food_cell_outline(cell, rect, cell_lookup)
-
-func _draw_food_cell_outline(cell: Vector2i, rect: Rect2, cell_lookup: Dictionary) -> void:
-	var stroke: Color = Color(0.1, 0.1, 0.1, 0.85)
-	var stroke_width: float = 2.0
-	var top_left: Vector2 = rect.position
-	var top_right: Vector2 = rect.position + Vector2(rect.size.x, 0.0)
-	var bottom_left: Vector2 = rect.position + Vector2(0.0, rect.size.y)
-	var bottom_right: Vector2 = rect.position + rect.size
-	if not cell_lookup.has("%d:%d" % [cell.x, cell.y - 1]):
-		draw_line(top_left, top_right, stroke, stroke_width)
-	if not cell_lookup.has("%d:%d" % [cell.x, cell.y + 1]):
-		draw_line(bottom_left, bottom_right, stroke, stroke_width)
-	if not cell_lookup.has("%d:%d" % [cell.x - 1, cell.y]):
-		draw_line(top_left, bottom_left, stroke, stroke_width)
-	if not cell_lookup.has("%d:%d" % [cell.x + 1, cell.y]):
-		draw_line(top_right, bottom_right, stroke, stroke_width)
+		var fill_color := rarity_color
+		fill_color.a = FOOD_BACKGROUND_ALPHA
+		_draw_rounded_cell(rect, fill_color)
 
 func _food_cell_rect(cell: Vector2i) -> Rect2:
 	return Rect2(Vector2(cell.x * cell_pixel_size, cell.y * cell_pixel_size), Vector2(cell_pixel_size, cell_pixel_size))
+
+func _draw_rounded_cell(rect: Rect2, color: Color) -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	style.draw_center = true
+	style.set_corner_radius_all(int(CELL_CORNER_RADIUS))
+	draw_style_box(style, rect)
 
 func _get_cells_bounds(cells: Array) -> Rect2:
 	if cells.is_empty():
@@ -219,6 +216,13 @@ static func compute_food_cell_source_region(cell: Vector2i, cells: Array[Vector2
 		)
 	)
 
+static func compute_food_texture_draw_rect(bounds: Rect2, cell_size: int) -> Rect2:
+	var inset: float = max(FOOD_TEXTURE_INSET_MIN, round(float(cell_size) * FOOD_TEXTURE_INSET_RATIO))
+	var max_inset_x: float = max(0.0, (bounds.size.x - 1.0) * 0.5)
+	var max_inset_y: float = max(0.0, (bounds.size.y - 1.0) * 0.5)
+	var clamped_inset: float = min(inset, min(max_inset_x, max_inset_y))
+	return bounds.grow_individual(-clamped_inset, -clamped_inset, -clamped_inset, -clamped_inset)
+
 func _gui_input(event: InputEvent) -> void:
 	if read_only:
 		return
@@ -228,10 +232,12 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		var cell: Vector2i = _position_to_cell(event.position)
 		if not _is_cell_in_bounds(cell):
+			_clear_food_hover()
 			return
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			cell_clicked.emit(cell)
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			_clear_food_hover()
 			cell_right_clicked.emit(cell)
 
 func _get_drag_data(at_position: Vector2) -> Variant:
@@ -241,6 +247,7 @@ func _get_drag_data(at_position: Vector2) -> Variant:
 	var payload: Dictionary = _build_drag_payload(cell)
 	if payload.is_empty():
 		return null
+	_clear_food_hover()
 	_ui_sfx().play_pickup()
 	set_drag_preview(_build_drag_preview(payload))
 	return payload
@@ -272,21 +279,23 @@ func _notification(what: int) -> void:
 		_hover_cells.clear()
 		_hover_valid = false
 		queue_redraw()
+		_clear_food_hover()
+	elif what == NOTIFICATION_DRAG_BEGIN:
+		_clear_food_hover()
 	elif what == NOTIFICATION_MOUSE_EXIT:
 		_clear_food_hover()
 
 func _build_drag_payload(cell: Vector2i) -> Dictionary:
 	for item in _character_state.get("placed_foods", []):
 		if ShapeUtils.cells_to_lookup(item.get("cells", [])).has("%d:%d" % [cell.x, cell.y]):
-			var definition: FoodDefinition = _food_lookup.get(item.get("definition_id", &""), null) as FoodDefinition
-			if definition == null:
+			var definition_id: StringName = item.get("definition_id", &"")
+			if not _food_lookup.has(definition_id):
 				return {}
+			_run_state().begin_board_food_action(cell)
 			return {
 				"source": &"board_food",
 				"instance_id": item["instance_id"],
-				"definition_id": item["definition_id"],
-				"rotation": int(item.get("rotation", 0)),
-				"shape_cells": ShapeUtils.rotate_cells(definition.shape_cells, int(item.get("rotation", 0))),
+				"definition_id": definition_id,
 				"from_cell": cell,
 				"anchor": item["anchor"],
 				"grab_offset": cell - item["anchor"],
@@ -333,13 +342,41 @@ func _build_drag_preview(payload: Dictionary) -> Control:
 	return panel
 
 func _payload_cells_for_anchor(payload: Dictionary, anchor: Vector2i) -> Array[Vector2i]:
-	var local_cells: Array[Vector2i] = []
-	for cell_variant in payload.get("shape_cells", []):
-		local_cells.append(cell_variant)
+	var local_cells: Array[Vector2i] = _resolve_payload_shape_cells(payload)
 	var adjusted_anchor: Vector2i = anchor
 	if payload.has("grab_offset"):
 		adjusted_anchor -= payload.get("grab_offset", Vector2i.ZERO)
 	return ShapeUtils.translate_cells(local_cells, adjusted_anchor)
+
+func _resolve_payload_shape_cells(payload: Dictionary) -> Array[Vector2i]:
+	var run_state: Node = _run_state()
+	if _payload_uses_selected_item(payload, run_state):
+		return run_state.get_selected_item_cells()
+	var local_cells: Array[Vector2i] = []
+	for cell_variant in payload.get("shape_cells", []):
+		var cell: Vector2i = cell_variant
+		local_cells.append(cell)
+	return local_cells
+
+func _payload_uses_selected_item(payload: Dictionary, run_state: Node) -> bool:
+	if run_state.selected_item.is_empty():
+		return false
+	var selected_source: StringName = run_state.selected_item.get("source", &"")
+	var payload_source: StringName = payload.get("source", &"")
+	if selected_source != payload_source:
+		return false
+	match payload_source:
+		&"inventory":
+			var inventory_item: Dictionary = run_state._find_inventory_item(run_state.selected_item.get("instance_id", &""))
+			return inventory_item.get("definition_id", &"") == payload.get("definition_id", &"")
+		&"market_offer", &"market_expansion":
+			return run_state.selected_item.get("offer_id", &"") == payload.get("offer_id", &"")
+		&"pending_expansion":
+			return run_state.selected_item.get("instance_id", &"") == payload.get("instance_id", &"")
+		&"board_food":
+			return run_state.selected_item.get("instance_id", &"") == payload.get("instance_id", &"")
+		_:
+			return false
 
 func _validate_payload_cells(payload: Dictionary, cells: Array[Vector2i]) -> bool:
 	if cells.is_empty():
@@ -471,5 +508,20 @@ func _color_for_rarity(rarity: StringName) -> Color:
 		_:
 			return Color(1.0, 1.0, 1.0, 0.95)
 
+func get_food_background_alpha() -> float:
+	return FOOD_BACKGROUND_ALPHA
+
+func get_grid_background_alpha() -> float:
+	return GRID_CELL_COLOR.a
+
+func get_cell_corner_radius() -> float:
+	return CELL_CORNER_RADIUS
+
+func draws_food_outline() -> bool:
+	return false
+
 func _ui_sfx() -> Node:
 	return get_node("/root/UiSfxPlayer")
+
+func _run_state() -> Node:
+	return get_node("/root/RunState")

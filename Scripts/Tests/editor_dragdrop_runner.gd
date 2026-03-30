@@ -70,10 +70,57 @@ func _run() -> void:
 	_assert(placed, "Dragged inventory instance should place onto the board")
 	_assert(run_state.get_selected_character_state()["placed_foods"].size() == 1, "Board should contain exactly one placed food after placement")
 
+	var rotatable_inventory: Dictionary = run_state.generate_item_instance(&"lettuce_leaf")
+	run_state.shared_inventory.append(rotatable_inventory)
+	run_state.select_inventory_item(rotatable_inventory["instance_id"])
+	var before_rotation_cells: Array[Vector2i] = run_state.get_selected_item_cells()
+	run_state.rotate_selected_item()
+	var after_rotation_cells: Array[Vector2i] = run_state.get_selected_item_cells()
+	_assert(before_rotation_cells != after_rotation_cells, "Rotating a selected inventory food should change its placement cells")
+	var rotated_inventory_anchor: Vector2i = _find_valid_anchor_for_selected_item(run_state)
+	_assert(rotated_inventory_anchor != Vector2i(-1, -1), "Rotated selected inventory food should still have a valid anchor on the board")
+	_assert(run_state.try_place_selected_item(rotated_inventory_anchor), "Rotated selected inventory food should place successfully")
+	var rotated_inventory_food: Dictionary = run_state.get_item_at_cell(rotated_inventory_anchor)
+	_assert(int(rotated_inventory_food.get("rotation", 0)) == 1, "Placed inventory food should keep the rotated state")
+
+	var market_offer_id: StringName = &"rotation_offer_test"
+	run_state.current_market_offers.append({
+		"offer_id": market_offer_id,
+		"slot_index": 98,
+		"kind": &"food",
+		"definition_id": &"lettuce_leaf",
+		"quantity": 2,
+		"rarity": &"common",
+		"discount": 1.0,
+		"price": 4,
+	})
+	run_state.begin_market_offer_action(market_offer_id)
+	var market_before_rotation: Array[Vector2i] = run_state.get_selected_item_cells()
+	run_state.rotate_selected_item()
+	var market_after_rotation: Array[Vector2i] = run_state.get_selected_item_cells()
+	_assert(market_before_rotation != market_after_rotation, "Rotating a market drag action should change its placement cells")
+	var market_gold_before_place: int = run_state.current_gold
+	var market_anchor: Vector2i = _find_valid_anchor_for_selected_item(run_state)
+	_assert(market_anchor != Vector2i(-1, -1), "Rotated market food should still have a valid anchor on the board")
+	_assert(run_state.try_place_selected_item(market_anchor), "Rotated market food should place directly from the market onto the board")
+	var market_food_on_board: Dictionary = run_state.get_item_at_cell(market_anchor)
+	_assert(int(market_food_on_board.get("rotation", 0)) == 1, "Placed market food should keep the rotated state")
+	_assert(run_state.current_gold == market_gold_before_place - 4, "Direct market placement should still spend the package price once")
+
 	var moved_food_anchor: Vector2i = placed_anchor + Vector2i(1, 0)
 	var move_success: bool = run_state.move_placed_food(placed_anchor, moved_food_anchor)
 	_assert(move_success, "Placed food should move to a new valid anchor")
 	_assert(run_state.get_selected_character_state()["placed_foods"].size() == 1, "Moving a placed food should preserve a single placed-food entry")
+	_assert(run_state.begin_board_food_action(rotated_inventory_anchor), "Placed food should enter a board action when grabbed from the board")
+	var board_before_rotation: Array[Vector2i] = run_state.get_selected_item_cells()
+	run_state.rotate_selected_item()
+	var board_after_rotation: Array[Vector2i] = run_state.get_selected_item_cells()
+	_assert(board_before_rotation != board_after_rotation, "Rotating a grabbed board food should change its placement cells")
+	var board_reanchor: Vector2i = _find_valid_anchor_for_selected_item(run_state)
+	_assert(board_reanchor != Vector2i(-1, -1), "Grabbed board food should still have a legal anchor after rotation")
+	_assert(run_state.try_place_selected_item(board_reanchor), "Grabbed board food should rotate and re-place legally")
+	var rotated_board_food: Dictionary = run_state.get_item_at_cell(board_reanchor)
+	_assert(int(rotated_board_food.get("rotation", 0)) == 2, "Re-placed board food should persist its updated rotation")
 	var moved_base: bool = run_state.move_base_board(Vector2i(2, 1))
 	_assert(moved_base, "Base bento body should move to a new valid anchor inside the 8x6 workspace")
 	_assert(run_state.get_selected_character_state().get("base_anchor", Vector2i.ZERO) == Vector2i(2, 1), "Base bento body should record its new anchor after moving")
@@ -112,6 +159,14 @@ func _assert(condition: bool, message: String) -> void:
 	if not condition:
 		_failures.append(message)
 		push_error(message)
+
+func _find_valid_anchor_for_selected_item(run_state: Node) -> Vector2i:
+	for y in range(run_state.GRID_HEIGHT):
+		for x in range(run_state.GRID_WIDTH):
+			var anchor := Vector2i(x, y)
+			if run_state.can_place_selected_item(anchor):
+				return anchor
+	return Vector2i(-1, -1)
 
 func _finish() -> void:
 	if _failures.is_empty():

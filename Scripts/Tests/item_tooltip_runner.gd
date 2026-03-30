@@ -24,14 +24,7 @@ func _run() -> void:
 		{}
 	)
 	await process_frame
-	card.call("_on_mouse_entered")
-	await process_frame
-	await process_frame
-	var tooltip: PopupPanel = card.get("_hover_tooltip")
-	assert(tooltip != null, "Hover tooltip should be created immediately")
-	assert(tooltip.visible, "Hover tooltip should be visible immediately on mouse enter")
-	card.call("_on_mouse_exited")
-	await process_frame
-	assert(not tooltip.visible, "Hover tooltip should hide immediately on mouse exit")
+	assert(card.has_signal("hover_started"), "Item card should expose hover_started signal for shared overlay host")
+	assert(card.has_signal("hover_ended"), "Item card should expose hover_ended signal for shared overlay host")
 	print("ITEM_TOOLTIP_TEST_PASS")
 	quit()

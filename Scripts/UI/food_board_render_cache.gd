@@ -1,6 +1,9 @@
 extends RefCounted
 class_name FoodBoardRenderCache
 
+const ANGLE_SEARCH_STEPS := 360
+const STRETCH_SEARCH_STEPS := 20
+
 var _raw_textures: Dictionary = {}
 var _food_lookup: Dictionary = {}
 var _cache: Dictionary = {}
@@ -49,11 +52,16 @@ func _bake_shape_texture(source_texture: Texture2D, base_shape_cells: Array[Vect
 	if source_image == null:
 		return null
 	var visible_region: Rect2 = _compute_visible_alpha_region(source_image)
-	var target_rect: Rect2 = compute_zero_crop_dest_rect(visible_region.size, Vector2(output_size))
+	var solution: Dictionary = compute_best_zero_crop_solution(visible_region.size, Vector2(output_size))
+	var target_rect: Rect2 = solution.get("dest_rect", Rect2(Vector2.ZERO, Vector2(output_size)))
+	var rotation_radians: float = float(solution.get("rotation_radians", 0.0))
+	var scale_x: float = float(solution.get("scale_x", 1.0))
+	var scale_y: float = float(solution.get("scale_y", 1.0))
+	var contain_scale: float = float(solution.get("contain_scale", 1.0))
+	var target_center := target_rect.position + target_rect.size * 0.5
+	var source_center := visible_region.position + visible_region.size * 0.5
 	var baked := Image.create(output_size.x, output_size.y, false, Image.FORMAT_RGBA8)
 	baked.fill(Color(0.0, 0.0, 0.0, 0.0))
-	var output_width: int = baked.get_width()
-	var output_height: int = baked.get_height()
 	for cell in rotated_cells:
 		var local_cell := Vector2i(cell.x - bounds.position.x, cell.y - bounds.position.y)
 		for local_y in range(cell_pixel_size):
@@ -63,10 +71,14 @@ func _bake_shape_texture(source_texture: Texture2D, base_shape_cells: Array[Vect
 				var pixel_position := Vector2(float(pixel_x) + 0.5, float(pixel_y) + 0.5)
 				if not target_rect.has_point(pixel_position):
 					continue
-				var u: float = 0.0 if target_rect.size.x <= 0.0 else (pixel_position.x - target_rect.position.x) / target_rect.size.x
-				var v: float = 0.0 if target_rect.size.y <= 0.0 else (pixel_position.y - target_rect.position.y) / target_rect.size.y
-				var sample_x: int = clampi(int(floor(visible_region.position.x + visible_region.size.x * u)), 0, source_image.get_width() - 1)
-				var sample_y: int = clampi(int(floor(visible_region.position.y + visible_region.size.y * v)), 0, source_image.get_height() - 1)
+				var transformed: Vector2 = (pixel_position - target_center) / max(contain_scale, 0.0001)
+				var unrotated: Vector2 = transformed.rotated(-rotation_radians)
+				var sample_x_float: float = source_center.x + unrotated.x / max(scale_x, 0.0001)
+				var sample_y_float: float = source_center.y + unrotated.y / max(scale_y, 0.0001)
+				if sample_x_float < visible_region.position.x or sample_x_float >= visible_region.end.x or sample_y_float < visible_region.position.y or sample_y_float >= visible_region.end.y:
+					continue
+				var sample_x: int = clampi(int(floor(sample_x_float)), 0, source_image.get_width() - 1)
+				var sample_y: int = clampi(int(floor(sample_y_float)), 0, source_image.get_height() - 1)
 				baked.set_pixel(pixel_x, pixel_y, source_image.get_pixel(sample_x, sample_y))
 	return ImageTexture.create_from_image(baked)
 
@@ -87,6 +99,59 @@ func compute_zero_crop_dest_rect(source_size: Vector2, target_size: Vector2, str
 	var fitted_size := adjusted_size * contain_scale
 	var fitted_position := (target_size - fitted_size) * 0.5
 	return Rect2(fitted_position, fitted_size)
+
+func compute_best_zero_crop_solution(source_size: Vector2, target_size: Vector2, stretch_limit: float = 0.2) -> Dictionary:
+	if source_size.x <= 0.0 or source_size.y <= 0.0 or target_size.x <= 0.0 or target_size.y <= 0.0:
+		return {
+			"rotation_radians": 0.0,
+			"scale_x": 1.0,
+			"scale_y": 1.0,
+			"contain_scale": 1.0,
+			"dest_rect": Rect2(Vector2.ZERO, target_size),
+		}
+	var low: float = max(0.0, 1.0 - stretch_limit)
+	var high: float = 1.0 + stretch_limit
+	var best_solution := {
+		"rotation_radians": 0.0,
+		"scale_x": 1.0,
+		"scale_y": 1.0,
+		"contain_scale": 1.0,
+		"dest_rect": compute_zero_crop_dest_rect(source_size, target_size, stretch_limit),
+	}
+	var best_subject_area: float = -1.0
+	var best_bbox_area: float = -1.0
+	var best_distortion: float = INF
+	for angle_step in range(ANGLE_SEARCH_STEPS + 1):
+		var angle: float = (PI * 0.5) * (float(angle_step) / float(ANGLE_SEARCH_STEPS))
+		var cosine: float = absf(cos(angle))
+		var sine: float = absf(sin(angle))
+		for stretch_x_step in range(STRETCH_SEARCH_STEPS + 1):
+			var scale_x: float = lerpf(low, high, float(stretch_x_step) / float(STRETCH_SEARCH_STEPS))
+			for stretch_y_step in range(STRETCH_SEARCH_STEPS + 1):
+				var scale_y: float = lerpf(low, high, float(stretch_y_step) / float(STRETCH_SEARCH_STEPS))
+				var rotated_width: float = source_size.x * scale_x * cosine + source_size.y * scale_y * sine
+				var rotated_height: float = source_size.x * scale_x * sine + source_size.y * scale_y * cosine
+				if rotated_width <= 0.0 or rotated_height <= 0.0:
+					continue
+				var contain_scale: float = min(target_size.x / rotated_width, target_size.y / rotated_height)
+				var fitted_size := Vector2(rotated_width, rotated_height) * contain_scale
+				var subject_area: float = source_size.x * source_size.y * scale_x * scale_y * contain_scale * contain_scale
+				var bbox_area: float = fitted_size.x * fitted_size.y
+				var distortion: float = absf(scale_x - 1.0) + absf(scale_y - 1.0)
+				if subject_area > best_subject_area + 0.0001 \
+				or (is_equal_approx(subject_area, best_subject_area) and bbox_area > best_bbox_area + 0.0001) \
+				or (is_equal_approx(subject_area, best_subject_area) and is_equal_approx(bbox_area, best_bbox_area) and distortion < best_distortion - 0.0001):
+					best_subject_area = subject_area
+					best_bbox_area = bbox_area
+					best_distortion = distortion
+					best_solution = {
+						"rotation_radians": angle,
+						"scale_x": scale_x,
+						"scale_y": scale_y,
+						"contain_scale": contain_scale,
+						"dest_rect": Rect2((target_size - fitted_size) * 0.5, fitted_size),
+					}
+	return best_solution
 
 func _resolve_bounded_stretch_pair(ratio_multiplier: float, low: float, high: float) -> Vector2:
 	if ratio_multiplier <= 0.0:

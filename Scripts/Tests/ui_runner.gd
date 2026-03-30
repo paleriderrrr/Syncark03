@@ -31,6 +31,43 @@ func _run() -> void:
 	_assert(market_strip.has_method("get_entry_count"), "Top market strip should expose grouped entries")
 	if market_strip.has_method("get_entry_count"):
 		_assert(int(market_strip.call("get_entry_count")) > 0, "Top market strip should render at least one grouped market entry")
+	var found_market_expansion_icon: bool = false
+	run_state.current_gold = 999
+	for _i in range(12):
+		await process_frame
+		var card_row: HBoxContainer = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip/VBox/StripHBox/Viewport/CardRow")
+		for card_variant in card_row.get_children():
+			var card: ItemIconCard = card_variant
+			if card.entry.get("kind", &"") != &"expansion":
+				continue
+			var icon_rect: TextureRect = card.find_child("IconRect", true, false) as TextureRect
+			_assert(icon_rect != null, "Expansion market card should expose an icon rect")
+			if icon_rect != null:
+				_assert(icon_rect.texture != null, "Market expansion card should display a lunchbox texture")
+				_assert(icon_rect.visible, "Market expansion card should keep its lunchbox texture visible")
+			found_market_expansion_icon = true
+			var gained_expansions: Array[Dictionary] = run_state.purchase_market_offer_package(card.entry.get("offer_id", &""))
+			_assert(not gained_expansions.is_empty(), "Expansion purchase should succeed during icon validation")
+			await process_frame
+			var inventory_card_row: HBoxContainer = editor.get_node("BottomInventoryPanel/InventoryDropZone/InventoryStrip/VBox/StripHBox/Viewport/CardRow")
+			var found_inventory_expansion_icon: bool = false
+			for inventory_card_variant in inventory_card_row.get_children():
+				var inventory_card: ItemIconCard = inventory_card_variant
+				if inventory_card.entry.get("entry_kind", &"food") != &"expansion":
+					continue
+				var inventory_icon_rect: TextureRect = inventory_card.find_child("IconRect", true, false) as TextureRect
+				_assert(inventory_icon_rect != null, "Pending expansion inventory card should expose an icon rect")
+				if inventory_icon_rect != null:
+					_assert(inventory_icon_rect.texture != null, "Pending expansion inventory card should display a lunchbox texture")
+					_assert(inventory_icon_rect.visible, "Pending expansion inventory card should keep its lunchbox texture visible")
+				found_inventory_expansion_icon = true
+				break
+			_assert(found_inventory_expansion_icon, "Buying an expansion should add a lunchbox-textured pending expansion card to inventory")
+			break
+		if found_market_expansion_icon:
+			break
+		_assert(run_state.refresh_market_offers(), "Reroll should succeed while searching for market expansion icons")
+	_assert(found_market_expansion_icon, "Market should surface at least one expansion card with a lunchbox icon during validation")
 	var before_offer_ids: Array[StringName] = []
 	for offer in run_state.current_market_offers:
 		before_offer_ids.append(offer["offer_id"])

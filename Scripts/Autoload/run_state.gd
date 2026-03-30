@@ -528,6 +528,7 @@ func select_inventory_item(instance_id: StringName) -> void:
 				"source": &"inventory",
 				"instance_id": instance_id,
 				"rotation": int(item.get("rotation", 0)),
+				"drag_session": false,
 			}
 			selected_item_changed.emit()
 			state_changed.emit()
@@ -540,11 +541,71 @@ func pick_inventory_instance(group_key: StringName) -> Dictionary:
 				"source": &"inventory",
 				"instance_id": item["instance_id"],
 				"rotation": int(item.get("rotation", 0)),
+				"drag_session": false,
 			}
 			selected_item_changed.emit()
 			state_changed.emit()
 			return selected_item.duplicate(true)
 	return {}
+
+func begin_inventory_drag(group_key: StringName) -> Dictionary:
+	var action: Dictionary = pick_inventory_instance(group_key)
+	if action.is_empty():
+		return {}
+	selected_item["drag_session"] = true
+	selected_item_changed.emit()
+	state_changed.emit()
+	return selected_item.duplicate(true)
+
+func begin_market_offer_action(offer_id: StringName) -> Dictionary:
+	var offer: Dictionary = _find_market_offer(offer_id)
+	if offer.is_empty() or offer.get("kind", &"") != &"food":
+		return {}
+	selected_item = {
+		"source": &"market_offer",
+		"offer_id": offer_id,
+		"definition_id": offer.get("definition_id", &""),
+		"rotation": 0,
+		"drag_session": true,
+	}
+	selected_item_changed.emit()
+	state_changed.emit()
+	return selected_item.duplicate(true)
+
+func begin_market_expansion_action(offer_id: StringName) -> Dictionary:
+	var offer: Dictionary = _find_market_offer(offer_id)
+	if offer.is_empty() or offer.get("kind", &"") != &"expansion":
+		return {}
+	selected_item = {
+		"source": &"market_expansion",
+		"offer_id": offer_id,
+		"rotation": 0,
+		"drag_session": true,
+		"target_character_id": offer.get("target_character_id", &""),
+	}
+	selected_item_changed.emit()
+	state_changed.emit()
+	return selected_item.duplicate(true)
+
+func begin_board_food_action(from_cell: Vector2i) -> bool:
+	var state: Dictionary = get_selected_character_state()
+	var key: String = "%d:%d" % [from_cell.x, from_cell.y]
+	for item_variant in state.get("placed_foods", []):
+		var item: Dictionary = item_variant
+		if not ShapeUtils.cells_to_lookup(item.get("cells", [])).has(key):
+			continue
+		selected_item = {
+			"source": &"board_food",
+			"instance_id": item.get("instance_id", &""),
+			"definition_id": item.get("definition_id", &""),
+			"rotation": int(item.get("rotation", 0)),
+			"origin_anchor": item.get("anchor", Vector2i.ZERO),
+			"drag_session": true,
+		}
+		selected_item_changed.emit()
+		state_changed.emit()
+		return true
+	return false
 
 func store_placed_food(from_cell: Vector2i) -> bool:
 	return remove_item_at_cell(from_cell)
@@ -589,6 +650,7 @@ func select_pending_expansion(instance_id: StringName) -> void:
 				"source": &"expansion",
 				"instance_id": instance_id,
 				"rotation": int(item.get("rotation", 0)),
+				"drag_session": false,
 			}
 			selected_item_changed.emit()
 			state_changed.emit()
@@ -616,6 +678,27 @@ func get_selected_item_cells() -> Array[Vector2i]:
 			return []
 		var definition: FoodDefinition = get_food_definition(item["definition_id"])
 		return ShapeUtils.rotate_cells(definition.shape_cells, int(selected_item["rotation"]))
+	if source == &"market_offer":
+		var offer: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
+		if offer.is_empty():
+			return []
+		var offer_definition: FoodDefinition = get_food_definition(offer.get("definition_id", &""))
+		if offer_definition == null:
+			return []
+		return ShapeUtils.rotate_cells(offer_definition.shape_cells, int(selected_item["rotation"]))
+	if source == &"board_food":
+		var placed_food: Dictionary = _find_placed_food(selected_character_id, selected_item.get("instance_id", &""))
+		if placed_food.is_empty():
+			return []
+		var placed_definition: FoodDefinition = get_food_definition(placed_food.get("definition_id", &""))
+		if placed_definition == null:
+			return []
+		return ShapeUtils.rotate_cells(placed_definition.shape_cells, int(selected_item["rotation"]))
+	if source == &"market_expansion":
+		var offer_expansion: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
+		if offer_expansion.is_empty():
+			return []
+		return ShapeUtils.rotate_cells(_clone_cells(offer_expansion.get("shape_cells", [])), int(selected_item["rotation"]))
 	var pending: Dictionary = _find_pending_expansion(selected_character_id, selected_item["instance_id"])
 	if pending.is_empty():
 		return []
@@ -634,7 +717,22 @@ func _find_pending_expansion(character_id: StringName, instance_id: StringName) 
 			return item
 	return {}
 
-func try_place_selected_item(anchor: Vector2i) -> bool:
+func _find_market_offer(offer_id: StringName) -> Dictionary:
+	for offer_variant in current_market_offers:
+		var offer: Dictionary = offer_variant
+		if offer.get("offer_id", &"") == offer_id:
+			return offer
+	return {}
+
+func _find_placed_food(character_id: StringName, instance_id: StringName) -> Dictionary:
+	var state: Dictionary = get_character_state(character_id)
+	for item_variant in state.get("placed_foods", []):
+		var item: Dictionary = item_variant
+		if item.get("instance_id", &"") == instance_id:
+			return item
+	return {}
+
+func can_place_selected_item(anchor: Vector2i) -> bool:
 	if selected_item.is_empty():
 		return false
 	var local_cells: Array[Vector2i] = get_selected_item_cells()
@@ -644,11 +742,42 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 	if not ShapeUtils.within_bounds(placed_cells, GRID_WIDTH, GRID_HEIGHT):
 		return false
 	var state: Dictionary = get_selected_character_state()
+	match selected_item.get("source", &""):
+		&"inventory", &"market_offer":
+			if not ShapeUtils.contains_all(state["active_cells"], placed_cells):
+				return false
+			return not ShapeUtils.overlaps(get_board_item_cells(selected_character_id), placed_cells)
+		&"board_food":
+			if not ShapeUtils.contains_all(state["active_cells"], placed_cells):
+				return false
+			var moving_item: Dictionary = _find_placed_food(selected_character_id, selected_item.get("instance_id", &""))
+			if moving_item.is_empty():
+				return false
+			var occupied_by_others: Array[Vector2i] = []
+			for other_variant in state.get("placed_foods", []):
+				var other_item: Dictionary = other_variant
+				if other_item.get("instance_id", &"") == moving_item.get("instance_id", &""):
+					continue
+				for other_cell_variant in other_item.get("cells", []):
+					var other_cell: Vector2i = other_cell_variant
+					occupied_by_others.append(other_cell)
+			return not ShapeUtils.overlaps(occupied_by_others, placed_cells)
+		&"expansion", &"market_expansion":
+			if selected_item.get("source", &"") == &"market_expansion" and selected_item.get("target_character_id", &"") != selected_character_id:
+				return false
+			if ShapeUtils.overlaps(state["active_cells"], placed_cells):
+				return false
+			return ShapeUtils.shares_edge(placed_cells, state["active_cells"])
+		_:
+			return false
+
+func try_place_selected_item(anchor: Vector2i) -> bool:
+	if not can_place_selected_item(anchor):
+		return false
+	var local_cells: Array[Vector2i] = get_selected_item_cells()
+	var placed_cells: Array[Vector2i] = ShapeUtils.translate_cells(local_cells, anchor)
+	var state: Dictionary = get_selected_character_state()
 	if selected_item["source"] == &"inventory":
-		if not ShapeUtils.contains_all(state["active_cells"], placed_cells):
-			return false
-		if ShapeUtils.overlaps(get_board_item_cells(selected_character_id), placed_cells):
-			return false
 		var inventory_item: Dictionary = _find_inventory_item(selected_item["instance_id"])
 		if inventory_item.is_empty():
 			return false
@@ -662,11 +791,58 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 			"reroll_bonus_count": int(inventory_item.get("reroll_bonus_count", 0)),
 		})
 		_remove_inventory_item(inventory_item["instance_id"])
+	elif selected_item["source"] == &"market_offer":
+		var market_offer: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
+		if market_offer.is_empty():
+			return false
+		var gained_items: Array[Dictionary] = purchase_market_offer_package(market_offer.get("offer_id", &""))
+		if gained_items.is_empty():
+			return false
+		var placed_instance: Dictionary = gained_items[0]
+		placed_instance["rotation"] = int(selected_item["rotation"])
+		state["placed_foods"].append({
+			"instance_id": placed_instance["instance_id"],
+			"definition_id": placed_instance["definition_id"],
+			"rotation": int(selected_item["rotation"]),
+			"anchor": anchor,
+			"cells": placed_cells,
+			"reroll_bonus_count": int(placed_instance.get("reroll_bonus_count", 0)),
+		})
+		_remove_inventory_item(placed_instance["instance_id"])
+	elif selected_item["source"] == &"board_food":
+		var moving_item: Dictionary = _find_placed_food(selected_character_id, selected_item.get("instance_id", &""))
+		if moving_item.is_empty():
+			return false
+		for index in range(state["placed_foods"].size()):
+			var placed_variant: Dictionary = state["placed_foods"][index]
+			if placed_variant.get("instance_id", &"") != moving_item.get("instance_id", &""):
+				continue
+			placed_variant["rotation"] = int(selected_item["rotation"])
+			placed_variant["anchor"] = anchor
+			placed_variant["cells"] = placed_cells
+			state["placed_foods"][index] = placed_variant
+			state_changed.emit()
+			clear_selection()
+			return true
+		return false
+	elif selected_item["source"] == &"market_expansion":
+		var expansion_offer: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
+		if expansion_offer.is_empty():
+			return false
+		var gained_expansions: Array[Dictionary] = purchase_market_offer_package(expansion_offer.get("offer_id", &""))
+		if gained_expansions.is_empty():
+			return false
+		var placed_expansion: Dictionary = gained_expansions[0]
+		state["placed_expansions"].append({
+			"instance_id": placed_expansion["instance_id"],
+			"label": placed_expansion["label"],
+			"rotation": int(selected_item["rotation"]),
+			"anchor": anchor,
+			"cells": placed_cells,
+		})
+		_remove_pending_expansion(selected_character_id, placed_expansion["instance_id"])
+		_rebuild_active_cells(state)
 	else:
-		if ShapeUtils.overlaps(state["active_cells"], placed_cells):
-			return false
-		if not ShapeUtils.shares_edge(placed_cells, state["active_cells"]):
-			return false
 		var pending: Dictionary = _find_pending_expansion(selected_character_id, selected_item["instance_id"])
 		if pending.is_empty():
 			return false
@@ -682,6 +858,15 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 	state_changed.emit()
 	clear_selection()
 	return true
+
+func get_item_at_cell(cell: Vector2i) -> Dictionary:
+	var state: Dictionary = get_selected_character_state()
+	var key: String = "%d:%d" % [cell.x, cell.y]
+	for item_variant in state.get("placed_foods", []):
+		var item: Dictionary = item_variant
+		if ShapeUtils.cells_to_lookup(item.get("cells", [])).has(key):
+			return item
+	return {}
 
 func _remove_inventory_item(instance_id: StringName) -> void:
 	for index in shared_inventory.size():
@@ -830,6 +1015,41 @@ func get_inventory_display_entries() -> Array[Dictionary]:
 			"definition_id": item["definition_id"],
 		})
 	return entries
+
+func get_selected_item_summary_safe() -> String:
+	if selected_item.is_empty():
+		return "鏈€夋嫨鐗╁搧"
+	match selected_item.get("source", &""):
+		&"inventory":
+			var inventory_item: Dictionary = _find_inventory_item(selected_item.get("instance_id", &""))
+			if inventory_item.is_empty():
+				return "鏈€夋嫨鐗╁搧"
+			var inventory_definition: FoodDefinition = get_food_definition(inventory_item.get("definition_id", &""))
+			return "鏀剧疆椋熺墿: %s" % (inventory_definition.display_name if inventory_definition != null else "")
+		&"market_offer":
+			var market_offer: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
+			if market_offer.is_empty():
+				return "鏈€夋嫨鐗╁搧"
+			var market_definition: FoodDefinition = get_food_definition(market_offer.get("definition_id", &""))
+			return "鏀剧疆椋熺墿: %s" % (market_definition.display_name if market_definition != null else "")
+		&"board_food":
+			var placed_food: Dictionary = _find_placed_food(selected_character_id, selected_item.get("instance_id", &""))
+			if placed_food.is_empty():
+				return "鏈€夋嫨鐗╁搧"
+			var placed_definition: FoodDefinition = get_food_definition(placed_food.get("definition_id", &""))
+			return "鏀剧疆椋熺墿: %s" % (placed_definition.display_name if placed_definition != null else "")
+		&"expansion":
+			var pending_expansion: Dictionary = _find_pending_expansion(selected_character_id, selected_item.get("instance_id", &""))
+			if pending_expansion.is_empty():
+				return "鏈€夋嫨鐗╁搧"
+			return "鏀剧疆楗洅鎷撳睍: %s" % String(pending_expansion.get("label", ""))
+		&"market_expansion":
+			var offer_expansion: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
+			if offer_expansion.is_empty():
+				return "鏈€夋嫨鐗╁搧"
+			return "鏀剧疆楗洅鎷撳睍: %s" % String(offer_expansion.get("label", ""))
+		_:
+			return "鏈€夋嫨鐗╁搧"
 
 func get_grouped_inventory_entries() -> Array[Dictionary]:
 	var grouped: Dictionary = {}

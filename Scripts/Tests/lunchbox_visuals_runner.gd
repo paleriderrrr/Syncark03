@@ -6,6 +6,7 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	LunchboxVisuals.clear_runtime_cache()
 	_assert(ResourceLoader.exists("res://Art/Lunchbox/Generated/warrior_3x3.png"), "Generated warrior 3x3 lunchbox texture should exist")
 	_assert(ResourceLoader.exists("res://Art/Lunchbox/Generated/hunter_2x2.png"), "Generated hunter 2x2 lunchbox texture should exist")
 	_assert(ResourceLoader.exists("res://Art/Lunchbox/Generated/mage_2x4.png"), "Generated mage 2x4 lunchbox texture should exist")
@@ -16,6 +17,7 @@ func _run() -> void:
 	_assert(base_lookup.has(&"mage"), "Lunchbox visuals should expose mage base texture")
 
 	var expansion_lookup: Dictionary = LunchboxVisuals.build_role_expansion_texture_lookup()
+	var second_expansion_lookup: Dictionary = LunchboxVisuals.build_role_expansion_texture_lookup()
 	_assert(expansion_lookup.has(&"warrior"), "Lunchbox visuals should expose warrior expansion textures")
 	if expansion_lookup.has(&"warrior"):
 		var warrior_lookup: Dictionary = expansion_lookup[&"warrior"]
@@ -25,6 +27,9 @@ func _run() -> void:
 		_assert(warrior_lookup.has(&"4x1"), "Warrior expansion textures should include rotated 4x1")
 		_assert(warrior_lookup.has(&"2x4"), "Warrior expansion textures should include 2x4")
 		_assert(warrior_lookup.has(&"4x2"), "Warrior expansion textures should include rotated 4x2")
+		var second_warrior_lookup: Dictionary = second_expansion_lookup[&"warrior"]
+		_assert(is_same(warrior_lookup[&"4x1"], second_warrior_lookup[&"4x1"]), "Lunchbox visuals should cache rotated 4x1 textures across calls")
+		_assert(is_same(warrior_lookup[&"4x2"], second_warrior_lookup[&"4x2"]), "Lunchbox visuals should cache rotated 4x2 textures across calls")
 
 	if base_lookup.has(&"warrior") and base_lookup.has(&"hunter") and base_lookup.has(&"mage"):
 		var warrior_image: Image = (base_lookup[&"warrior"] as Texture2D).get_image()

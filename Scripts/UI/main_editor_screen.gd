@@ -5,6 +5,7 @@ const ACTION_BUTTON_TEXT_TEXTURES := {
 	&"continue": preload("res://Art/UI/NewUI/UI1-3_slices/ui13_formal_continue_text.png"),
 	&"restart": preload("res://Art/UI/NewUI/UI1-3_slices/ui13_formal_restart_text.png"),
 }
+const ITEM_TOOLTIP_OVERLAY_SCENE := preload("res://Scenes/Components/immediate_item_tooltip_overlay.tscn")
 
 @onready var gold_label: Label = %GoldLabel
 @onready var route_label: Label = %RouteLabel
@@ -55,7 +56,7 @@ var _intro_tween: Tween
 var _intro_animating: bool = false
 var _last_node_type: StringName = &""
 var _active_synergy_ids: Dictionary = {}
-var _board_hover_tooltip: PopupPanel = null
+var item_tooltip_overlay: ImmediateItemTooltipOverlay
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -68,6 +69,9 @@ func _ui_sfx() -> Node:
 
 func _ready() -> void:
 	_bgm_player().play_non_battle()
+	item_tooltip_overlay = ITEM_TOOLTIP_OVERLAY_SCENE.instantiate() as ImmediateItemTooltipOverlay
+	item_tooltip_overlay.name = "ItemTooltipOverlay"
+	add_child(item_tooltip_overlay)
 	gold_label.add_theme_color_override("font_color", Color.WHITE)
 	selected_item_label.add_theme_color_override("font_color", Color.WHITE)
 	market_refresh_button.add_theme_color_override("font_color", Color.WHITE)
@@ -92,8 +96,12 @@ func _ready() -> void:
 	board_view.hover_food_changed.connect(_on_board_hover_food_changed)
 	board_view.hover_food_cleared.connect(_on_board_hover_food_cleared)
 	top_market_strip.entry_clicked.connect(_on_market_entry_clicked)
+	top_market_strip.entry_hover_started.connect(_on_strip_item_hover_started)
+	top_market_strip.entry_hover_ended.connect(_on_strip_item_hover_ended)
 	market_refresh_button.pressed.connect(_on_market_refresh_pressed)
 	inventory_strip.entry_clicked.connect(_on_inventory_entry_clicked)
+	inventory_strip.entry_hover_started.connect(_on_strip_item_hover_started)
+	inventory_strip.entry_hover_ended.connect(_on_strip_item_hover_ended)
 	inventory_drop_zone.drop_received.connect(_on_inventory_strip_drop_requested)
 	inventory_drop_zone.accepted_sources = [&"market_offer", &"board_food", &"market_expansion"]
 	inventory_strip.card_drop_sources = [&"market_offer", &"board_food", &"market_expansion"]
@@ -110,6 +118,7 @@ func _ready() -> void:
 	wanted_poster_rect.mouse_entered.connect(_on_monster_hover_entered)
 	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
 	monster_tooltip_panel.visible = false
+	item_tooltip_overlay.hide_tooltip()
 	_refresh()
 	_play_intro_animation()
 
@@ -125,7 +134,7 @@ func _refresh() -> void:
 	route_label.text = _build_route_label(run_state)
 	node_label.text = "当前节点：%s" % _display_name_for_node(current_node_type)
 	risk_label.text = "危险度：%s" % _estimate_risk_label()
-	selected_item_label.text = run_state.get_selected_item_summary()
+	selected_item_label.text = run_state.get_selected_item_summary_safe()
 	action_button.text = ""
 	_refresh_action_button_visual()
 	market_refresh_button.disabled = current_node_type != run_state.NODE_MARKET
@@ -254,17 +263,14 @@ func _refresh_market_strip() -> void:
 				"source": &"market_offer",
 				"offer_id": entry["offer_id"],
 				"definition_id": entry["definition_id"],
-				"shape_cells": definition.shape_cells,
-				"rotation": 0,
 			}
 		elif entry.get("kind", &"") == &"expansion":
 			_apply_expansion_tooltip(entry)
+			entry["icon_texture"] = _resolve_expansion_icon_texture(entry)
 			entry["drag_payload"] = {
 				"source": &"market_expansion",
 				"offer_id": entry["offer_id"],
 				"target_character_id": entry["target_character_id"],
-				"shape_cells": entry.get("shape_cells", []),
-				"rotation": 0,
 			}
 		else:
 			entry["drag_payload"] = {}
@@ -278,12 +284,11 @@ func _refresh_inventory_strip() -> void:
 		var entry: Dictionary = entry_variant.duplicate(true)
 		if entry.get("entry_kind", &"food") == &"expansion":
 			_apply_expansion_tooltip(entry)
+			entry["icon_texture"] = _resolve_expansion_icon_texture(entry)
 			entry["drag_payload"] = {
 				"source": &"pending_expansion",
 				"instance_id": entry["instance_id"],
 				"target_character_id": entry["target_character_id"],
-				"shape_cells": entry.get("shape_cells", []),
-				"rotation": int(entry.get("rotation", 0)),
 			}
 		else:
 			var definition: FoodDefinition = run_state.get_food_definition(entry["definition_id"])
@@ -292,8 +297,6 @@ func _refresh_inventory_strip() -> void:
 				"source": &"inventory",
 				"group_key": entry["group_key"],
 				"definition_id": entry["definition_id"],
-				"shape_cells": definition.shape_cells,
-				"rotation": 0,
 			}
 		entries.append(entry)
 	inventory_strip.set_entries(entries, _food_textures)
@@ -311,6 +314,27 @@ func _apply_expansion_tooltip(entry: Dictionary) -> void:
 	entry["tooltip_base_bonus"] = "扩展当前角色的可放置区域"
 	entry["tooltip_special_effect"] = "拖拽到棋盘上，为对应角色增加新的格子。"
 	entry["tooltip_shape_cells"] = entry.get("shape_cells", []).duplicate()
+
+func _resolve_expansion_icon_texture(entry: Dictionary) -> Texture2D:
+	var role_lookup: Dictionary = _expansion_lunchbox_textures.get(entry.get("target_character_id", &""), {})
+	if role_lookup.is_empty():
+		return null
+	return role_lookup.get(_shape_size_key(entry.get("shape_cells", [])), null) as Texture2D
+
+func _shape_size_key(shape_cells: Array) -> StringName:
+	if shape_cells.is_empty():
+		return &""
+	var min_x: int = int(shape_cells[0].x)
+	var max_x: int = int(shape_cells[0].x)
+	var min_y: int = int(shape_cells[0].y)
+	var max_y: int = int(shape_cells[0].y)
+	for cell_variant in shape_cells:
+		var cell: Vector2i = cell_variant
+		min_x = min(min_x, cell.x)
+		max_x = max(max_x, cell.x)
+		min_y = min(min_y, cell.y)
+		max_y = max(max_y, cell.y)
+	return StringName("%dx%d" % [max_x - min_x + 1, max_y - min_y + 1])
 
 func _build_food_bonus_text(definition: FoodDefinition) -> String:
 	var parts: PackedStringArray = []
@@ -347,9 +371,9 @@ func _format_signed_value(value: float, decimals: int = 1) -> String:
 func _refresh_board() -> void:
 	var run_state: Node = _run_state()
 	var preview_cells: Array[Vector2i] = []
-	if not run_state.selected_item.is_empty():
+	if not run_state.selected_item.is_empty() and not bool(run_state.selected_item.get("drag_session", false)):
 		preview_cells = run_state.get_selected_item_cells()
-	_hide_board_hover_tooltip()
+	item_tooltip_overlay.hide_tooltip()
 	board_view.refresh_board(run_state.get_selected_character_state(), preview_cells, run_state.food_lookup, _food_textures)
 
 func _refresh_next_monster_panel() -> void:
@@ -448,47 +472,54 @@ func _on_inventory_entry_clicked(entry: Dictionary) -> void:
 func _on_board_cell_clicked(cell: Vector2i) -> void:
 	var run_state: Node = _run_state()
 	if not run_state.selected_item.is_empty():
+		item_tooltip_overlay.hide_tooltip()
 		if run_state.try_place_selected_item(cell):
 			_ui_sfx().play_place()
 
 func _on_board_cell_right_clicked(cell: Vector2i) -> void:
-	_hide_board_hover_tooltip()
+	item_tooltip_overlay.hide_tooltip()
 	if _run_state().remove_item_at_cell(cell):
 		_ui_sfx().play_place()
 
 func _on_board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary) -> void:
-	_hide_board_hover_tooltip()
+	item_tooltip_overlay.hide_tooltip()
 	var run_state: Node = _run_state()
 	match drag_data.get("source", &""):
 		&"market_offer":
-			var gained_items: Array[Dictionary] = run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
-			if gained_items.is_empty():
-				_ui_sfx().play_purchase_denied()
-			elif drag_data.has("definition_id"):
-				var first_instance: Dictionary = gained_items[0]
-				run_state.select_inventory_item(first_instance["instance_id"])
-				if run_state.try_place_selected_item(anchor_cell):
-					_ui_sfx().play_place()
-				else:
-					_ui_sfx().play_purchase_success()
-					run_state.clear_selection()
+			if run_state.selected_item.is_empty() or run_state.selected_item.get("source", &"") != &"market_offer" or run_state.selected_item.get("offer_id", &"") != drag_data.get("offer_id", &""):
+				run_state.begin_market_offer_action(drag_data.get("offer_id", &""))
+			if run_state.try_place_selected_item(anchor_cell):
+				_ui_sfx().play_place()
 			else:
-				_ui_sfx().play_purchase_success()
+				_ui_sfx().play_purchase_denied()
+				run_state.clear_selection()
 		&"inventory":
-			var picked_item: Dictionary = run_state.pick_inventory_instance(drag_data.get("group_key", &""))
-			if not picked_item.is_empty():
-				if run_state.try_place_selected_item(anchor_cell):
-					_ui_sfx().play_place()
-				else:
-					run_state.clear_selection()
-		&"pending_expansion":
-			run_state.select_pending_expansion(drag_data.get("instance_id", &""))
+			if run_state.selected_item.is_empty() or run_state.selected_item.get("source", &"") != &"inventory":
+				run_state.begin_inventory_drag(drag_data.get("group_key", &""))
 			if run_state.try_place_selected_item(anchor_cell):
 				_ui_sfx().play_place()
 			else:
 				run_state.clear_selection()
+		&"pending_expansion":
+			if run_state.selected_item.is_empty() or run_state.selected_item.get("instance_id", &"") != drag_data.get("instance_id", &""):
+				run_state.select_pending_expansion(drag_data.get("instance_id", &""))
+				run_state.selected_item["drag_session"] = true
+			if run_state.try_place_selected_item(anchor_cell):
+				_ui_sfx().play_place()
+			else:
+				run_state.clear_selection()
+		&"market_expansion":
+			if run_state.selected_item.is_empty() or run_state.selected_item.get("source", &"") != &"market_expansion" or run_state.selected_item.get("offer_id", &"") != drag_data.get("offer_id", &""):
+				run_state.begin_market_expansion_action(drag_data.get("offer_id", &""))
+			if run_state.try_place_selected_item(anchor_cell):
+				_ui_sfx().play_place()
+			else:
+				_ui_sfx().play_purchase_denied()
+				run_state.clear_selection()
 		&"board_food":
-			if run_state.move_placed_food(drag_data.get("from_cell", Vector2i.ZERO), anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)):
+			if run_state.selected_item.is_empty() or run_state.selected_item.get("source", &"") != &"board_food" or run_state.selected_item.get("instance_id", &"") != drag_data.get("instance_id", &""):
+				run_state.begin_board_food_action(drag_data.get("from_cell", Vector2i.ZERO))
+			if run_state.try_place_selected_item(anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)):
 				_ui_sfx().play_place()
 		&"board_expansion":
 			if run_state.move_placed_expansion(drag_data.get("from_cell", Vector2i.ZERO), anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)):
@@ -503,19 +534,26 @@ func _on_board_hover_food_changed(item: Dictionary, global_rect: Rect2) -> void:
 	var run_state: Node = _run_state()
 	var definition: FoodDefinition = run_state.get_food_definition(item.get("definition_id", &""))
 	if definition == null:
-		_hide_board_hover_tooltip()
+		item_tooltip_overlay.hide_tooltip()
 		return
 	var entry: Dictionary = {
 		"display_name": definition.display_name,
 		"definition_id": definition.id,
 	}
 	_apply_food_tooltip(entry, definition)
-	_show_board_hover_tooltip(entry, global_rect)
+	item_tooltip_overlay.show_entry(entry, global_rect)
 
 func _on_board_hover_food_cleared() -> void:
-	_hide_board_hover_tooltip()
+	item_tooltip_overlay.hide_tooltip()
+
+func _on_strip_item_hover_started(entry: Dictionary, global_rect: Rect2) -> void:
+	item_tooltip_overlay.show_entry(entry, global_rect)
+
+func _on_strip_item_hover_ended() -> void:
+	item_tooltip_overlay.hide_tooltip()
 
 func _on_inventory_strip_drop_requested(drag_data: Dictionary) -> void:
+	item_tooltip_overlay.hide_tooltip()
 	var run_state: Node = _run_state()
 	match drag_data.get("source", &""):
 		&"market_offer":
@@ -524,15 +562,18 @@ func _on_inventory_strip_drop_requested(drag_data: Dictionary) -> void:
 				_ui_sfx().play_purchase_denied()
 			else:
 				_ui_sfx().play_purchase_success()
+			run_state.clear_selection()
 		&"market_expansion":
 			var gained_expansions: Array[Dictionary] = run_state.purchase_market_offer_package(drag_data.get("offer_id", &""))
 			if gained_expansions.is_empty():
 				_ui_sfx().play_purchase_denied()
 			else:
 				_ui_sfx().play_purchase_success()
+			run_state.clear_selection()
 		&"board_food":
 			if run_state.store_placed_food(drag_data.get("from_cell", Vector2i.ZERO)):
 				_ui_sfx().play_place()
+			run_state.clear_selection()
 	_refresh()
 
 func _on_restore_pressed() -> void:
@@ -541,11 +582,13 @@ func _on_restore_pressed() -> void:
 
 func _on_settings_pressed() -> void:
 	_ui_sfx().play_button()
+	item_tooltip_overlay.hide_tooltip()
 	_run_state().set_settings_return_scene("res://Scenes/main_editor_screen.tscn")
 	get_tree().change_scene_to_file("res://Scenes/settings_screen.tscn")
 
 func _on_action_pressed() -> void:
 	_ui_sfx().play_button()
+	item_tooltip_overlay.hide_tooltip()
 	_run_state().perform_primary_action()
 
 func _refresh_action_button_visual() -> void:
@@ -553,6 +596,7 @@ func _refresh_action_button_visual() -> void:
 	action_button_text.texture = ACTION_BUTTON_TEXT_TEXTURES.get(visual_key, ACTION_BUTTON_TEXT_TEXTURES[&"continue"])
 
 func _on_market_refresh_pressed() -> void:
+	item_tooltip_overlay.hide_tooltip()
 	if _run_state().refresh_market_offers():
 		_ui_sfx().play_button()
 	else:
@@ -568,38 +612,6 @@ func _on_monster_hover_entered() -> void:
 
 func _on_monster_hover_exited() -> void:
 	monster_tooltip_panel.visible = false
-
-func _show_board_hover_tooltip(entry: Dictionary, source_rect: Rect2) -> void:
-	var root: Window = get_tree().root
-	if root == null:
-		return
-	if not is_instance_valid(_board_hover_tooltip):
-		_board_hover_tooltip = PopupPanel.new()
-		_board_hover_tooltip.transparent_bg = true
-		root.add_child(_board_hover_tooltip)
-	for child in _board_hover_tooltip.get_children():
-		child.queue_free()
-	var panel_content: PanelContainer = ItemTooltipBuilder.build_tooltip_panel(entry)
-	_board_hover_tooltip.add_child(panel_content)
-	panel_content.position = Vector2.ZERO
-	await get_tree().process_frame
-	var tooltip_size: Vector2 = panel_content.get_combined_minimum_size()
-	_board_hover_tooltip.size = tooltip_size
-	var viewport_rect: Rect2 = get_viewport_rect()
-	var popup_position := Vector2(source_rect.end.x + 12.0, source_rect.position.y)
-	if popup_position.x + tooltip_size.x > viewport_rect.size.x - 8.0:
-		popup_position.x = source_rect.position.x - tooltip_size.x - 12.0
-	if popup_position.x < 8.0:
-		popup_position.x = 8.0
-	if popup_position.y + tooltip_size.y > viewport_rect.size.y - 8.0:
-		popup_position.y = viewport_rect.size.y - tooltip_size.y - 8.0
-	if popup_position.y < 8.0:
-		popup_position.y = 8.0
-	_board_hover_tooltip.popup(Rect2i(popup_position, tooltip_size))
-
-func _hide_board_hover_tooltip() -> void:
-	if is_instance_valid(_board_hover_tooltip):
-		_board_hover_tooltip.hide()
 
 func _estimate_risk_label() -> String:
 	var total_power: float = 0.0
@@ -638,6 +650,7 @@ func _estimate_risk_label() -> String:
 
 func _on_role_tab_pressed(character_id: StringName) -> void:
 	_ui_sfx().play_button()
+	item_tooltip_overlay.hide_tooltip()
 	_run_state().select_character(character_id)
 
 func _unhandled_input(event: InputEvent) -> void:

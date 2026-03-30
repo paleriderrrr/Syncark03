@@ -19,6 +19,11 @@ func _run() -> void:
 	_assert(_approx_vec2(square_rect.size, Vector2(90.0, 60.0)), "Square source should use bounded stretch to maximize coverage in a wide target without cropping")
 	_assert(_approx_vec2(square_rect.position, Vector2(15.0, 0.0)), "Wide target fit should remain centered on the x axis")
 
+	var rotated_solution: Dictionary = cache.compute_best_zero_crop_solution(Vector2(40.0, 100.0), Vector2(100.0, 40.0))
+	_assert(rotated_solution.has("rotation_radians"), "Best zero-crop solver should expose a rotation angle")
+	_assert(absf(float(rotated_solution.get("rotation_radians", 0.0)) - PI * 0.5) <= deg_to_rad(1.0), "Tall source should rotate close to 90 degrees to maximize coverage in a wide target")
+	_assert(_approx_vec2((rotated_solution.get("dest_rect", Rect2()) as Rect2).size, Vector2(100.0, 40.0)), "Angle-aware solver should fully occupy the wide target when a 90-degree rotation solves it exactly")
+
 	_finish()
 
 func _assert(condition: bool, message: String) -> void:

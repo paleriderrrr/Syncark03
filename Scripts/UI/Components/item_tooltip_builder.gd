@@ -55,6 +55,22 @@ static func build_tooltip_panel(entry: Dictionary) -> PanelContainer:
 		vbox.add_child(shape_preview)
 	return panel
 
+static func apply_to_labels(
+	entry: Dictionary,
+	title_label: Label,
+	base_bonus_label: Label,
+	special_effect_label: Label,
+	shape_title_label: Label,
+	shape_preview: TooltipShapePreview
+) -> void:
+	title_label.text = String(entry.get("tooltip_name", entry.get("display_name", "")))
+	base_bonus_label.text = "基础加成: %s" % String(entry.get("tooltip_base_bonus", "无基础加成"))
+	special_effect_label.text = "特殊效果: %s" % String(entry.get("tooltip_special_effect", "无"))
+	var shape_cells: Array[Vector2i] = _get_tooltip_shape_cells(entry)
+	shape_title_label.visible = not shape_cells.is_empty()
+	shape_preview.visible = not shape_cells.is_empty()
+	shape_preview.set_cells(shape_cells)
+
 static func _build_tooltip_label(text_value: String, wrap_text: bool) -> Label:
 	var label := Label.new()
 	label.text = text_value

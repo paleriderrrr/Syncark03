@@ -739,3 +739,29 @@
 - Files Touched: Scripts/UI/Components/item_tooltip_builder.gd, Scripts/UI/Components/item_icon_card.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/main_editor_screen.gd, Scripts/Tests/board_hover_tooltip_runner.gd, Docs/07_progress_log.md
 - Notes: The board popup intentionally only targets placed foods, not base lunchboxes or expansion blocks, and it reuses the same tooltip content builder so the information stays consistent across strips and board cells.
 - 2026-03-30 16:44 食物桌面贴图改为零裁剪离线求解：FoodBoardRenderCache 新增 compute_zero_crop_dest_rect，基准朝向改为 contain + 20% 有界拉伸，禁止主体二次裁剪；FoodBoard 资源重生成并验证通过（food_board_zero_crop_runner / food_board_assets_runner / campaign_runner）。
+- 2026-03-30 16:58 餐盒格子样式改版：BentoBoardView 将底板格和食物底色由实线方块改为无边框圆角矩形，食物底色改为低透明承托层；新增 bento_board_style_runner 验证透明度、圆角半径和无外轮廓约束。
+### 2026-03-30 17:14
+- Completed: Optimized main-editor startup by adding runtime caches for FoodVisuals and LunchboxVisuals. Food icon lookups, board-texture lookups, background/panel textures, generated lunchbox textures, and rotated lunchbox expansion textures are now built once and reused on later main-editor entries instead of being synchronously rebuilt every time.
+- In Progress: Manual feel validation in the live game that returning to the main editor now feels instant after the first entry, with no visual regressions in market icons, board foods, or lunchbox expansion art.
+- Next: Open the game, enter the main editor twice in one session, and compare the second entry speed against the previous build; if needed, continue profiling the remaining cold-start cost on the first entry.
+- Blockers: No known blocker remains for the repeated-entry startup optimization itself; the remaining slow path is now mostly first-entry scene/resource cold load rather than repeated texture-table rebuilds.
+- Files Touched: Scripts/UI/food_visuals.gd, Scripts/UI/lunchbox_visuals.gd, Scripts/Tests/food_visuals_runner.gd, Scripts/Tests/lunchbox_visuals_runner.gd, Docs/07_progress_log.md
+- Notes: Measured main-editor repeated-entry startup dropped from about 2316 ms to about 43 ms in headless profiling after caching. The first entry still pays cold-load cost, but the repeated synchronous rebuild cost has been eliminated.
+- 2026-03-30 17:10 食物桌面贴图升级为零裁剪角度优化：FoodBoardRenderCache 新增 compute_best_zero_crop_solution，在 contain + 最多20%有界拉伸 + 额外源图角度搜索下求基准朝向最大覆盖，再旋转导出 r1/r2/r3；FoodBoard 资源重生成，food_board_zero_crop_runner / food_board_assets_runner / campaign_runner 通过。
+### 2026-03-30 01:21
+- Completed: Replaced the board/card hover details with a shared non-window item tooltip overlay hosted by the main editor, eliminating the old PopupPanel + await process_frame path so placed-food hover now updates in-place without blocking board input.
+- In Progress: Manual validation of hover smoothness while sweeping quickly across multiple placed foods and between strip cards, with special attention to whether brief hide/show flicker is perceptible during card-to-card transitions.
+- Next: In the main editor, hover across several placed foods and strip cards, then right-click a hovered board food to confirm the tooltip no longer blocks removal and the content switches immediately when moving between foods.
+- Blockers: No known compile blocker remains for this shared item-tooltip overlay pass.
+- Files Touched: Scripts/UI/Components/item_tooltip_builder.gd, Scripts/UI/Components/immediate_item_tooltip_overlay.gd, Scenes/Components/immediate_item_tooltip_overlay.tscn, Scripts/UI/Components/item_icon_card.gd, Scripts/UI/Components/item_strip.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/main_editor_screen.gd, Scripts/Tests/item_tooltip_runner.gd, Scripts/Tests/board_hover_tooltip_runner.gd, Docs/07_progress_log.md
+- Notes: The board now clears hover before right-click removal and drag start, while the tooltip overlay itself is a regular Control with mouse_filter = IGNORE, so it no longer intercepts board interaction or trap hover updates behind a popup window.
+### 2026-03-30 01:31
+- Completed: Raised the shared item tooltip overlay into a true top-level canvas item with a fixed high z-index so it no longer renders underneath editor panels when shown near dense UI areas.
+- In Progress: Manual confirmation that the overlay now stays visually above the board, market strip, and inventory strip across the whole screen.
+- Next: Hover food cards and placed foods near the right panel and bottom inventory, and verify the tooltip is no longer visually occluded by surrounding UI.
+- Blockers: No known compile blocker remains for this tooltip layering fix.
+- Files Touched: Scripts/UI/Components/immediate_item_tooltip_overlay.gd, Docs/07_progress_log.md
+- Notes: The overlay now uses 	op_level = true, z_as_relative = false, and a high z_index, which keeps it out of parent stacking/canvas ordering issues without reintroducing popup-window input capture.
+- 2026-03-30 17:55 | R旋转链路接入 | 已将主编辑页食物旋转统一到 RunState.selected_item 操作态：支持库存选中放置、库存拖拽放置、市场拖拽直放、棋盘已摆放食物抓起后按 R 旋转重放；同步扩展 editor_dragdrop_runner 旋转覆盖，并完成 headless 回归检查。
+- 2026-03-30 18:08 | 旋转链热修 | 修复主界面在市场/棋盘食物旋转操作时 selected_item 摘要错误假设 instance_id 存在的问题；新增安全摘要接口并切换主编辑页调用，避免市场与棋盘食物操作触发空字典字段访问。
+- 2026-03-30 16:53 恢复餐盒内食物底板可见性：BentoBoardView 新增 compute_food_texture_draw_rect，桌面食物贴图统一内缩绘制，重新露出底下的透明无框线圆角矩形；food_shape_fit_runner 与 campaign_runner 通过。

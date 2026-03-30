@@ -2,6 +2,8 @@ extends PanelContainer
 class_name ItemIconCard
 
 signal clicked(entry: Dictionary)
+signal hover_started(entry: Dictionary, global_rect: Rect2)
+signal hover_ended
 
 @onready var background_rect: TextureRect = $Background
 @onready var icon_rect: TextureRect = %IconRect
@@ -15,7 +17,6 @@ var accepted_drop_sources: Array[StringName] = []
 var drop_forward_target: Node = null
 var _left_pressed: bool = false
 var _drag_started: bool = false
-var _hover_tooltip: PopupPanel = null
 
 func configure(
 	new_entry: Dictionary,
@@ -29,6 +30,7 @@ func configure(
 	drag_payload = new_drag_payload.duplicate(true)
 	accepted_drop_sources = new_accepted_drop_sources.duplicate()
 	drop_forward_target = new_drop_forward_target
+	var resolved_texture: Texture2D = entry.get("icon_texture", texture) as Texture2D
 	name_label.text = String(entry.get("display_name", ""))
 	count_label.text = "x%d" % int(entry.get("count", 0))
 	if entry.has("display_price"):
@@ -37,8 +39,8 @@ func configure(
 		price_label.text = "%d G" % int(entry["unit_price"])
 	else:
 		price_label.text = ""
-	icon_rect.texture = texture
-	icon_rect.visible = texture != null
+	icon_rect.texture = resolved_texture
+	icon_rect.visible = resolved_texture != null
 	background_rect.texture = background_texture
 	background_rect.visible = background_texture != null
 	name_label.add_theme_color_override("font_color", Color.WHITE)
@@ -50,54 +52,11 @@ func _ready() -> void:
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 
-func _exit_tree() -> void:
-	if is_instance_valid(_hover_tooltip):
-		_hover_tooltip.queue_free()
-		_hover_tooltip = null
-
-func _build_tooltip_panel() -> PanelContainer:
-	return ItemTooltipBuilder.build_tooltip_panel(entry)
-
-func _show_hover_tooltip() -> void:
-	if entry.is_empty():
-		return
-	var root: Window = get_tree().root
-	if root == null:
-		return
-	if not is_instance_valid(_hover_tooltip):
-		_hover_tooltip = PopupPanel.new()
-		_hover_tooltip.transparent_bg = true
-		root.add_child(_hover_tooltip)
-	var panel_content: PanelContainer = _build_tooltip_panel()
-	for child in _hover_tooltip.get_children():
-		child.queue_free()
-	_hover_tooltip.add_child(panel_content)
-	panel_content.position = Vector2.ZERO
-	await get_tree().process_frame
-	var tooltip_size: Vector2 = panel_content.get_combined_minimum_size()
-	_hover_tooltip.size = tooltip_size
-	var card_rect: Rect2 = get_global_rect()
-	var viewport_rect: Rect2 = get_viewport_rect()
-	var popup_position := Vector2(card_rect.end.x + 12.0, card_rect.position.y)
-	if popup_position.x + tooltip_size.x > viewport_rect.size.x - 8.0:
-		popup_position.x = card_rect.position.x - tooltip_size.x - 12.0
-	if popup_position.x < 8.0:
-		popup_position.x = 8.0
-	if popup_position.y + tooltip_size.y > viewport_rect.size.y - 8.0:
-		popup_position.y = viewport_rect.size.y - tooltip_size.y - 8.0
-	if popup_position.y < 8.0:
-		popup_position.y = 8.0
-	_hover_tooltip.popup(Rect2i(popup_position, tooltip_size))
-
-func _hide_hover_tooltip() -> void:
-	if is_instance_valid(_hover_tooltip):
-		_hover_tooltip.hide()
-
 func _on_mouse_entered() -> void:
-	_show_hover_tooltip()
+	hover_started.emit(entry.duplicate(true), get_global_rect())
 
 func _on_mouse_exited() -> void:
-	_hide_hover_tooltip()
+	hover_ended.emit()
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -111,12 +70,29 @@ func _gui_input(event: InputEvent) -> void:
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if drag_payload.is_empty():
 		return null
+	_begin_drag_action()
 	_drag_started = true
 	_left_pressed = false
 	_ui_sfx().play_pickup()
 	var preview: Control = _build_preview()
 	set_drag_preview(preview)
 	return drag_payload.duplicate(true)
+
+func _begin_drag_action() -> void:
+	var run_state: Node = get_node("/root/RunState")
+	match drag_payload.get("source", &""):
+		&"inventory":
+			run_state.begin_inventory_drag(drag_payload.get("group_key", &""))
+		&"market_offer":
+			run_state.begin_market_offer_action(drag_payload.get("offer_id", &""))
+		&"pending_expansion":
+			run_state.select_pending_expansion(drag_payload.get("instance_id", &""))
+			if not run_state.selected_item.is_empty():
+				run_state.selected_item["drag_session"] = true
+				run_state.selected_item_changed.emit()
+				run_state.state_changed.emit()
+		&"market_expansion":
+			run_state.begin_market_expansion_action(drag_payload.get("offer_id", &""))
 
 func _build_preview() -> Control:
 	var panel := PanelContainer.new()

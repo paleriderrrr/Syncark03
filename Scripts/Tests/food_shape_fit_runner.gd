@@ -12,6 +12,7 @@ func _run() -> void:
 	_test_cover_crop_wide_texture()
 	_test_cover_crop_tall_texture()
 	_test_tetris_shape_cell_regions()
+	_test_food_texture_draw_rect_is_inset()
 	_finish()
 
 func _test_visible_alpha_region_trims_padding() -> void:
@@ -56,6 +57,14 @@ func _test_tetris_shape_cell_regions() -> void:
 	_assert(is_equal_approx(top_left.size.x, source_region.size.x / 3.0), "Three-column bounds should divide the source region evenly across columns")
 	_assert(is_equal_approx(top_left.size.y, source_region.size.y / 2.0), "Two-row bounds should divide the source region evenly across rows")
 	_assert(not is_equal_approx(top_middle.position.y, bottom_left.position.y), "An occupied upper-row cell should not sample the same vertical slice as a lower-row occupied cell")
+
+func _test_food_texture_draw_rect_is_inset() -> void:
+	var bounds := Rect2(Vector2(0, 0), Vector2(216, 144))
+	var draw_rect: Rect2 = BentoBoardView.compute_food_texture_draw_rect(bounds, 72)
+	_assert(draw_rect.size.x < bounds.size.x, "Food texture draw rect should leave horizontal margin for the rounded background")
+	_assert(draw_rect.size.y < bounds.size.y, "Food texture draw rect should leave vertical margin for the rounded background")
+	_assert(draw_rect.position.x > bounds.position.x, "Food texture draw rect should be inset from the left edge")
+	_assert(draw_rect.position.y > bounds.position.y, "Food texture draw rect should be inset from the top edge")
 
 func _assert(condition: bool, message: String) -> void:
 	if not condition:
