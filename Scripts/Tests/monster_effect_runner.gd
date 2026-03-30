@@ -41,6 +41,7 @@ func _run_monster_cases(run_state: Node) -> void:
 	var engine: CombatEngine = CombatEngine.new()
 	_test_fruit_tree_opening(run_state, engine)
 	_test_cream_overlord_on_hit(engine)
+	_test_monster_death_stops_actions(engine)
 	_test_charging_beast_burst(engine)
 	_test_water_giant_rules(engine)
 	_test_bread_knight_rules(engine)
@@ -62,13 +63,31 @@ func _test_cream_overlord_on_hit(engine: CombatEngine) -> void:
 	if not engine.has_method("_handle_monster_hit_by_character"):
 		return
 	var monster: Dictionary = _make_monster_stub(&"cream_overlord", 360.0, 15.0, 1.2)
+	monster["current_hp"] = 300.0
 	var attacker: Dictionary = _make_actor(&"warrior")
 	var characters: Array[Dictionary] = [attacker]
 	var log: Array[String] = []
 	for _i in 6:
 		engine._handle_monster_hit_by_character(monster, attacker, characters, 10.0, 0.0, log)
 	_assert(int(attacker.get("monster_attack_down_stacks", 0)) == 5, "cream_overlord should reduce attacker ATK up to 5 stacks")
-	_assert(float(monster.get("damage_taken_window", 0.0)) >= 60.0, "cream_overlord should still record incoming damage for satisfaction healing")
+	engine._process_monster_timed_effects(5.0, monster, characters, log)
+	_assert(is_equal_approx(float(monster.get("current_hp", 0.0)), 320.0), "cream_overlord should restore a fixed 20 HP every 5 seconds")
+	_assert(is_equal_approx(float(monster.get("next_cream_heal_tick", 0.0)), 10.0), "cream_overlord heal timer should advance by 5 seconds each trigger")
+
+func _test_monster_death_stops_actions(engine: CombatEngine) -> void:
+	_assert(engine.has_method("_handle_monster_death"), "CombatEngine should expose _handle_monster_death for monster death flow")
+	if not engine.has_method("_handle_monster_death"):
+		return
+	var monster: Dictionary = _make_monster_stub(&"cream_overlord", 360.0, 15.0, 1.2)
+	var attacker: Dictionary = _make_actor(&"warrior")
+	var characters: Array[Dictionary] = [attacker]
+	var log: Array[String] = []
+	engine._handle_monster_death(monster, log, 4.0)
+	engine._process_monster_timed_effects(5.0, monster, characters, log)
+	engine._process_monster_attack(6.0, monster, characters, {}, log)
+	_assert(not bool(monster.get("alive", true)), "defeated monsters should remain dead")
+	_assert(is_equal_approx(float(monster.get("current_hp", 0.0)), 0.0), "defeated monsters should stay at 0 HP")
+	_assert(log.count("[4.0s] cream_overlord is defeated.") == 1, "monster defeat should be logged exactly once")
 
 func _test_charging_beast_burst(engine: CombatEngine) -> void:
 	_assert(engine.has_method("_handle_monster_hit_by_character"), "CombatEngine should expose _handle_monster_hit_by_character for charging_beast burst")
@@ -215,14 +234,14 @@ func _make_monster_stub(monster_id: StringName, hp: float, attack: float, interv
 		"category": &"",
 		"max_hp": hp,
 		"current_hp": hp,
+		"alive": true,
 		"base_attack": attack,
 		"attack_multiplier": 1.0,
 		"base_interval": interval,
 		"attack_speed_slow": 0.0,
 		"next_attack_time": interval,
 		"corrosion_damage": 0.0,
-		"damage_taken_window": 0.0,
-		"next_satisfaction_tick": 5.0,
+		"next_cream_heal_tick": 5.0,
 		"wave_active_until": -1.0,
 		"wave_recorded_damage": 0.0,
 		"next_wave_tick": 5.0,

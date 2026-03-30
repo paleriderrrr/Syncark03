@@ -325,6 +325,7 @@ func _refresh_inventory_strip() -> void:
 				"source": &"pending_expansion",
 				"instance_id": entry["instance_id"],
 				"target_character_id": entry["target_character_id"],
+				"shape_cells": entry.get("shape_cells", []).duplicate(),
 			}
 		else:
 			var definition: FoodDefinition = run_state.get_food_definition(entry["definition_id"])
@@ -497,7 +498,7 @@ func _on_market_entry_clicked(entry: Dictionary) -> void:
 
 func _on_inventory_entry_clicked(entry: Dictionary) -> void:
 	if entry.get("entry_kind", &"food") == &"expansion":
-		_run_state().select_pending_expansion(entry.get("instance_id", &""))
+		_run_state().select_pending_expansion(entry.get("instance_id", &""), entry.get("target_character_id", &""))
 	else:
 		_run_state().pick_inventory_instance(entry.get("group_key", &""))
 
@@ -534,7 +535,11 @@ func _on_board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary) -> v
 				run_state.clear_selection()
 		&"pending_expansion":
 			if run_state.selected_item.is_empty() or run_state.selected_item.get("instance_id", &"") != drag_data.get("instance_id", &""):
-				run_state.select_pending_expansion(drag_data.get("instance_id", &""))
+				if not run_state.select_pending_expansion(drag_data.get("instance_id", &""), drag_data.get("target_character_id", &"")):
+					run_state.clear_selection()
+					_ui_sfx().play_purchase_denied()
+					_refresh()
+					return
 				run_state.selected_item["drag_session"] = true
 			if run_state.try_place_selected_item(anchor_cell):
 				_ui_sfx().play_place()

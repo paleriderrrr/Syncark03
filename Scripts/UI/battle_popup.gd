@@ -24,6 +24,15 @@ const MONSTER_TEXTURE_COWDRAGON := preload("res://Art/PaperEnemies/cowdragon.png
 const MONSTER_TEXTURE_WATER := preload("res://Art/PaperEnemies/water.png")
 const MONSTER_TEXTURE_BREAD := preload("res://Art/PaperEnemies/bread.png")
 const MONSTER_TEXTURE_MUSHROOM := preload("res://Art/PaperEnemies/mushroom.png")
+const VICTORY_BANNER_TEXTURE := preload("res://Art/BattleBackground/victory.png")
+const DEFEAT_BANNER_TEXTURE := preload("res://Art/BattleBackground/defeat.png")
+const RESULT_BANNER_TOP_MARGIN := 8.0
+const RESULT_BANNER_START_OFFSET := 40.0
+const RESULT_BANNER_MAX_WIDTH_RATIO := 0.56
+const RESULT_BANNER_MAX_HEIGHT_RATIO := 0.72
+const RESULT_BANNER_DROP_TIME := 0.42
+const RESULT_BANNER_SETTLE_TIME := 0.14
+const RESULT_BANNER_OVERSHOOT := 18.0
 
 @onready var title_label: Label = %TitleLabel
 @onready var route_label: Label = %BattleRouteLabel
@@ -36,6 +45,7 @@ const MONSTER_TEXTURE_MUSHROOM := preload("res://Art/PaperEnemies/mushroom.png")
 @onready var battle_log: RichTextLabel = %BattleLog
 @onready var result_label: Label = %ResultLabel
 @onready var battle_float_layer: Control = %BattleFloatLayer
+@onready var result_banner: TextureRect = %ResultBanner
 @onready var monster_actor: Control = %MonsterActor
 @onready var monster_portrait_frame: Control = %MonsterPortraitFrame
 @onready var monster_portrait_sprite: TextureRect = %MonsterPortraitSprite
@@ -51,6 +61,7 @@ var _name_to_party_index: Dictionary = {}
 var _actor_base_positions: Dictionary = {}
 var _actor_base_scales: Dictionary = {}
 var _active_attack_animations: Dictionary = {}
+var _result_banner_tween: Tween
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -88,7 +99,7 @@ func open_battle() -> void:
 	_normalize_popup_layout()
 	await _play_report(report)
 	run_state.apply_battle_report(report)
-	_render_final_report(report)
+	await _render_final_report(report)
 	close_button.disabled = false
 	_is_playing = false
 
@@ -100,6 +111,7 @@ func _prepare_playback() -> void:
 	_recent_lines.clear()
 	battle_log.clear()
 	_reset_all_attack_animations()
+	_reset_result_banner()
 	_refresh_battle_visual_state()
 
 func _play_report(report: Dictionary) -> void:
@@ -123,7 +135,8 @@ func _play_report(report: Dictionary) -> void:
 		playback_time_label.text = "Time %.1fs" % float(report.get("duration", 0.0))
 
 func _render_final_report(report: Dictionary) -> void:
-	if String(report.get("result", "")) == "win":
+	var result: String = String(report.get("result", ""))
+	if result == "win":
 		_ui_sfx().play_battle_win()
 	else:
 		_ui_sfx().play_battle_lose()
@@ -131,6 +144,7 @@ func _render_final_report(report: Dictionary) -> void:
 	playback_time_label.text = "Time %.1fs" % float(report.get("duration", 0.0))
 	result_label.text = ""
 	_refresh_battle_visual_state()
+	await _play_result_banner(result)
 
 func _capture_initial_party_state(run_state: Node) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
@@ -243,7 +257,7 @@ func _process_battle_event(line: String) -> void:
 		return
 	if content.contains(" deals ") and content.contains(" damage to "):
 		await _process_damage_event(content)
-	elif content.contains(" restores ") and content.ends_with(" HP."):
+	elif content.contains(" restores ") and content.contains(" HP"):
 		_process_heal_event(content)
 	elif content.contains(" lands a critical hit for "):
 		await _process_critical_event(content)
@@ -294,10 +308,14 @@ func _process_heal_event(content: String) -> void:
 	if first_split.size() != 2:
 		return
 	var source_name: String = first_split[0]
-	var amount: float = float(String(first_split[1]).trim_suffix(" HP."))
+	var heal_tail: String = String(first_split[1])
+	var hp_index: int = heal_tail.find(" HP")
+	if hp_index == -1:
+		return
+	var amount: float = float(heal_tail.substr(0, hp_index))
 	_apply_heal_to_target(source_name, amount)
 	_spawn_floating_text(_resolve_target_node(source_name), "+%.1f" % amount, HEAL_COLOR)
-	if _is_monster_name(source_name) and content.contains("through Satisfaction"):
+	if _is_monster_name(source_name):
 		_spawn_notice_text("%s skill" % source_name)
 
 func _process_critical_event(content: String) -> void:
@@ -577,11 +595,76 @@ func _spawn_notice_text(text: String) -> void:
 	tween.tween_property(label, "modulate:a", 0.0, FLOAT_TEXT_TIME).from(1.0)
 	tween.chain().tween_callback(label.queue_free)
 
+func _play_result_banner(result: String) -> void:
+	var banner_texture: Texture2D = null
+	match result:
+		"win":
+			banner_texture = VICTORY_BANNER_TEXTURE
+		"lose":
+			banner_texture = DEFEAT_BANNER_TEXTURE
+	if banner_texture == null:
+		_reset_result_banner()
+		return
+	result_banner.texture = banner_texture
+	result_banner.visible = true
+	result_banner.modulate = Color.WHITE
+	_layout_result_banner(true)
+	_result_banner_tween = create_tween()
+	_result_banner_tween.tween_property(
+		result_banner,
+		"position:y",
+		RESULT_BANNER_TOP_MARGIN + RESULT_BANNER_OVERSHOOT,
+		RESULT_BANNER_DROP_TIME
+	).from(result_banner.position.y).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_result_banner_tween.tween_property(
+		result_banner,
+		"position:y",
+		RESULT_BANNER_TOP_MARGIN,
+		RESULT_BANNER_SETTLE_TIME
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	await _result_banner_tween.finished
+	_result_banner_tween = null
+
+func _reset_result_banner() -> void:
+	if _result_banner_tween != null:
+		_result_banner_tween.kill()
+		_result_banner_tween = null
+	result_banner.texture = null
+	result_banner.visible = false
+	result_banner.position = Vector2.ZERO
+	result_banner.size = Vector2.ZERO
+	result_banner.scale = Vector2.ONE
+	result_banner.modulate = Color.WHITE
+
+func _layout_result_banner(start_above_screen: bool) -> void:
+	var banner_texture: Texture2D = result_banner.texture
+	if banner_texture == null:
+		return
+	var available_size: Vector2 = battle_float_layer.size
+	if available_size.x <= 0.0 or available_size.y <= 0.0:
+		available_size = size
+	if available_size.x <= 0.0 or available_size.y <= 0.0:
+		return
+	var texture_size: Vector2 = Vector2(banner_texture.get_width(), banner_texture.get_height())
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return
+	var scale_factor: float = minf(
+		available_size.x * RESULT_BANNER_MAX_WIDTH_RATIO / texture_size.x,
+		available_size.y * RESULT_BANNER_MAX_HEIGHT_RATIO / texture_size.y
+	)
+	result_banner.size = texture_size * scale_factor
+	result_banner.position.x = (available_size.x - result_banner.size.x) * 0.5
+	result_banner.position.y = RESULT_BANNER_TOP_MARGIN
+	if start_above_screen:
+		result_banner.position.y = -result_banner.size.y - RESULT_BANNER_START_OFFSET
+
 func _normalize_popup_layout() -> void:
 	if not visible:
 		return
 	popup_centered(POPUP_SIZE)
 	_cache_actor_base_positions()
+	if result_banner.visible:
+		_layout_result_banner(false)
 
 func _on_close_pressed() -> void:
 	if _is_playing:
@@ -591,4 +674,5 @@ func _on_close_pressed() -> void:
 
 func _on_popup_hidden() -> void:
 	_reset_all_attack_animations()
+	_reset_result_banner()
 	_bgm_player().play_non_battle()

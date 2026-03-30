@@ -134,12 +134,32 @@ func _run() -> void:
 	})
 	var grouped_inventory_with_expansion: Array[Dictionary] = run_state.get_grouped_inventory_entries()
 	var saw_expansion_entry: bool = false
+	var expansion_inventory_entry: Dictionary = {}
 	for entry_with_expansion in grouped_inventory_with_expansion:
 		if entry_with_expansion.get("entry_kind", &"food") == &"expansion":
 			saw_expansion_entry = true
+			expansion_inventory_entry = entry_with_expansion
 			break
 	_assert(saw_expansion_entry, "Pending character expansions should appear in the shared inventory strip data")
-	run_state.select_pending_expansion(&"drag_expansion")
+	_assert(not expansion_inventory_entry.is_empty(), "Pending expansion inventory entry should remain available for drag validation")
+	run_state.select_character(&"mage")
+	_assert(run_state.select_pending_expansion(&"drag_expansion", expansion_inventory_entry.get("target_character_id", &"")), "Selecting a pending expansion from shared inventory should resolve its owning role")
+	_assert(run_state.selected_character_id == &"warrior", "Selecting a warrior expansion from shared inventory should focus the warrior board")
+	var expansion_board := BentoBoardView.new()
+	root.add_child(expansion_board)
+	expansion_board.refresh_board(run_state.get_selected_character_state(), [], run_state.food_lookup)
+	var pending_drag_payload := {
+		"source": &"pending_expansion",
+		"instance_id": expansion_inventory_entry.get("instance_id", &""),
+		"target_character_id": expansion_inventory_entry.get("target_character_id", &""),
+		"shape_cells": expansion_inventory_entry.get("shape_cells", []).duplicate(),
+	}
+	var hover_accepts_pending: bool = expansion_board._can_drop_data(
+		Vector2(float(expansion_board.cell_pixel_size * 5) + 1.0, float(expansion_board.cell_pixel_size * 1) + 1.0),
+		pending_drag_payload
+	)
+	_assert(hover_accepts_pending, "Board hover validation should accept valid pending expansion drag payloads from shared inventory")
+	expansion_board.queue_free()
 	var expansion_placed: bool = run_state.try_place_selected_item(Vector2i(5, 1))
 	_assert(expansion_placed, "Pending expansion should place on a valid edge anchor")
 	var move_expansion_success: bool = run_state.move_placed_expansion(Vector2i(5, 1), Vector2i(5, 2))

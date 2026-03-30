@@ -74,6 +74,8 @@ func _run() -> void:
 				if inventory_icon_rect != null:
 					_assert(inventory_icon_rect.texture != null, "Pending expansion inventory card should display a lunchbox texture")
 					_assert(inventory_icon_rect.visible, "Pending expansion inventory card should keep its lunchbox texture visible")
+				_assert(not inventory_card.drag_payload.get("shape_cells", []).is_empty(), "Pending expansion inventory drag payload should include shape cells for board validation")
+				_assert(inventory_card.drag_payload.get("target_character_id", &"") != &"", "Pending expansion inventory drag payload should retain its target role")
 				found_inventory_expansion_icon = true
 				break
 			_assert(found_inventory_expansion_icon, "Buying an expansion should add a lunchbox-textured pending expansion card to inventory")

@@ -9,6 +9,8 @@
 [ext_resource type="Texture2D" uid="uid://ck2lqq3tvkopk" path="res://Art/PaperCharacters/猎人纸片.png" id="7_7llj4"]
 [ext_resource type="Texture2D" uid="uid://r3ofrxbuqmhi" path="res://Art/PaperCharacters/法师纸片.png" id="8_kuq81"]
 
+[ext_resource type="Texture2D" uid="uid://dcvoqe0ie7qv0" path="res://Art/BattleBackground/victory.png" id="9_tdt7w"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_battle_popup"]
 
 [node name="BattlePopup" type="PopupPanel" unique_id=1367356641]
@@ -311,6 +313,17 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="ResultBanner" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1845207737]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_right = 822.0
+offset_bottom = 727.0
+mouse_filter = 2
+texture = ExtResource("9_tdt7w")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TimelinePanel" type="PanelContainer" parent="Margin/RootVBox" unique_id=976345216]
 custom_minimum_size = Vector2(0, 132)

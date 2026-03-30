@@ -23,6 +23,7 @@ func _run() -> void:
 
 	var popup: BattlePopup = editor.get_node("BattlePopup") as BattlePopup
 	var blocker: Control = editor.get_node("BattleModalBlocker") as Control
+	var result_banner: TextureRect = popup.get_node("Margin/RootVBox/ArenaPanel/ArenaStage/ResultBanner") as TextureRect
 	popup.open_battle()
 	_assert(popup._is_playing, "Battle popup should enter playback instead of finishing instantly")
 	_assert(not popup.popup_window, "Battle popup should not use click-outside popup-window auto close")
@@ -31,6 +32,17 @@ func _run() -> void:
 	while popup._is_playing:
 		await process_frame
 	_assert(run_state.battle_reports.size() == 1, "Battle result should be committed after playback finishes")
+	_assert(result_banner.visible, "Battle result banner should be visible after playback finishes")
+	var result: String = String(run_state.battle_reports[0].get("result", ""))
+	var banner_path: String = ""
+	if result_banner.texture != null:
+		banner_path = result_banner.texture.resource_path
+	if result == "win":
+		_assert(banner_path.ends_with("victory.png"), "Winning battles should show the victory banner")
+	elif result == "lose":
+		_assert(banner_path.ends_with("defeat.png"), "Losing battles should show the defeat banner")
+	else:
+		_assert(false, "Battle playback test expected a win or lose result, got %s" % result)
 	popup.hide()
 	await process_frame
 	_assert(not blocker.visible, "Battle popup should release the outside blocker after closing")
