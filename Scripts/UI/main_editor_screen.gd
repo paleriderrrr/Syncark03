@@ -51,6 +51,8 @@ const TEXT_RISK_STABLE := "\u7a33\u64cd\u80dc\u5238"
 const TEXT_RISK_CLOSE := "\u52bf\u5747\u529b\u654c"
 const TEXT_RISK_DANGEROUS := "\u9669\u8c61\u73af\u751f"
 const TEXT_RISK_FATAL := "\u4e5d\u6b7b\u4e00\u751f"
+const TEXT_ROLE_TAB_STATS_PLACEHOLDER := "HP 0/0\nATK 0\nINT 0.0s"
+const TEXT_ROLE_TAB_STATS := "HP %d/%d\nATK %s\nINT %ss"
 
 @onready var gold_label: Label = %GoldLabel
 @onready var route_label: Label = %RouteLabel
@@ -91,6 +93,11 @@ const TEXT_RISK_FATAL := "\u4e5d\u6b7b\u4e00\u751f"
 	&"warrior": %WarriorTabButton,
 	&"hunter": %HunterTabButton,
 	&"mage": %MageTabButton,
+}
+@onready var role_tab_stats_labels: Dictionary = {
+	&"warrior": %WarriorTabStatsLabel,
+	&"hunter": %HunterTabStatsLabel,
+	&"mage": %MageTabStatsLabel,
 }
 
 var _food_textures: Dictionary = {}
@@ -317,6 +324,31 @@ func _refresh_selected_role(character_id: StringName) -> void:
 	for role_id in tab_buttons.keys():
 		tab_buttons[role_id].disabled = role_id == character_id
 		tab_buttons[role_id].text = ""
+
+	_refresh_role_tab_stats()
+
+func _refresh_role_tab_stats() -> void:
+	var run_state: Node = _run_state()
+	for role_id in role_tab_stats_labels.keys():
+		var stats_label: Label = role_tab_stats_labels.get(role_id) as Label
+		if stats_label == null:
+			continue
+		var actor: Dictionary = CombatEngine.preview_character_actor(run_state, role_id)
+		if actor.is_empty():
+			stats_label.text = TEXT_ROLE_TAB_STATS_PLACEHOLDER
+			continue
+		var total_attack: float = float(actor.get("base_attack", 0.0)) + float(actor.get("attack_bonus", 0.0))
+		var effective_interval: float = CombatEngine.preview_effective_interval(
+			float(actor.get("base_interval", 1.0)),
+			float(actor.get("attack_speed_bonus", 0.0))
+		)
+		stats_label.text = TEXT_ROLE_TAB_STATS % [
+			int(round(float(actor.get("current_hp", 0.0)))),
+			int(round(float(actor.get("max_hp", 0.0)))),
+			_format_stat_value(total_attack),
+			_format_stat_value(effective_interval),
+		]
+
 func _refresh_market_strip() -> void:
 	var run_state: Node = _run_state()
 	var entries: Array[Dictionary] = []
@@ -432,6 +464,19 @@ func _format_signed_value(value: float, decimals: int = 1) -> String:
 			if text.ends_with("."):
 				text = text.left(text.length() - 1)
 	return ("+" if value >= 0.0 else "-") + text
+
+func _format_stat_value(value: float, decimals: int = 1) -> String:
+	var text := ""
+	if decimals <= 0 or is_zero_approx(value - round(value)):
+		text = str(int(round(value)))
+	else:
+		text = str(snapped(value, 0.1))
+		if text.contains("."):
+			while text.ends_with("0"):
+				text = text.left(text.length() - 1)
+			if text.ends_with("."):
+				text = text.left(text.length() - 1)
+	return text
 
 func _refresh_board() -> void:
 	var run_state: Node = _run_state()
@@ -743,7 +788,10 @@ func _estimate_risk_label() -> String:
 	var monster: MonsterDefinition = run_state.get_current_monster_definition()
 	if monster == null:
 		return TEXT_RISK_UNKNOWN
-	var monster_power: float = monster.base_attack * 2.0 + monster.base_hp / 6.0
+	var monster_multipliers: Dictionary = run_state.get_current_monster_multipliers()
+	var scaled_monster_attack: float = float(monster.base_attack) * float(monster_multipliers.get("attack", 1.0))
+	var scaled_monster_hp: float = float(monster.base_hp) * float(monster_multipliers.get("hp", 1.0))
+	var monster_power: float = scaled_monster_attack * 2.0 + scaled_monster_hp / 6.0
 	var ratio: float = total_power / maxf(monster_power, 1.0)
 	if ratio >= 1.8:
 		return TEXT_RISK_OVERWHELM

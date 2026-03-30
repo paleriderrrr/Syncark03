@@ -5,10 +5,21 @@ signal clicked(entry: Dictionary)
 signal hover_started(entry: Dictionary, global_rect: Rect2)
 signal hover_ended
 
+const CATEGORY_LABELS := {
+	&"fruit": "\u852c\u679c",
+	&"dessert": "\u751c\u54c1",
+	&"meat": "\u8089\u7c7b",
+	&"drink": "\u996e\u54c1",
+	&"staple": "\u4e3b\u98df",
+	&"spice": "\u9999\u6599",
+}
+
 @onready var background_rect: TextureRect = $Content/Background
 @onready var rarity_bar: ColorRect = %RarityBar
 @onready var rarity_badge: Panel = %RarityBadge
 @onready var rarity_label: Label = %RarityLabel
+@onready var category_badge: Panel = %CategoryBadge
+@onready var category_label: Label = %CategoryLabel
 @onready var discount_badge: Panel = %DiscountBadge
 @onready var discount_label: Label = %DiscountLabel
 @onready var icon_rect: TextureRect = %IconRect
@@ -38,6 +49,8 @@ func configure(
 	accepted_drop_sources = new_accepted_drop_sources.duplicate()
 	drop_forward_target = new_drop_forward_target
 	var resolved_texture: Texture2D = entry.get("icon_texture", texture) as Texture2D
+	var is_food_card: bool = entry.get("kind", &"food") == &"food" and entry.get("entry_kind", &"food") == &"food"
+	var category_id: StringName = entry.get("category", &"")
 	name_label.text = String(entry.get("display_name", ""))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	count_label.text = "x%d" % int(entry.get("count", 0))
@@ -61,8 +74,11 @@ func configure(
 	rarity_bar.color = rarity_color
 	rarity_badge.visible = not String(entry.get("rarity_label", _rarity_label(rarity))).is_empty()
 	rarity_label.text = String(entry.get("rarity_label", _rarity_label(rarity)))
+	category_badge.visible = is_food_card and CATEGORY_LABELS.has(category_id)
+	category_label.text = String(CATEGORY_LABELS.get(category_id, ""))
 	name_label.add_theme_color_override("font_color", Color.WHITE)
 	rarity_label.add_theme_color_override("font_color", Color.WHITE)
+	category_label.add_theme_color_override("font_color", Color.WHITE)
 	discount_label.add_theme_color_override("font_color", Color.WHITE)
 	count_label.add_theme_color_override("font_color", Color.WHITE)
 	price_label.add_theme_color_override("font_color", Color.WHITE)
