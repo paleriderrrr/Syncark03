@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://kaye34abgc0x"]
 
 [ext_resource type="Script" uid="uid://d0b7aj2qs8g7t" path="res://Scripts/UI/main_editor_screen.gd" id="1_editor"]
-[ext_resource type="PackedScene" path="res://Scenes/battle_popup.tscn" id="2_popup"]
+[ext_resource type="PackedScene" uid="uid://uqipbhpx82be" path="res://Scenes/battle_popup.tscn" id="2_popup"]
 [ext_resource type="Script" uid="uid://caqumohui2q5b" path="res://Scripts/UI/Components/bento_board_view.gd" id="3_board"]
 [ext_resource type="Texture2D" uid="uid://dy6hhm0cxhd6b" path="res://Art/UI/NewUI/ui2_2_panel_top_green.png" id="3_ojex1"]
 [ext_resource type="Texture2D" uid="uid://bxop82ps7gvtv" path="res://Art/UI/NewUI/金币.png" id="4_3wget"]
@@ -326,6 +326,107 @@ icon = ExtResource("13_qli1y")
 flat = true
 expand_icon = true
 
+[node name="BottomInventoryPanel" type="Control" parent="." unique_id=1254454826]
+anchors_preset = 0
+offset_left = 182.0
+offset_top = 794.0
+offset_right = 1708.0
+offset_bottom = 1080.0
+
+[node name="BottomInventoryBackground" type="TextureRect" parent="BottomInventoryPanel" unique_id=1860282968]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -47.0
+offset_top = 37.0
+offset_right = 78.0
+offset_bottom = 97.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.9014568, 0.758023)
+mouse_filter = 2
+texture = ExtResource("9_fwcvo")
+
+[node name="WarehouseSlotGuide" type="HBoxContainer" parent="BottomInventoryPanel" unique_id=201430001]
+layout_mode = 0
+offset_left = 104.0
+offset_top = 147.0
+offset_right = 1355.0
+offset_bottom = 283.0
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="WarehouseSlot1" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430002]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+stretch_mode = 6
+
+[node name="WarehouseSlot2" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430003]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+stretch_mode = 6
+
+[node name="WarehouseSlot3" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430004]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+stretch_mode = 6
+
+[node name="WarehouseSlot4" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430005]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+stretch_mode = 6
+
+[node name="WarehouseSlot5" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430006]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+stretch_mode = 6
+
+[node name="WarehouseSlot6" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430007]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+stretch_mode = 6
+
+[node name="WarehouseSlot7" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430008]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+stretch_mode = 6
+
+[node name="InventoryDropZone" type="PanelContainer" parent="BottomInventoryPanel" unique_id=373381151]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 104.0
+offset_top = 132.5
+offset_right = -198.0
+offset_bottom = -17.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_inventory_drop_zone")
+script = ExtResource("7_drop_zone")
+
+[node name="InventoryStrip" parent="BottomInventoryPanel/InventoryDropZone" unique_id=865739911 instance=ExtResource("4_strip")]
+unique_name_in_owner = true
+layout_mode = 2
+card_background_texture = ExtResource("16_inventory_card")
+
 [node name="RightPanel" type="Control" parent="." unique_id=1766331938]
 anchors_preset = 0
 offset_left = 1536.0
@@ -435,7 +536,6 @@ text = "阶段：1/14"
 
 [node name="MonsterTooltipPanel" type="PanelContainer" parent="RightPanel" unique_id=1842622011]
 unique_name_in_owner = true
-visible = false
 layout_mode = 0
 offset_left = -138.0
 offset_top = 396.0
@@ -466,7 +566,7 @@ autowrap_mode = 3
 
 [node name="SynergyPanel" parent="RightPanel" unique_id=1134522113 instance=ExtResource("5_synergy")]
 unique_name_in_owner = true
-layout_mode = 0
+anchors_preset = 0
 offset_left = -461.0
 offset_top = 15.0
 offset_right = -234.0
@@ -582,107 +682,6 @@ icon = ExtResource("17_3wget")
 flat = true
 icon_alignment = 1
 
-[node name="BottomInventoryPanel" type="Control" parent="." unique_id=1254454826]
-anchors_preset = 0
-offset_left = 182.0
-offset_top = 794.0
-offset_right = 1708.0
-offset_bottom = 1080.0
-
-[node name="BottomInventoryBackground" type="TextureRect" parent="BottomInventoryPanel" unique_id=1860282968]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -47.0
-offset_top = 37.0
-offset_right = 78.0
-offset_bottom = 97.0
-grow_horizontal = 2
-grow_vertical = 2
-scale = Vector2(0.9014568, 0.758023)
-mouse_filter = 2
-texture = ExtResource("9_fwcvo")
-
-[node name="WarehouseSlotGuide" type="HBoxContainer" parent="BottomInventoryPanel" unique_id=201430001]
-layout_mode = 0
-offset_left = 104.0
-offset_top = 147.0
-offset_right = 1355.0
-offset_bottom = 283.0
-mouse_filter = 2
-theme_override_constants/separation = 12
-
-[node name="WarehouseSlot1" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430002]
-custom_minimum_size = Vector2(150, 80)
-layout_mode = 2
-size_flags_horizontal = 3
-expand_mode = 1
-stretch_mode = 6
-
-[node name="WarehouseSlot2" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430003]
-custom_minimum_size = Vector2(150, 80)
-layout_mode = 2
-size_flags_horizontal = 3
-expand_mode = 1
-stretch_mode = 6
-
-[node name="WarehouseSlot3" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430004]
-custom_minimum_size = Vector2(150, 80)
-layout_mode = 2
-size_flags_horizontal = 3
-expand_mode = 1
-stretch_mode = 6
-
-[node name="WarehouseSlot4" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430005]
-custom_minimum_size = Vector2(150, 80)
-layout_mode = 2
-size_flags_horizontal = 3
-expand_mode = 1
-stretch_mode = 6
-
-[node name="WarehouseSlot5" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430006]
-custom_minimum_size = Vector2(150, 80)
-layout_mode = 2
-size_flags_horizontal = 3
-expand_mode = 1
-stretch_mode = 6
-
-[node name="WarehouseSlot6" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430007]
-custom_minimum_size = Vector2(150, 80)
-layout_mode = 2
-size_flags_horizontal = 3
-expand_mode = 1
-stretch_mode = 6
-
-[node name="WarehouseSlot7" type="TextureRect" parent="BottomInventoryPanel/WarehouseSlotGuide" unique_id=201430008]
-custom_minimum_size = Vector2(150, 80)
-layout_mode = 2
-size_flags_horizontal = 3
-expand_mode = 1
-stretch_mode = 6
-
-[node name="InventoryDropZone" type="PanelContainer" parent="BottomInventoryPanel" unique_id=373381151]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 104.0
-offset_top = 132.5
-offset_right = -198.0
-offset_bottom = -17.5
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxEmpty_inventory_drop_zone")
-script = ExtResource("7_drop_zone")
-
-[node name="InventoryStrip" parent="BottomInventoryPanel/InventoryDropZone" unique_id=865739911 instance=ExtResource("4_strip")]
-unique_name_in_owner = true
-layout_mode = 2
-card_background_texture = ExtResource("16_inventory_card")
-
 [node name="SettingsButton" type="Button" parent="." unique_id=201440001]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 96)
@@ -704,7 +703,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 color = Color(0, 0, 0, 0)
 
 [node name="BattlePopup" parent="." unique_id=1952828123 instance=ExtResource("2_popup")]
