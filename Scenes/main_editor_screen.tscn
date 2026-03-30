@@ -307,6 +307,10 @@ scale = Vector2(0.9014568, 0.758023)
 mouse_filter = 2
 texture = ExtResource("9_fwcvo")
 
+[node name="Carriage" type="Sprite2D" parent="BottomInventoryPanel" unique_id=1801502501]
+position = Vector2(1303, 83)
+texture = ExtResource("27_oi5tu")
+
 [node name="InventoryDropZone" type="PanelContainer" parent="BottomInventoryPanel" unique_id=373381151]
 unique_name_in_owner = true
 layout_mode = 1
@@ -679,7 +683,3 @@ color = Color(0, 0, 0, 0)
 
 [node name="BattlePopup" parent="." unique_id=1952828123 instance=ExtResource("2_popup")]
 visible = false
-
-[node name="Carriage" type="Sprite2D" parent="." unique_id=1801502501]
-position = Vector2(1485, 877)
-texture = ExtResource("27_oi5tu")
