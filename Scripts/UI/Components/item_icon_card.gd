@@ -52,7 +52,6 @@ func configure(
 	var is_food_card: bool = entry.get("kind", &"food") == &"food" and entry.get("entry_kind", &"food") == &"food"
 	var category_id: StringName = entry.get("category", &"")
 	name_label.text = String(entry.get("display_name", ""))
-	name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	count_label.text = "x%d" % int(entry.get("count", 0))
 	count_badge.visible = int(entry.get("count", 0)) > 0
 	if entry.has("display_price"):
@@ -67,8 +66,8 @@ func configure(
 	discount_label.text = "-%d%%" % discount_percent if discount_percent > 0 else ""
 	icon_rect.texture = resolved_texture
 	icon_rect.visible = resolved_texture != null
-	background_rect.texture = null
-	background_rect.visible = false
+	if background_texture != null:
+		background_rect.texture = background_texture
 	var rarity: StringName = entry.get("rarity", &"common")
 	var rarity_color: Color = _rarity_color(rarity)
 	rarity_bar.color = rarity_color
@@ -76,12 +75,6 @@ func configure(
 	rarity_label.text = String(entry.get("rarity_label", _rarity_label(rarity)))
 	category_badge.visible = is_food_card and CATEGORY_LABELS.has(category_id)
 	category_label.text = String(CATEGORY_LABELS.get(category_id, ""))
-	name_label.add_theme_color_override("font_color", Color.WHITE)
-	rarity_label.add_theme_color_override("font_color", Color.WHITE)
-	category_label.add_theme_color_override("font_color", Color.WHITE)
-	discount_label.add_theme_color_override("font_color", Color.WHITE)
-	count_label.add_theme_color_override("font_color", Color.WHITE)
-	price_label.add_theme_color_override("font_color", Color.WHITE)
 	tooltip_text = ""
 
 func _ready() -> void:

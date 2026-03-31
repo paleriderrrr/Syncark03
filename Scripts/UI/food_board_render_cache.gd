@@ -52,7 +52,7 @@ func _bake_shape_texture(source_texture: Texture2D, base_shape_cells: Array[Vect
 	if source_image == null:
 		return null
 	var visible_region: Rect2 = _compute_visible_alpha_region(source_image)
-	var solution: Dictionary = compute_best_zero_crop_solution(visible_region.size, Vector2(output_size))
+	var solution: Dictionary = compute_best_solution_for_shape(visible_region.size, base_shape_cells, rotation, cell_pixel_size)
 	var target_rect: Rect2 = solution.get("dest_rect", Rect2(Vector2.ZERO, Vector2(output_size)))
 	var rotation_radians: float = float(solution.get("rotation_radians", 0.0))
 	var scale_x: float = float(solution.get("scale_x", 1.0))
@@ -81,6 +81,25 @@ func _bake_shape_texture(source_texture: Texture2D, base_shape_cells: Array[Vect
 				var sample_y: int = clampi(int(floor(sample_y_float)), 0, source_image.get_height() - 1)
 				baked.set_pixel(pixel_x, pixel_y, source_image.get_pixel(sample_x, sample_y))
 	return ImageTexture.create_from_image(baked)
+
+func compute_best_solution_for_shape(source_size: Vector2, base_shape_cells: Array[Vector2i], rotation: int, cell_pixel_size: int, stretch_limit: float = 0.2) -> Dictionary:
+	var rotated_cells: Array[Vector2i] = ShapeUtils.rotate_cells(base_shape_cells, rotation)
+	var bounds: Rect2i = _get_shape_bounds(rotated_cells)
+	var target_size := Vector2(bounds.size.x * cell_pixel_size, bounds.size.y * cell_pixel_size)
+	if not _is_irregular_shape(rotated_cells) or posmod(rotation, 4) != 0:
+		var regular_solution: Dictionary = compute_best_zero_crop_solution(source_size, target_size, stretch_limit)
+		regular_solution["fits_occupied_mask"] = true
+		return regular_solution
+	return _compute_best_masked_zero_crop_solution(source_size, target_size, rotated_cells, cell_pixel_size, stretch_limit)
+
+func solution_intersects_empty_cells(solution: Dictionary, base_shape_cells: Array[Vector2i], rotation: int, cell_pixel_size: int) -> bool:
+	var rotated_cells: Array[Vector2i] = ShapeUtils.rotate_cells(base_shape_cells, rotation)
+	var empty_rects: Array[Rect2] = _build_empty_cell_rects(rotated_cells, cell_pixel_size)
+	if empty_rects.is_empty():
+		return false
+	var target_rect: Rect2 = solution.get("dest_rect", Rect2())
+	var rotation_radians: float = float(solution.get("rotation_radians", 0.0))
+	return _rotated_rect_intersects_any_empty_cell(target_rect, rotation_radians, empty_rects)
 
 func compute_zero_crop_dest_rect(source_size: Vector2, target_size: Vector2, stretch_limit: float = 0.2) -> Rect2:
 	if source_size.x <= 0.0 or source_size.y <= 0.0 or target_size.x <= 0.0 or target_size.y <= 0.0:
@@ -152,6 +171,160 @@ func compute_best_zero_crop_solution(source_size: Vector2, target_size: Vector2,
 						"dest_rect": Rect2((target_size - fitted_size) * 0.5, fitted_size),
 					}
 	return best_solution
+
+func _compute_best_masked_zero_crop_solution(source_size: Vector2, target_size: Vector2, shape_cells: Array[Vector2i], cell_pixel_size: int, stretch_limit: float = 0.2) -> Dictionary:
+	if source_size.x <= 0.0 or source_size.y <= 0.0 or target_size.x <= 0.0 or target_size.y <= 0.0:
+		return {
+			"rotation_radians": 0.0,
+			"scale_x": 1.0,
+			"scale_y": 1.0,
+			"contain_scale": 1.0,
+			"dest_rect": Rect2(Vector2.ZERO, target_size),
+			"fits_occupied_mask": false,
+		}
+	var empty_rects: Array[Rect2] = _build_empty_cell_rects(shape_cells, cell_pixel_size)
+	if empty_rects.is_empty():
+		var trivial_solution: Dictionary = compute_best_zero_crop_solution(source_size, target_size, stretch_limit)
+		trivial_solution["fits_occupied_mask"] = true
+		return trivial_solution
+	var low: float = max(0.0, 1.0 - stretch_limit)
+	var high: float = 1.0 + stretch_limit
+	var best_solution := {
+		"rotation_radians": 0.0,
+		"scale_x": 1.0,
+		"scale_y": 1.0,
+		"contain_scale": 0.0,
+		"dest_rect": Rect2(target_size * 0.5, Vector2.ZERO),
+		"fits_occupied_mask": false,
+	}
+	var best_subject_area: float = -1.0
+	var best_bbox_area: float = -1.0
+	var best_distortion: float = INF
+	for angle_step in range(ANGLE_SEARCH_STEPS + 1):
+		var angle: float = (PI * 0.5) * (float(angle_step) / float(ANGLE_SEARCH_STEPS))
+		var cosine: float = absf(cos(angle))
+		var sine: float = absf(sin(angle))
+		for stretch_x_step in range(STRETCH_SEARCH_STEPS + 1):
+			var scale_x: float = lerpf(low, high, float(stretch_x_step) / float(STRETCH_SEARCH_STEPS))
+			for stretch_y_step in range(STRETCH_SEARCH_STEPS + 1):
+				var scale_y: float = lerpf(low, high, float(stretch_y_step) / float(STRETCH_SEARCH_STEPS))
+				var rotated_width: float = source_size.x * scale_x * cosine + source_size.y * scale_y * sine
+				var rotated_height: float = source_size.x * scale_x * sine + source_size.y * scale_y * cosine
+				if rotated_width <= 0.0 or rotated_height <= 0.0:
+					continue
+				var bbox_contain_scale: float = min(target_size.x / rotated_width, target_size.y / rotated_height)
+				var contain_scale: float = _find_max_masked_contain_scale(rotated_width, rotated_height, angle, target_size, empty_rects, bbox_contain_scale)
+				if contain_scale <= 0.0001:
+					continue
+				var fitted_size := Vector2(rotated_width, rotated_height) * contain_scale
+				var subject_area: float = source_size.x * source_size.y * scale_x * scale_y * contain_scale * contain_scale
+				var bbox_area: float = fitted_size.x * fitted_size.y
+				var distortion: float = absf(scale_x - 1.0) + absf(scale_y - 1.0)
+				if subject_area > best_subject_area + 0.0001 \
+				or (is_equal_approx(subject_area, best_subject_area) and bbox_area > best_bbox_area + 0.0001) \
+				or (is_equal_approx(subject_area, best_subject_area) and is_equal_approx(bbox_area, best_bbox_area) and distortion < best_distortion - 0.0001):
+					best_subject_area = subject_area
+					best_bbox_area = bbox_area
+					best_distortion = distortion
+					best_solution = {
+						"rotation_radians": angle,
+						"scale_x": scale_x,
+						"scale_y": scale_y,
+						"contain_scale": contain_scale,
+						"dest_rect": Rect2((target_size - fitted_size) * 0.5, fitted_size),
+						"fits_occupied_mask": true,
+					}
+	return best_solution
+
+func _find_max_masked_contain_scale(rotated_width: float, rotated_height: float, angle: float, target_size: Vector2, empty_rects: Array[Rect2], max_scale: float) -> float:
+	if max_scale <= 0.0:
+		return 0.0
+	var best_scale: float = 0.0
+	var low: float = 0.0
+	var high: float = max_scale
+	for _step in range(20):
+		var mid: float = (low + high) * 0.5
+		var fitted_size := Vector2(rotated_width, rotated_height) * mid
+		var dest_rect := Rect2((target_size - fitted_size) * 0.5, fitted_size)
+		if _rotated_rect_intersects_any_empty_cell(dest_rect, angle, empty_rects):
+			high = mid
+		else:
+			best_scale = mid
+			low = mid
+	return best_scale
+
+func _is_irregular_shape(cells: Array[Vector2i]) -> bool:
+	var bounds: Rect2i = _get_shape_bounds(cells)
+	return cells.size() != bounds.size.x * bounds.size.y
+
+func _build_empty_cell_rects(cells: Array[Vector2i], cell_pixel_size: int) -> Array[Rect2]:
+	var bounds: Rect2i = _get_shape_bounds(cells)
+	var occupied_lookup := {}
+	for cell in cells:
+		var local_cell := Vector2i(cell.x - bounds.position.x, cell.y - bounds.position.y)
+		occupied_lookup["%d:%d" % [local_cell.x, local_cell.y]] = true
+	var empty_rects: Array[Rect2] = []
+	for cell_y in range(bounds.size.y):
+		for cell_x in range(bounds.size.x):
+			if occupied_lookup.has("%d:%d" % [cell_x, cell_y]):
+				continue
+			empty_rects.append(Rect2(
+				Vector2(cell_x * cell_pixel_size, cell_y * cell_pixel_size),
+				Vector2(cell_pixel_size, cell_pixel_size)
+			))
+	return empty_rects
+
+func _rotated_rect_intersects_any_empty_cell(dest_rect: Rect2, angle: float, empty_rects: Array[Rect2]) -> bool:
+	for empty_rect in empty_rects:
+		if _rotated_rect_intersects_axis_aligned_rect(dest_rect, angle, empty_rect):
+			return true
+	return false
+
+func _rotated_rect_intersects_axis_aligned_rect(rotated_rect: Rect2, angle: float, axis_rect: Rect2) -> bool:
+	if rotated_rect.size.x <= 0.0 or rotated_rect.size.y <= 0.0 or axis_rect.size.x <= 0.0 or axis_rect.size.y <= 0.0:
+		return false
+	var rotated_points: Array[Vector2] = _build_rotated_rect_points(rotated_rect, angle)
+	var axis_points: Array[Vector2] = [
+		axis_rect.position,
+		axis_rect.position + Vector2(axis_rect.size.x, 0.0),
+		axis_rect.position + axis_rect.size,
+		axis_rect.position + Vector2(0.0, axis_rect.size.y),
+	]
+	var axes: Array[Vector2] = [
+		Vector2.RIGHT,
+		Vector2.DOWN,
+		Vector2(cos(angle), sin(angle)).normalized(),
+		Vector2(-sin(angle), cos(angle)).normalized(),
+	]
+	for axis in axes:
+		var rotated_projection: Vector2 = _project_points_onto_axis(rotated_points, axis)
+		var axis_projection: Vector2 = _project_points_onto_axis(axis_points, axis)
+		if rotated_projection.y <= axis_projection.x + 0.001 or axis_projection.y <= rotated_projection.x + 0.001:
+			return false
+	return true
+
+func _build_rotated_rect_points(rect: Rect2, angle: float) -> Array[Vector2]:
+	var center := rect.position + rect.size * 0.5
+	var half_size := rect.size * 0.5
+	var corners: Array[Vector2] = [
+		Vector2(-half_size.x, -half_size.y),
+		Vector2(half_size.x, -half_size.y),
+		Vector2(half_size.x, half_size.y),
+		Vector2(-half_size.x, half_size.y),
+	]
+	var points: Array[Vector2] = []
+	for corner in corners:
+		points.append(center + corner.rotated(angle))
+	return points
+
+func _project_points_onto_axis(points: Array[Vector2], axis: Vector2) -> Vector2:
+	var min_projection: float = points[0].dot(axis)
+	var max_projection: float = min_projection
+	for index in range(1, points.size()):
+		var projection: float = points[index].dot(axis)
+		min_projection = min(min_projection, projection)
+		max_projection = max(max_projection, projection)
+	return Vector2(min_projection, max_projection)
 
 func _resolve_bounded_stretch_pair(ratio_multiplier: float, low: float, high: float) -> Vector2:
 	if ratio_multiplier <= 0.0:

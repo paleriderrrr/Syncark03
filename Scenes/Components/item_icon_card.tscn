@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dpjwawppnbn2u"]
 
 [ext_resource type="Script" uid="uid://cmnqwh22dhtcn" path="res://Scripts/UI/Components/item_icon_card.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://d4jjrpk8ln0gg" path="res://Art/UI/NewUI/UI2-3.png" id="2_n2u14"]
 [ext_resource type="FontFile" uid="uid://bgm3gwcogagmy" path="res://Art/Fonts/handwriting.ttf" id="2_qghfr"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_card"]
@@ -13,11 +14,11 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [node name="ItemIconCard" type="Control" unique_id=281851868]
-custom_minimum_size = Vector2(156, 164)
+custom_minimum_size = Vector2(156, 192)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 156.0
-offset_bottom = 164.0
+offset_bottom = 192.0
 script = ExtResource("1_script")
 
 [node name="Content" type="Control" parent="." unique_id=281851869]
@@ -30,9 +31,11 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Background" type="TextureRect" parent="Content" unique_id=373685472]
-visible = false
 layout_mode = 0
+offset_right = 163.0
+offset_bottom = 172.0
 mouse_filter = 2
+texture = ExtResource("2_n2u14")
 expand_mode = 1
 stretch_mode = 6
 
@@ -44,6 +47,7 @@ color = Color(0.75, 0.75, 0.75, 0.95)
 
 [node name="RarityBadge" type="Panel" parent="Content" unique_id=190200428]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 offset_left = 4.0
 offset_top = 4.0
@@ -54,6 +58,7 @@ theme_override_styles/panel = SubResource("StyleBoxEmpty_card")
 
 [node name="RarityLabel" type="Label" parent="Content/RarityBadge" unique_id=78743209]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -80,9 +85,14 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = -19.0
+offset_right = 21.0
+offset_bottom = -1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 20
+text = "Common"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -98,13 +108,12 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 65.0
-offset_top = -10.0
-offset_right = 194.0
-offset_bottom = 30.0
+offset_left = 72.0
+offset_top = 4.0
+offset_right = 201.0
+offset_bottom = 44.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0.152, 0.24293338, 0.4, 1)
 theme_override_fonts/font = ExtResource("2_qghfr")
 theme_override_font_sizes/font_size = 40
 text = "-20%"
@@ -114,10 +123,10 @@ vertical_alignment = 1
 [node name="IconRect" type="TextureRect" parent="Content" unique_id=1828858474]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 13.0
-offset_top = 17.0
-offset_right = 133.0
-offset_bottom = 137.0
+offset_left = 27.0
+offset_top = 30.0
+offset_right = 134.0
+offset_bottom = 140.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
@@ -125,10 +134,10 @@ stretch_mode = 5
 [node name="NameLabel" type="Label" parent="Content" unique_id=602264525]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 21.0
-offset_top = 133.0
-offset_right = 124.0
-offset_bottom = 160.0
+offset_left = 28.0
+offset_top = 164.0
+offset_right = 131.0
+offset_bottom = 191.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 22
@@ -149,13 +158,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 5.0
-offset_top = 132.0
-offset_right = 20.0
-offset_bottom = 156.0
+offset_left = 132.0
+offset_top = 126.0
+offset_right = 163.0
+offset_bottom = 170.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 26
 text = "x1"
 vertical_alignment = 1
 
@@ -171,13 +180,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 125.5
-offset_top = 133.0
-offset_right = 153.5
-offset_bottom = 157.0
+offset_left = 64.0
+offset_top = 136.0
+offset_right = 96.0
+offset_bottom = 165.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 24
 text = "10G"
 horizontal_alignment = 2
 vertical_alignment = 1

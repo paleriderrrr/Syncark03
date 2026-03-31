@@ -7,7 +7,7 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_panel"]
 
 [node name="ItemStrip" type="PanelContainer" unique_id=573594463]
-custom_minimum_size = Vector2(0, 168)
+custom_minimum_size = Vector2(0, 208)
 script = ExtResource("1_script")
 theme_override_styles/panel = SubResource("StyleBoxEmpty_panel")
 
@@ -43,7 +43,7 @@ flat = true
 [node name="Viewport" type="Control" parent="VBox/StripHBox" unique_id=975938177]
 unique_name_in_owner = true
 clip_contents = true
-custom_minimum_size = Vector2(0, 164)
+custom_minimum_size = Vector2(0, 208)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

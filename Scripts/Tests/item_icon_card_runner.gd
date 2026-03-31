@@ -37,6 +37,7 @@ func _run() -> void:
 	_assert(int(name_label.autowrap_mode) == 0, "Card name should stay on one line")
 	_assert(name_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Card name should stay bottom centered")
 	_assert(name_label.offset_top >= 132.0, "Card name should sit in the bottom band of the card")
+	_assert(card.custom_minimum_size.y >= name_label.offset_bottom, "Card scene minimum height should be large enough for the template label layout")
 	_assert(count_label.text == "x3", "Count badge should render quantity")
 	_assert(price_label.text == "4 G", "Price badge should render package price")
 	_assert(discount_badge.visible, "Discount badge should be visible when a discount exists")
