@@ -246,6 +246,7 @@ stretch_mode = 6
 
 [node name="EdgeFog" type="ColorRect" parent="." unique_id=1612850454]
 unique_name_in_owner = true
+visible = false
 material = SubResource("ShaderMaterial_edge_fog")
 layout_mode = 1
 anchors_preset = 15

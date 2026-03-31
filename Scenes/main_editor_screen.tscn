@@ -26,6 +26,7 @@
 [ext_resource type="Texture2D" uid="uid://dqy8yyxju1ffo" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_help_icon.png" id="23_help_icon"]
 [ext_resource type="Texture2D" uid="uid://dgmo8udhv7she" path="res://Art/UI/NewUI/Carriage.png" id="27_oi5tu"]
 [ext_resource type="Texture2D" uid="uid://pnv0stxua51g" path="res://Art/UI/tutor1.png" id="28_tutor_1"]
+[ext_resource type="Texture2D" uid="uid://l2ybt4krxofa" path="res://Art/UI/NewUI/UI2-4.png" id="29_inventory_card_bg"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_inventory_drop_zone"]
 
@@ -190,10 +191,10 @@ icon_alignment = 1
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 37.0
-offset_top = 46.0
+offset_top = 27.0
 offset_right = 1030.0
-offset_bottom = 226.0
-viewport_height = 180
+offset_bottom = 254.0
+viewport_height = 208
 content_top_padding = 16
 
 [node name="Market" type="Sprite2D" parent="TopMarketPanel" unique_id=1509509966]
@@ -355,9 +356,9 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -47.0
-offset_top = 37.0
+offset_top = 2.0000095
 offset_right = 78.0
-offset_bottom = 97.0
+offset_bottom = 177.7273
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.9014568, 0.758023)
@@ -386,6 +387,7 @@ script = ExtResource("7_drop_zone")
 [node name="InventoryStrip" parent="BottomInventoryPanel/InventoryDropZone" unique_id=865739911 instance=ExtResource("4_strip")]
 unique_name_in_owner = true
 layout_mode = 2
+card_background_texture = ExtResource("29_inventory_card_bg")
 
 [node name="RightPanel" type="Control" parent="." unique_id=1766331938]
 anchors_preset = 0
@@ -606,10 +608,10 @@ text = "当前节点"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 74)
 layout_mode = 0
-offset_left = 148.0
-offset_top = 665.0
-offset_right = 540.0
-offset_bottom = 872.0
+offset_left = 102.00001
+offset_top = 635.0
+offset_right = 569.9263
+offset_bottom = 950.89526
 scale = Vector2(0.59268016, 0.5601714)
 icon = ExtResource("17_qli1y")
 flat = true
@@ -623,10 +625,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -88.0
-offset_top = -33.0
-offset_right = 88.0
-offset_bottom = 33.0
+offset_left = -151.28793
+offset_top = -91.89641
+offset_right = 143.67886
+offset_bottom = 63.347855
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -728,10 +730,3 @@ color = Color(0, 0, 0, 0)
 
 [node name="BattlePopup" parent="." unique_id=1952828123 instance=ExtResource("2_popup")]
 visible = false
-
-[node name="StageTitleLabel2" type="Label" parent="." unique_id=1383312759]
-layout_mode = 0
-theme_override_colors/font_color = Color(0.258824, 0.14902, 0.0862745, 1)
-theme_override_fonts/font = ExtResource("15_80818")
-theme_override_font_sizes/font_size = 32
-text = "阶段信息"

@@ -11,6 +11,8 @@ func _run() -> void:
 	_test_cache_reuses_baked_texture()
 	_test_rotation_uses_distinct_baked_texture()
 	_test_baked_texture_matches_shape_bounds()
+	_test_regular_shape_keeps_bbox_fit_solution()
+	_test_irregular_shape_r0_stays_inside_occupied_cells()
 	_finish()
 
 func _test_cache_reuses_baked_texture() -> void:
@@ -49,6 +51,27 @@ func _test_baked_texture_matches_shape_bounds() -> void:
 	_assert(baked != null, "Cache should bake the continuous board texture")
 	_assert(baked.get_size() == Vector2(78, 78), "Cross-shaped foods should bake to their occupied bounding box size in pixels")
 
+func _test_regular_shape_keeps_bbox_fit_solution() -> void:
+	var cache: FoodBoardRenderCache = CACHE_SCRIPT.new()
+	var shape_cells: Array[Vector2i] = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
+	var solution: Dictionary = cache.compute_best_solution_for_shape(Vector2(100.0, 100.0), shape_cells, 0, 30)
+	var dest_rect: Rect2 = solution.get("dest_rect", Rect2())
+	_assert(_approx_vec2(dest_rect.size, Vector2(60.0, 60.0)), "Regular full-rectangle shapes should keep using the outer bounding box fit")
+	_assert(bool(solution.get("fits_occupied_mask", false)), "Regular full-rectangle shapes should be treated as trivially valid within the occupied mask")
+
+func _test_irregular_shape_r0_stays_inside_occupied_cells() -> void:
+	var cache: FoodBoardRenderCache = CACHE_SCRIPT.new()
+	var shape_cells: Array[Vector2i] = [
+		Vector2i(1, 0),
+		Vector2i(0, 1),
+		Vector2i(1, 1),
+		Vector2i(2, 1),
+		Vector2i(1, 2),
+	]
+	var solution: Dictionary = cache.compute_best_solution_for_shape(Vector2(96.0, 72.0), shape_cells, 0, 26)
+	_assert(bool(solution.get("fits_occupied_mask", false)), "Irregular shape r0 solutions should explicitly guarantee occupied-mask containment")
+	_assert(not cache.solution_intersects_empty_cells(solution, shape_cells, 0, 26), "Irregular shape r0 solutions should not place the visible region into empty bbox cells")
+
 func _make_test_texture(size: Vector2i) -> Texture2D:
 	var image := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
 	for y in range(size.y):
@@ -60,6 +83,9 @@ func _assert(condition: bool, message: String) -> void:
 	if not condition:
 		_failures.append(message)
 		push_error(message)
+
+func _approx_vec2(left: Vector2, right: Vector2, tolerance: float = 0.02) -> bool:
+	return absf(left.x - right.x) <= tolerance and absf(left.y - right.y) <= tolerance
 
 func _finish() -> void:
 	if _failures.is_empty():

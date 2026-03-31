@@ -183,9 +183,9 @@ vertical_alignment = 1
 [node name="CloseButton" type="TextureButton" parent="CenterContainer/PanelRoot" unique_id=1043357211]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 615.0
+offset_left = 607.0
 offset_top = 18.0
-offset_right = 718.0
+offset_right = 710.0
 offset_bottom = 118.0
 texture_normal = ExtResource("7_close")
 texture_pressed = ExtResource("7_close")
