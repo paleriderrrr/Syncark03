@@ -54,6 +54,14 @@
 - Files Touched: Scripts/Autoload/run_state.gd, Scripts/UI/title_screen.gd, Scenes/title_screen.tscn, Scripts/UI/main_editor_screen.gd, Scripts/Tests/save_load_runner.gd, Scripts/Tests/title_screen_runner.gd, Docs/07_progress_log.md
 - Notes: The save format is a single local file at `user://run_state.save` using Godot variant serialization so existing gameplay dictionaries, `Vector2i`, and `StringName` values can round-trip without lossy JSON conversion. The title-screen continue button is only a rough placement for now and is intended for later manual layout adjustment.
 
+### 2026-04-10 09:30
+- Completed: Added a development-only one-click save-clear entry to the settings screen so local save files can be deleted without leaving the game or manually browsing the Godot user-data folder.
+- In Progress: Waiting for manual in-editor confirmation of the rough button placement and whether the developer-only label should stay visible in release-facing settings builds.
+- Next: Open the settings screen in the editor, confirm the new bottom button placement is acceptable as a temporary layout, and click it once after creating a save to verify the title-screen `Continue` entry disappears on the next return.
+- Blockers: Runtime verification remains limited by the existing environment-level headless Godot crash, so this round relies on static review plus the updated settings test script rather than a confirmed local automated pass.
+- Files Touched: Scenes/settings_screen.tscn, Scripts/UI/settings_screen.gd, Scripts/Tests/settings_runner.gd, Docs/07_progress_log.md
+- Notes: The button currently deletes only the persisted file and disables itself when no save is present; it is intended as a development convenience entry, not a finalized player-facing UX element.
+
 ### 2026-03-28 00:52
 - Completed: Added a dedicated UI design rules document and linked it into the AI handoff and acceptance flow.
 - In Progress: Waiting for user clarification on UI visual decisions that are not explicit in the PDFs.

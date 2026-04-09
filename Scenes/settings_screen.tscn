@@ -192,3 +192,13 @@ texture_pressed = ExtResource("7_close")
 texture_hover = ExtResource("7_close")
 ignore_texture_size = true
 stretch_mode = 5
+
+[node name="DevClearSaveButton" type="Button" parent="CenterContainer/PanelRoot"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 214.0
+offset_top = 835.0
+offset_right = 550.0
+offset_bottom = 883.0
+theme_override_font_sizes/font_size = 24
+text = "DEV CLEAR SAVE"
