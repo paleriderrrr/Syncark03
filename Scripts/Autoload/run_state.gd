@@ -11,6 +11,8 @@ const FOOD_DATA_PATH := "res://Data/Foods/food_catalog.tres"
 const MONSTER_DATA_PATH := "res://Data/Monsters/monster_roster.tres"
 const MARKET_CONFIG_PATH := "res://Data/Configs/market_config.tres"
 const STAGE_FLOW_CONFIG_PATH := "res://Data/Configs/stage_flow_config.tres"
+const SAVE_FILE_PATH := "user://run_state.save"
+const SAVE_FORMAT_VERSION := 1
 
 const GRID_WIDTH := 8
 const GRID_HEIGHT := 6
@@ -73,15 +75,21 @@ var pre_battle_snapshot: Dictionary = {}
 var run_finished: bool = false
 var settings_return_scene_path: String = "res://Scenes/title_screen.tscn"
 var master_volume_percent: float = 100.0
+var tutorial_completed: bool = false
 
 var _instance_counter: int = 1
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _autosave_enabled: bool = false
+var _has_persistable_run: bool = false
 
 func _ready() -> void:
 	_rng.randomize()
 	_load_static_data()
+	state_changed.connect(_on_state_changed_autosave)
+	_load_persistent_metadata()
 	apply_master_volume()
-	start_new_run()
+	start_new_run(false)
+	_autosave_enabled = true
 
 func _load_static_data() -> void:
 	character_roster = load(CHARACTER_DATA_PATH) as CharacterRoster
@@ -107,7 +115,7 @@ func ensure_initialized() -> void:
 	if character_states.is_empty():
 		start_new_run()
 
-func start_new_run() -> void:
+func start_new_run(persist_run: bool = true) -> void:
 	current_gold = stage_flow_config.initial_gold if stage_flow_config else 30
 	current_route_index = 0
 	current_market_index = 1
@@ -123,6 +131,7 @@ func start_new_run() -> void:
 	pre_battle_snapshot.clear()
 	run_finished = false
 	_instance_counter = 1
+	_has_persistable_run = persist_run
 	_init_character_states()
 	_init_normal_monster_order()
 	_generate_market_offers()
@@ -143,9 +152,21 @@ func consume_settings_return_scene(fallback_path: String) -> String:
 func set_master_volume_percent(value: float) -> void:
 	master_volume_percent = clampf(value, 0.0, 100.0)
 	apply_master_volume()
+	if _autosave_enabled:
+		save_run()
 
 func get_master_volume_percent() -> float:
 	return master_volume_percent
+
+func is_tutorial_completed() -> bool:
+	return tutorial_completed
+
+func mark_tutorial_completed() -> void:
+	if tutorial_completed:
+		return
+	tutorial_completed = true
+	if _autosave_enabled:
+		save_run()
 
 func apply_master_volume() -> void:
 	var bus_index: int = AudioServer.get_bus_index(&"Master")
@@ -154,6 +175,160 @@ func apply_master_volume() -> void:
 	var linear_value: float = master_volume_percent / 100.0
 	var db_value: float = linear_to_db(linear_value) if linear_value > 0.0 else -80.0
 	AudioServer.set_bus_volume_db(bus_index, db_value)
+
+func has_saved_run() -> bool:
+	var payload: Dictionary = _read_persistence_payload()
+	return bool(payload.get("has_run_data", false)) and payload.has("run_data")
+
+func save_run() -> bool:
+	return _write_persistence_payload(_build_persistence_payload())
+
+func ensure_persistable_run() -> void:
+	if _has_persistable_run:
+		return
+	_has_persistable_run = true
+	if _autosave_enabled:
+		save_run()
+
+func load_run() -> bool:
+	var payload: Dictionary = _read_persistence_payload()
+	if payload.is_empty() or not bool(payload.get("has_run_data", false)):
+		return false
+	var run_data_variant: Variant = payload.get("run_data", {})
+	if not (run_data_variant is Dictionary):
+		return false
+	var run_data: Dictionary = run_data_variant
+	_apply_persistent_metadata_from_payload(payload)
+	if not _apply_run_snapshot(run_data):
+		return false
+	_has_persistable_run = true
+	selected_item.clear()
+	apply_master_volume()
+	state_changed.emit()
+	selected_character_changed.emit(selected_character_id)
+	selected_item_changed.emit()
+	return true
+
+func delete_saved_run() -> void:
+	if not FileAccess.file_exists(SAVE_FILE_PATH):
+		return
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_FILE_PATH))
+
+func _on_state_changed_autosave() -> void:
+	if not _autosave_enabled or not _has_persistable_run:
+		return
+	save_run()
+
+func _load_persistent_metadata() -> void:
+	var payload: Dictionary = _read_persistence_payload()
+	if payload.is_empty():
+		return
+	_apply_persistent_metadata_from_payload(payload)
+
+func _apply_persistent_metadata_from_payload(payload: Dictionary) -> void:
+	var settings_variant: Variant = payload.get("settings", {})
+	if not (settings_variant is Dictionary):
+		return
+	var settings: Dictionary = settings_variant
+	master_volume_percent = clampf(float(settings.get("master_volume_percent", master_volume_percent)), 0.0, 100.0)
+	tutorial_completed = bool(settings.get("tutorial_completed", tutorial_completed))
+
+func _build_persistence_payload() -> Dictionary:
+	return {
+		"version": SAVE_FORMAT_VERSION,
+		"settings": {
+			"master_volume_percent": master_volume_percent,
+			"tutorial_completed": tutorial_completed,
+		},
+		"has_run_data": _has_persistable_run,
+		"run_data": _build_run_snapshot() if _has_persistable_run else {},
+	}
+
+func _build_run_snapshot() -> Dictionary:
+	return {
+		"instance_counter": _instance_counter,
+		"current_gold": current_gold,
+		"current_route_index": current_route_index,
+		"current_market_index": current_market_index,
+		"current_reroll_count": current_reroll_count,
+		"selected_character_id": selected_character_id,
+		"shared_inventory": shared_inventory.duplicate(true),
+		"character_states": character_states.duplicate(true),
+		"current_market_offers": current_market_offers.duplicate(true),
+		"normal_monster_order": normal_monster_order.duplicate(),
+		"free_food_purchase_count": free_food_purchase_count,
+		"spice_purchase_refund": spice_purchase_refund,
+		"battle_reports": battle_reports.duplicate(true),
+		"pre_battle_snapshot": pre_battle_snapshot.duplicate(true),
+		"run_finished": run_finished,
+		"rng_seed": _rng.seed,
+		"rng_state": _rng.state,
+	}
+
+func _apply_run_snapshot(snapshot: Dictionary) -> bool:
+	if snapshot.is_empty():
+		return false
+	var restored_character_states: Dictionary = snapshot.get("character_states", {})
+	if restored_character_states.is_empty():
+		return false
+	current_gold = int(snapshot.get("current_gold", stage_flow_config.initial_gold if stage_flow_config else 30))
+	current_route_index = int(snapshot.get("current_route_index", 0))
+	current_market_index = int(snapshot.get("current_market_index", 1))
+	current_reroll_count = int(snapshot.get("current_reroll_count", 0))
+	selected_character_id = StringName(snapshot.get("selected_character_id", &"warrior"))
+	shared_inventory = _duplicate_dictionary_array(snapshot.get("shared_inventory", []))
+	character_states = restored_character_states.duplicate(true)
+	current_market_offers = _duplicate_dictionary_array(snapshot.get("current_market_offers", []))
+	normal_monster_order = _duplicate_string_name_array(snapshot.get("normal_monster_order", []))
+	free_food_purchase_count = int(snapshot.get("free_food_purchase_count", 0))
+	spice_purchase_refund = int(snapshot.get("spice_purchase_refund", 0))
+	battle_reports = _duplicate_dictionary_array(snapshot.get("battle_reports", []))
+	pre_battle_snapshot = snapshot.get("pre_battle_snapshot", {}).duplicate(true)
+	run_finished = bool(snapshot.get("run_finished", false))
+	_instance_counter = int(snapshot.get("instance_counter", 1))
+	if snapshot.has("rng_seed"):
+		_rng.seed = int(snapshot.get("rng_seed", _rng.seed))
+	if snapshot.has("rng_state"):
+		_rng.state = int(snapshot.get("rng_state", _rng.state))
+	if not character_states.has(selected_character_id):
+		selected_character_id = &"warrior"
+	return true
+
+func _write_persistence_payload(payload: Dictionary) -> bool:
+	var file: FileAccess = FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_string(var_to_str(payload))
+	return file.get_error() == OK
+
+func _read_persistence_payload() -> Dictionary:
+	if not FileAccess.file_exists(SAVE_FILE_PATH):
+		return {}
+	var file: FileAccess = FileAccess.open(SAVE_FILE_PATH, FileAccess.READ)
+	if file == null:
+		return {}
+	var payload_variant: Variant = str_to_var(file.get_as_text())
+	if payload_variant is Dictionary:
+		var payload: Dictionary = payload_variant
+		return payload
+	return {}
+
+func _duplicate_dictionary_array(value: Variant) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if not (value is Array):
+		return result
+	for entry_variant in value:
+		if entry_variant is Dictionary:
+			result.append(entry_variant.duplicate(true))
+	return result
+
+func _duplicate_string_name_array(value: Variant) -> Array[StringName]:
+	var result: Array[StringName] = []
+	if not (value is Array):
+		return result
+	for entry_variant in value:
+		result.append(StringName(entry_variant))
+	return result
 
 func _init_character_states() -> void:
 	for definition in character_roster.characters:
@@ -1357,6 +1532,8 @@ func advance_to_next_node() -> void:
 
 func prepare_battle() -> void:
 	pre_battle_snapshot = _capture_snapshot()
+	if _autosave_enabled and _has_persistable_run:
+		save_run()
 
 func _capture_snapshot() -> Dictionary:
 	var result: Dictionary = {

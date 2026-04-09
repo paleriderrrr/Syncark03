@@ -147,6 +147,7 @@ func _ready() -> void:
 	top_market_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var run_state: Node = _run_state()
 	run_state.ensure_initialized()
+	run_state.ensure_persistable_run()
 	_food_textures = FoodVisuals.build_food_texture_lookup()
 	_food_board_textures = FoodVisuals.build_food_board_texture_lookup()
 	_base_lunchbox_textures = LunchboxVisuals.build_role_base_texture_lookup()

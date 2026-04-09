@@ -7,6 +7,8 @@ const START_GLOW_IDLE_ALPHA := 0.42
 const START_GLOW_PULSE_ALPHA := 0.78
 const START_BUTTON_IDLE_ALPHA := 1.0
 const START_BUTTON_PULSE_ALPHA := 0.96
+const MAIN_EDITOR_SCENE_PATH := "res://Scenes/main_editor_screen.tscn"
+const CONTINUE_BUTTON_TEXT := "\u7EE7\u7EED\u5192\u9669"
 
 @onready var cover_base_1: TextureRect = %CoverBase1
 @onready var cover_base_2: TextureRect = %CoverBase2
@@ -23,6 +25,7 @@ const START_BUTTON_PULSE_ALPHA := 0.96
 @onready var edge_fog: ColorRect = %EdgeFog
 @onready var start_glow: TextureRect = %StartGlow
 @onready var start_button: TextureButton = %StartButton
+@onready var continue_button: Button = %ContinueButton
 @onready var settings_button: Button = %SettingsButton
 @onready var quit_button: Button = %QuitButton
 
@@ -49,7 +52,9 @@ func _ready() -> void:
 	_configure_cover_pivots()
 	_cache_ambient_bases()
 	_start_ambient_effects()
+	_refresh_continue_button()
 	start_button.pressed.connect(_on_start_pressed)
+	continue_button.pressed.connect(_on_continue_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 
@@ -69,6 +74,7 @@ func _on_start_pressed() -> void:
 	_transition_started = true
 	_stop_ambient_effects()
 	start_button.disabled = true
+	continue_button.disabled = true
 	settings_button.disabled = true
 	quit_button.disabled = true
 	_play_start_transition()
@@ -97,12 +103,19 @@ func _play_start_transition() -> void:
 		)
 	await tween.finished
 	_run_state().start_new_run()
-	get_tree().change_scene_to_file("res://Scenes/main_editor_screen.tscn")
+	get_tree().change_scene_to_file(MAIN_EDITOR_SCENE_PATH)
+
+func _refresh_continue_button() -> void:
+	var has_save: bool = _run_state().has_saved_run()
+	continue_button.text = CONTINUE_BUTTON_TEXT
+	continue_button.visible = has_save
+	continue_button.disabled = not has_save
 
 func _configure_cover_pivots() -> void:
 	for node in [cover_base_1, cover_base_2, cover_base_3, cover_base_4, center_fog, cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4, title_art, floating_art, floating_art_b, edge_fog, start_glow]:
 		node.pivot_offset = node.size * 0.5
 	start_button.pivot_offset = start_button.size * 0.5
+	continue_button.pivot_offset = continue_button.size * 0.5
 
 func _cache_ambient_bases() -> void:
 	_title_base_y = title_art.position.y
@@ -207,6 +220,21 @@ func _on_settings_pressed() -> void:
 	_ui_sfx().play_button()
 	_run_state().set_settings_return_scene("res://Scenes/title_screen.tscn")
 	get_tree().change_scene_to_file("res://Scenes/settings_screen.tscn")
+
+func _on_continue_pressed() -> void:
+	if _transition_started:
+		return
+	_ui_sfx().play_button()
+	if not _run_state().load_run():
+		_run_state().delete_saved_run()
+		_refresh_continue_button()
+		return
+	_transition_started = true
+	start_button.disabled = true
+	continue_button.disabled = true
+	settings_button.disabled = true
+	quit_button.disabled = true
+	get_tree().change_scene_to_file(MAIN_EDITOR_SCENE_PATH)
 
 func _on_quit_pressed() -> void:
 	if _transition_started:

@@ -46,6 +46,14 @@
 - Files Touched: Docs/07_progress_log.md
 - Notes: Only `Docs/07_progress_log.md` required content-preserving re-encoding; the rest of the Markdown files under `Docs/` were already valid UTF-8 and were left unchanged.
 
+### 2026-04-09 12:00
+- Completed: Implemented the first playable save/load pass by adding single-slot run persistence to `RunState`, rough title-screen `Continue` entry support, and new save/title test coverage scripts for future verification.
+- In Progress: Waiting for in-editor or stable Godot runtime verification in this environment, because local headless Godot startup currently crashes before script-level tests can report pass/fail results.
+- Next: Manually verify the save flow in the editor: start a run, alter inventory/board state, close and reopen, use `Continue`, then confirm state restoration before polishing the title-screen button placement.
+- Blockers: Automated runtime validation is blocked by an environment-level Godot crash under headless launch, so this round has only static review plus implementation-side risk reduction and not a confirmed green runtime test pass.
+- Files Touched: Scripts/Autoload/run_state.gd, Scripts/UI/title_screen.gd, Scenes/title_screen.tscn, Scripts/UI/main_editor_screen.gd, Scripts/Tests/save_load_runner.gd, Scripts/Tests/title_screen_runner.gd, Docs/07_progress_log.md
+- Notes: The save format is a single local file at `user://run_state.save` using Godot variant serialization so existing gameplay dictionaries, `Vector2i`, and `StringName` values can round-trip without lossy JSON conversion. The title-screen continue button is only a rough placement for now and is intended for later manual layout adjustment.
+
 ### 2026-03-28 00:52
 - Completed: Added a dedicated UI design rules document and linked it into the AI handoff and acceptance flow.
 - In Progress: Waiting for user clarification on UI visual decisions that are not explicit in the PDFs.

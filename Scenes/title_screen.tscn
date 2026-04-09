@@ -303,3 +303,14 @@ texture_normal = ExtResource("11_start")
 texture_pressed = ExtResource("15_bsy20")
 texture_hover = ExtResource("15_bsy20")
 stretch_mode = 0
+
+[node name="ContinueButton" type="Button" parent="." unique_id=1902211184]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 813.0
+offset_top = 872.0
+offset_right = 1186.0
+offset_bottom = 943.0
+theme_override_font_sizes/font_size = 34
+text = "Continue"
