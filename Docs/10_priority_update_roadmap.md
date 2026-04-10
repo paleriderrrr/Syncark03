@@ -13,6 +13,21 @@
 
 ## Priority 1
 
+### 0. One-Step Entry Into Battle
+- Goal: remove the extra confirmation click between `market -> battle` and `rest -> battle`, so the player enters combat from the main editor flow in one action.
+- Why now: this is a core-loop friction issue in the currently playable path and should take precedence over other quality improvements.
+- Scope:
+  - define the intended one-click transition for both `market -> battle` and `rest -> battle`
+  - open battle immediately when the next routed node is `battle` or `boss_battle`
+  - preserve existing route advancement, snapshot, and battle result semantics
+  - keep non-battle transitions unchanged
+- Acceptance:
+  - from `market`, one primary-action click should both advance the route and open the battle popup if the next node is `battle`
+  - from `rest`, one primary-action click should both advance the route and open the battle popup if the next node is `battle`
+  - the change must not introduce duplicate route advancement, duplicate battle preparation, or skipped node effects
+- Constraints:
+  - solve this in the route/action flow itself, not with UI-only workarounds, fallback flags, or post-processing fixes
+
 ### 1. Save / Continue
 - 目标：让玩家可以关闭游戏后继续当前冒险，而不是每次都从头开始。
 - 原因：这是当前最直接影响留存和反复试玩意愿的缺口。
@@ -97,6 +112,7 @@
 - 局外成长
 
 ## Recommended Delivery Order
+Top priority: implement one-step battle entry for `market -> battle` and `rest -> battle`.
 1. 先完成存档骨架与标题页继续游戏入口。
 2. 在可持续保存的前提下重做经济曲线。
 3. 接入战前站位调整，让数值调整能立刻转化为策略体验。
@@ -105,6 +121,7 @@
 6. 最后做 bug 清扫与局部视觉 polish。
 
 ## Exit Criteria
+- `market -> battle` and `rest -> battle` should enter battle in one primary-action click without an intermediate idle stop on the editor screen.
 - 玩家可以关闭后继续当前冒险。
 - 玩家在市场与战前有明确可思考的取舍，而不只是被动使用现成资源。
 - 首次玩家在不看外部说明的情况下可以完成第一场战斗。

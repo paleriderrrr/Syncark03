@@ -803,3 +803,10 @@
 - 2026-03-30 20:03 | 卡片左上信息分层 | 已将食物卡片左上区域改为两行：上方保留稀有度标签，下方新增中文食物种类标签；仅食物卡显示该类别行，扩展等非食物卡自动隐藏。item_icon_card_runner 与 campaign_runner 通过。
 - 2026-03-30 20:16 | 怪物悬浮说明改为向左展开 | 已将右侧怪物区的 MonsterTooltipPanel 改为根据 WantedPosterRect 位置动态摆放到左侧展开，避免继续向下挤压右栏；main_editor_load_runner 与 ui_runner 均退出 0。
 - 2026-03-30 20:31 | 食物与连携 popup 字号统一放大 | 已将 ImmediateItemTooltipOverlay 与 ImmediateSynergyTooltipOverlay 的标签字号按当前主题统一上调 4 号，并重写损坏的连携 tooltip 脚本为干净版本；main_editor_load_runner 与 ui_runner 均退出 0。
+### 2026-04-10 10:40
+- Completed: Rebuilt battle-position swapping around the battle popup instead of the main editor. The popup now opens in a preparation state with a dedicated Start Battle button, heroes can be drag-swapped before combat begins, and CombatEngine accepts that popup-defined order when the fight actually starts.
+- In Progress: Manual validation that drag-swapping feels natural in the popup and that the boss target-order shift reads clearly enough during live combat.
+- Next: Open a battle popup in the editor, drag the three heroes into different orders, press Start Battle, and verify the chosen order affects who stands nearest the monster; then watch the boss fight and confirm the visual order shift is readable when its target-order skill triggers.
+- Blockers: Automatic runtime verification is still limited by the current local Godot headless crash, so this pass has code-level and scene-level validation only in the present environment.
+- Files Touched: Scenes/battle_popup.tscn, Scripts/UI/battle_popup.gd, Scripts/Core/combat_engine.gd, Scripts/Tests/battle_playback_runner.gd, Scripts/Tests/smoke_runner.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
+- Notes: This intentionally does not persist formation in RunState; the order lives only inside the popup preparation flow for the current fight, matching the revised UX requirement.

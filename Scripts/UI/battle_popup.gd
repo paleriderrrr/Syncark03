@@ -33,6 +33,9 @@ const RESULT_BANNER_MAX_HEIGHT_RATIO := 0.72
 const RESULT_BANNER_DROP_TIME := 0.42
 const RESULT_BANNER_SETTLE_TIME := 0.14
 const RESULT_BANNER_OVERSHOOT := 18.0
+const FORMATION_SWAP_TIME := 0.22
+const TARGET_BADGE_COLOR := Color(1.0, 0.93, 0.58)
+const TARGET_BADGE_OUTLINE_COLOR := Color(0.24, 0.11, 0.05, 0.95)
 
 @export var show_timeline_panel: bool = false
 
@@ -49,14 +52,17 @@ const RESULT_BANNER_OVERSHOOT := 18.0
 @onready var timeline_panel: Control = $Margin/RootVBox/TimelinePanel
 @onready var battle_float_layer: Control = %BattleFloatLayer
 @onready var result_banner: TextureRect = %ResultBanner
+@onready var preparation_hint_label: Label = %PreparationHintLabel
 @onready var monster_actor: Control = %MonsterActor
 @onready var monster_portrait_frame: Control = %MonsterPortraitFrame
 @onready var monster_portrait_sprite: TextureRect = %MonsterPortraitSprite
 @onready var monster_arena_name_label: Label = %MonsterArenaNameLabel
 @onready var monster_arena_hp_label: Label = %MonsterArenaHpLabel
+@onready var start_battle_button: Button = %StartBattleButton
 @onready var close_button: Button = %CloseBattleButton
 
 var _is_playing: bool = false
+var _is_preparing: bool = false
 var _recent_lines: Array[String] = []
 var _display_party: Array[Dictionary] = []
 var _display_monster: Dictionary = {}
@@ -65,6 +71,16 @@ var _actor_base_positions: Dictionary = {}
 var _actor_base_scales: Dictionary = {}
 var _active_attack_animations: Dictionary = {}
 var _result_banner_tween: Tween
+var _formation_tween: Tween
+var _hero_target_badges: Array[Label] = []
+var _default_hero_actor_nodes: Array[Control] = []
+var _default_hero_portrait_frames: Array[Control] = []
+var _default_hero_portrait_sprites: Array[TextureRect] = []
+var _default_hero_arena_name_labels: Array[Label] = []
+var _default_hero_arena_hp_labels: Array[Label] = []
+var _party_slot_positions: Array[Vector2] = []
+var _dragged_actor: Control
+var _drag_pointer_offset := Vector2.ZERO
 
 func _run_state() -> Node:
 	return get_node("/root/RunState")
@@ -78,29 +94,55 @@ func _ui_sfx() -> Node:
 func _ready() -> void:
 	_apply_timeline_panel_visibility()
 	close_button.text = "Close"
+	start_battle_button.text = "Start Battle"
+	preparation_hint_label.text = "Drag heroes to swap positions before the fight."
 	close_button.pressed.connect(_on_close_pressed)
+	start_battle_button.pressed.connect(_on_start_battle_pressed)
 	close_requested.connect(_on_close_pressed)
 	popup_hide.connect(_on_popup_hidden)
+	for hero_actor in hero_actor_nodes:
+		hero_actor.gui_input.connect(_on_hero_actor_gui_input.bind(hero_actor))
 	set_process(true)
+	set_process_input(true)
 	popup_window = false
+	_cache_default_party_node_order()
 	_cache_actor_base_positions()
+	_cache_party_slot_positions()
+	_create_target_badges()
+	_reset_preparation_state()
 
 func open_battle() -> void:
-	if _is_playing:
+	if _is_playing or _is_preparing:
 		return
+	_is_preparing = true
+	close_button.disabled = false
+	start_battle_button.disabled = false
+	start_battle_button.visible = true
+	preparation_hint_label.visible = true
+	var run_state: Node = _run_state()
+	_restore_default_party_node_order()
+	_display_party = _capture_initial_party_state(run_state)
+	_display_monster = _capture_initial_monster_state(run_state)
+	_rebuild_name_lookup()
+	_prepare_pre_battle_preview()
+	popup_centered(POPUP_SIZE)
+	await get_tree().process_frame
+	_normalize_popup_layout()
+
+func _on_start_battle_pressed() -> void:
+	if _is_playing or not _is_preparing:
+		return
+	_is_preparing = false
 	_is_playing = true
+	start_battle_button.disabled = true
+	start_battle_button.visible = false
+	preparation_hint_label.visible = false
 	close_button.disabled = true
 	_ui_sfx().play_battle_start()
 	_bgm_player().play_battle()
 	var run_state: Node = _run_state()
-	_display_party = _capture_initial_party_state(run_state)
-	_display_monster = _capture_initial_monster_state(run_state)
-	_rebuild_name_lookup()
-	var report: Dictionary = CombatEngine.simulate(run_state)
+	var report: Dictionary = CombatEngine.simulate(run_state, _current_party_order())
 	_prepare_playback()
-	popup_centered(POPUP_SIZE)
-	await get_tree().process_frame
-	_normalize_popup_layout()
 	await _play_report(report)
 	run_state.apply_battle_report(report)
 	await _render_final_report(report)
@@ -117,6 +159,34 @@ func _prepare_playback() -> void:
 	_reset_all_attack_animations()
 	_reset_result_banner()
 	_refresh_battle_visual_state()
+
+func _prepare_pre_battle_preview() -> void:
+	title_label.text = "Battle Ready"
+	route_label.text = _run_state().get_route_label()
+	playback_time_label.text = "Ready"
+	result_label.text = ""
+	_recent_lines.clear()
+	battle_log.clear()
+	_reset_all_attack_animations()
+	_reset_result_banner()
+	_refresh_battle_visual_state()
+
+func _reset_preparation_state() -> void:
+	_is_preparing = false
+	_dragged_actor = null
+	_drag_pointer_offset = Vector2.ZERO
+	start_battle_button.disabled = false
+	start_battle_button.visible = true
+	preparation_hint_label.visible = true
+	_stop_formation_animation()
+	_apply_party_layout(false)
+
+func _current_party_order() -> Array[StringName]:
+	var order: Array[StringName] = []
+	for entry_variant in _display_party:
+		var entry: Dictionary = entry_variant
+		order.append(entry.get("id", &""))
+	return order
 
 func _apply_timeline_panel_visibility() -> void:
 	timeline_panel.visible = show_timeline_panel
@@ -198,6 +268,133 @@ func _rebuild_name_lookup() -> void:
 	for index in range(_display_party.size()):
 		_name_to_party_index[String(_display_party[index].get("name", ""))] = index
 
+func _cache_default_party_node_order() -> void:
+	_default_hero_actor_nodes = hero_actor_nodes.duplicate()
+	_default_hero_portrait_frames = hero_portrait_frames.duplicate()
+	_default_hero_portrait_sprites = hero_portrait_sprites.duplicate()
+	_default_hero_arena_name_labels = hero_arena_name_labels.duplicate()
+	_default_hero_arena_hp_labels = hero_arena_hp_labels.duplicate()
+
+func _restore_default_party_node_order() -> void:
+	hero_actor_nodes = _default_hero_actor_nodes.duplicate()
+	hero_portrait_frames = _default_hero_portrait_frames.duplicate()
+	hero_portrait_sprites = _default_hero_portrait_sprites.duplicate()
+	hero_arena_name_labels = _default_hero_arena_name_labels.duplicate()
+	hero_arena_hp_labels = _default_hero_arena_hp_labels.duplicate()
+	_apply_party_layout(false)
+
+func _cache_party_slot_positions() -> void:
+	_party_slot_positions.clear()
+	for hero_actor in hero_actor_nodes:
+		_party_slot_positions.append(hero_actor.position)
+
+func _create_target_badges() -> void:
+	if not _hero_target_badges.is_empty():
+		return
+	for hero_actor in hero_actor_nodes:
+		var badge := Label.new()
+		badge.name = "TargetBadge"
+		badge.text = "1"
+		badge.position = Vector2(126.0, -18.0)
+		badge.size = Vector2(56.0, 32.0)
+		badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		badge.add_theme_font_override("font", FLOAT_FONT)
+		badge.add_theme_font_size_override("font_size", 24)
+		badge.add_theme_color_override("font_color", TARGET_BADGE_COLOR)
+		badge.add_theme_constant_override("outline_size", 5)
+		badge.add_theme_color_override("font_outline_color", TARGET_BADGE_OUTLINE_COLOR)
+		hero_actor.add_child(badge)
+		_hero_target_badges.append(badge)
+
+func _refresh_target_badges() -> void:
+	for index in range(hero_actor_nodes.size()):
+		var badge: Label = hero_actor_nodes[index].get_node_or_null("TargetBadge") as Label
+		if badge == null:
+			continue
+		badge.text = str(index + 1)
+		badge.visible = index < _display_party.size()
+
+func _apply_party_layout(animate: bool) -> void:
+	_stop_formation_animation()
+	if animate:
+		_formation_tween = create_tween()
+		_formation_tween.set_parallel(true)
+	for index in range(hero_actor_nodes.size()):
+		var hero_actor: Control = hero_actor_nodes[index]
+		var target_position: Vector2 = _party_slot_positions[index]
+		hero_actor.z_index = 0
+		if animate:
+			var track: PropertyTweener = _formation_tween.tween_property(hero_actor, "position", target_position, FORMATION_SWAP_TIME)
+			track.set_trans(Tween.TRANS_CUBIC)
+			track.set_ease(Tween.EASE_OUT)
+		else:
+			hero_actor.position = target_position
+			hero_actor.scale = Vector2(hero_actor.scale.x, hero_actor.scale.y)
+	if animate:
+		_formation_tween.finished.connect(func() -> void:
+			_formation_tween = null
+		)
+
+func _stop_formation_animation() -> void:
+	if _formation_tween != null:
+		_formation_tween.kill()
+		_formation_tween = null
+
+func _swap_party_slots(first_index: int, second_index: int, animate: bool = true) -> void:
+	if first_index == second_index:
+		return
+	if first_index < 0 or second_index < 0:
+		return
+	if first_index >= _display_party.size() or second_index >= _display_party.size():
+		return
+	var actor_node: Control = hero_actor_nodes[first_index]
+	hero_actor_nodes[first_index] = hero_actor_nodes[second_index]
+	hero_actor_nodes[second_index] = actor_node
+	var portrait_frame: Control = hero_portrait_frames[first_index]
+	hero_portrait_frames[first_index] = hero_portrait_frames[second_index]
+	hero_portrait_frames[second_index] = portrait_frame
+	var portrait_sprite: TextureRect = hero_portrait_sprites[first_index]
+	hero_portrait_sprites[first_index] = hero_portrait_sprites[second_index]
+	hero_portrait_sprites[second_index] = portrait_sprite
+	var name_label: Label = hero_arena_name_labels[first_index]
+	hero_arena_name_labels[first_index] = hero_arena_name_labels[second_index]
+	hero_arena_name_labels[second_index] = name_label
+	var hp_label: Label = hero_arena_hp_labels[first_index]
+	hero_arena_hp_labels[first_index] = hero_arena_hp_labels[second_index]
+	hero_arena_hp_labels[second_index] = hp_label
+	var entry: Dictionary = _display_party[first_index]
+	_display_party[first_index] = _display_party[second_index]
+	_display_party[second_index] = entry
+	_rebuild_name_lookup()
+	_apply_party_layout(animate)
+	_refresh_battle_visual_state()
+
+func _rotate_party_target_order_visual() -> void:
+	if _display_party.size() <= 1:
+		return
+	var first_node: Control = hero_actor_nodes[0]
+	hero_actor_nodes.remove_at(0)
+	hero_actor_nodes.append(first_node)
+	var first_frame: Control = hero_portrait_frames[0]
+	hero_portrait_frames.remove_at(0)
+	hero_portrait_frames.append(first_frame)
+	var first_sprite: TextureRect = hero_portrait_sprites[0]
+	hero_portrait_sprites.remove_at(0)
+	hero_portrait_sprites.append(first_sprite)
+	var first_name_label: Label = hero_arena_name_labels[0]
+	hero_arena_name_labels.remove_at(0)
+	hero_arena_name_labels.append(first_name_label)
+	var first_hp_label: Label = hero_arena_hp_labels[0]
+	hero_arena_hp_labels.remove_at(0)
+	hero_arena_hp_labels.append(first_hp_label)
+	var first_entry: Dictionary = _display_party[0]
+	_display_party.remove_at(0)
+	_display_party.append(first_entry)
+	_rebuild_name_lookup()
+	_apply_party_layout(true)
+	_refresh_battle_visual_state()
+
 func _refresh_battle_visual_state() -> void:
 	for index in range(hero_actor_nodes.size()):
 		if index >= _display_party.size():
@@ -219,19 +416,24 @@ func _refresh_battle_visual_state() -> void:
 	]
 	monster_portrait_sprite.texture = _monster_texture_for(_display_monster)
 	monster_actor.modulate = NORMAL_TINT if bool(_display_monster.get("alive", false)) else DOWN_TINT
+	_refresh_target_badges()
 
 func _apply_final_display_state(report: Dictionary) -> void:
 	if report.has("characters"):
-		_display_party.clear()
+		var report_by_id: Dictionary = {}
 		for actor_variant in report["characters"]:
 			var actor: Dictionary = actor_variant
-			_display_party.append({
+			report_by_id[actor.get("id", &"")] = {
 				"id": actor.get("id", &""),
 				"name": actor.get("name", "Hero"),
 				"current_hp": float(actor.get("current_hp", 0.0)),
 				"max_hp": float(actor.get("max_hp", 0.0)),
 				"alive": bool(actor.get("alive", false)),
-			})
+			}
+		for index in range(_display_party.size()):
+			var actor_id: StringName = _display_party[index].get("id", &"")
+			if report_by_id.has(actor_id):
+				_display_party[index] = report_by_id[actor_id]
 		_rebuild_name_lookup()
 	_display_monster["id"] = report.get("monster_id", _display_monster.get("id", &""))
 	_display_monster["name"] = String(report.get("monster_name", _display_monster.get("name", "Unknown")))
@@ -380,9 +582,77 @@ func _process_revive_event(content: String) -> void:
 	_spawn_floating_text(_resolve_target_node(target_name), "REVIVE %.1f" % hp_amount, HEAL_COLOR)
 
 func _process_notice_event(content: String) -> void:
+	if content.contains("shifts target order"):
+		_rotate_party_target_order_visual()
 	var skill_notice: String = _monster_skill_notice(content)
 	if skill_notice != "":
 		_spawn_notice_text(skill_notice)
+
+func _on_hero_actor_gui_input(event: InputEvent, hero_actor: Control) -> void:
+	if not _is_preparing or _is_playing:
+		return
+	var actor_index: int = hero_actor_nodes.find(hero_actor)
+	if actor_index == -1 or actor_index >= _display_party.size():
+		return
+	if event is InputEventMouseButton:
+		var mouse_button: InputEventMouseButton = event
+		if mouse_button.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if mouse_button.pressed:
+			_begin_party_drag(hero_actor, mouse_button.global_position)
+			get_viewport().set_input_as_handled()
+		elif _dragged_actor == hero_actor:
+			_finish_party_drag(mouse_button.global_position)
+			get_viewport().set_input_as_handled()
+
+func _input(event: InputEvent) -> void:
+	if _dragged_actor == null:
+		return
+	if event is InputEventMouseMotion:
+		var mouse_motion: InputEventMouseMotion = event
+		_dragged_actor.global_position = mouse_motion.global_position + _drag_pointer_offset
+		get_viewport().set_input_as_handled()
+	elif event is InputEventMouseButton:
+		var mouse_button: InputEventMouseButton = event
+		if mouse_button.button_index == MOUSE_BUTTON_LEFT and not mouse_button.pressed:
+			_finish_party_drag(mouse_button.global_position)
+			get_viewport().set_input_as_handled()
+
+func _begin_party_drag(hero_actor: Control, pointer_global_position: Vector2) -> void:
+	_stop_formation_animation()
+	_dragged_actor = hero_actor
+	_drag_pointer_offset = hero_actor.global_position - pointer_global_position
+	hero_actor.z_index = 20
+
+func _finish_party_drag(pointer_global_position: Vector2) -> void:
+	if _dragged_actor == null:
+		return
+	var source_index: int = hero_actor_nodes.find(_dragged_actor)
+	var target_index: int = _find_party_drop_target(pointer_global_position, _dragged_actor)
+	_dragged_actor.z_index = 0
+	_dragged_actor = null
+	if source_index != -1 and target_index != -1 and source_index != target_index:
+		_swap_party_slots(source_index, target_index)
+	else:
+		_apply_party_layout(true)
+
+func _find_party_drop_target(pointer_global_position: Vector2, dragged_actor: Control) -> int:
+	var best_index := -1
+	var best_distance := INF
+	for index in range(hero_actor_nodes.size()):
+		var hero_actor: Control = hero_actor_nodes[index]
+		if hero_actor == dragged_actor:
+			continue
+		var rect: Rect2 = hero_actor.get_global_rect()
+		if rect.has_point(pointer_global_position):
+			return index
+		var distance: float = rect.get_center().distance_to(pointer_global_position)
+		if distance < best_distance:
+			best_distance = distance
+			best_index = index
+	if best_distance <= 220.0:
+		return best_index
+	return -1
 
 func _monster_skill_notice(content: String) -> String:
 	var monster_name: String = String(_display_monster.get("name", ""))
@@ -692,6 +962,9 @@ func _on_close_pressed() -> void:
 	hide()
 
 func _on_popup_hidden() -> void:
+	_is_playing = false
+	_reset_preparation_state()
 	_reset_all_attack_animations()
 	_reset_result_banner()
+	_restore_default_party_node_order()
 	_bgm_player().play_non_battle()

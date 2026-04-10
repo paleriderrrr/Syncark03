@@ -24,11 +24,16 @@ func _run() -> void:
 	var popup: BattlePopup = editor.get_node("BattlePopup") as BattlePopup
 	var blocker: Control = editor.get_node("BattleModalBlocker") as Control
 	var result_banner: TextureRect = popup.get_node("Margin/RootVBox/ArenaPanel/ArenaStage/ResultBanner") as TextureRect
+	var start_button: Button = popup.get_node("%StartBattleButton") as Button
 	popup.open_battle()
-	_assert(popup._is_playing, "Battle popup should enter playback instead of finishing instantly")
+	_assert(not popup._is_playing, "Battle popup should stay in preparation mode before Start Battle is pressed")
+	_assert(start_button.visible, "Battle popup should show a Start Battle button during preparation")
 	_assert(not popup.popup_window, "Battle popup should not use click-outside popup-window auto close")
 	_assert(blocker.visible, "Battle popup should block outside interaction while visible")
 	_assert(run_state.battle_reports.is_empty(), "Battle result should not be committed before playback finishes")
+	start_button.pressed.emit()
+	await process_frame
+	_assert(popup._is_playing, "Battle popup should enter playback after Start Battle is pressed")
 	while popup._is_playing:
 		await process_frame
 	_assert(run_state.battle_reports.size() == 1, "Battle result should be committed after playback finishes")

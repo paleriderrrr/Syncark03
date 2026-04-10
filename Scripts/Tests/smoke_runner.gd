@@ -59,6 +59,10 @@ func _run() -> void:
 	run_state.prepare_battle()
 	var popup: BattlePopup = editor.get_node("BattlePopup") as BattlePopup
 	popup.open_battle()
+	var start_button: Button = popup.get_node("%StartBattleButton") as Button
+	_assert(start_button.visible, "Battle popup should expose the Start Battle button before playback")
+	start_button.pressed.emit()
+	await process_frame
 	while popup._is_playing:
 		await process_frame
 

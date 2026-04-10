@@ -5,9 +5,9 @@ const TICK := 0.25
 const ATTRITION_START_TIME := 60.0
 const ATTRITION_DPS := 7.0
 
-static func simulate(run_state: Object) -> Dictionary:
+static func simulate(run_state: Object, party_order: Array[StringName] = []) -> Dictionary:
 	var engine: CombatEngine = CombatEngine.new()
-	return engine._simulate_internal(run_state)
+	return engine._simulate_internal(run_state, party_order)
 
 static func preview_character_actor(run_state: Object, character_id: StringName) -> Dictionary:
 	var engine: CombatEngine = CombatEngine.new()
@@ -20,7 +20,7 @@ static func preview_effective_interval(base_interval: float, speed_bonus_pct: fl
 	var engine: CombatEngine = CombatEngine.new()
 	return engine._effective_interval(base_interval, speed_bonus_pct)
 
-func _simulate_internal(run_state: Object) -> Dictionary:
+func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) -> Dictionary:
 	var report: Dictionary = {
 		"result": "lose",
 		"duration": 0.0,
@@ -31,11 +31,13 @@ func _simulate_internal(run_state: Object) -> Dictionary:
 		"title": "",
 	}
 
-	var characters: Array[Dictionary] = _build_characters(run_state)
+	var resolved_party_order: Array[StringName] = _resolve_party_order(run_state, party_order)
+	var characters: Array[Dictionary] = _build_characters(run_state, resolved_party_order)
 	var team_effects: Dictionary = _build_team_effects(characters)
 	var monster_multipliers: Dictionary = run_state.get_current_monster_multipliers()
 	var monster: Dictionary = _build_monster(
 		run_state.get_current_monster_definition(),
+		resolved_party_order,
 		float(monster_multipliers.get("hp", 1.0)),
 		float(monster_multipliers.get("attack", 1.0))
 	)
@@ -99,9 +101,16 @@ func _simulate_internal(run_state: Object) -> Dictionary:
 	_cleanup_log(report, log, characters, monster)
 	return report
 
-func _build_characters(run_state: Object) -> Array[Dictionary]:
+func _build_characters(run_state: Object, party_order: Array[StringName] = []) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for definition in run_state.character_roster.characters:
+	var definitions_by_id: Dictionary = {}
+	for definition_variant in run_state.character_roster.characters:
+		var definition: CharacterDefinition = definition_variant
+		definitions_by_id[definition.id] = definition
+	for character_id in _resolve_party_order(run_state, party_order):
+		var definition: CharacterDefinition = definitions_by_id.get(character_id) as CharacterDefinition
+		if definition == null:
+			continue
 		var board_state: Dictionary = run_state.get_character_state(definition.id)
 		var evaluation: Dictionary = _evaluate_character_board(run_state, definition, board_state)
 		var actor: Dictionary = {
@@ -152,6 +161,23 @@ func _build_characters(run_state: Object) -> Array[Dictionary]:
 		result.append(actor)
 	return result
 
+func _resolve_party_order(run_state: Object, requested_order: Array[StringName]) -> Array[StringName]:
+	var roster_order: Array[StringName] = []
+	var seen: Dictionary = {}
+	for definition_variant in run_state.character_roster.characters:
+		var definition: CharacterDefinition = definition_variant
+		roster_order.append(definition.id)
+	var resolved_order: Array[StringName] = []
+	for role_id in requested_order:
+		if seen.has(role_id) or not roster_order.has(role_id):
+			continue
+		seen[role_id] = true
+		resolved_order.append(role_id)
+	for role_id in roster_order:
+		if not seen.has(role_id):
+			resolved_order.append(role_id)
+	return resolved_order
+
 func _build_team_effects(characters: Array[Dictionary]) -> Dictionary:
 	var effects: Dictionary = {
 		"dessert_pulse_amount": 0.0,
@@ -175,11 +201,14 @@ func _build_team_effects(characters: Array[Dictionary]) -> Dictionary:
 			effects["fairy_speed_on_heal"] = true
 	return effects
 
-func _build_monster(definition: MonsterDefinition, hp_multiplier: float = 1.0, attack_multiplier: float = 1.0) -> Dictionary:
+func _build_monster(definition: MonsterDefinition, target_order: Array[StringName] = [], hp_multiplier: float = 1.0, attack_multiplier: float = 1.0) -> Dictionary:
 	if definition == null:
 		return {}
 	var scaled_max_hp: float = float(definition.base_hp) * maxf(hp_multiplier, 0.0)
 	var scaled_attack: float = float(definition.base_attack) * maxf(attack_multiplier, 0.0)
+	var resolved_target_order: Array[StringName] = target_order.duplicate()
+	if resolved_target_order.is_empty():
+		resolved_target_order = [&"warrior", &"hunter", &"mage"]
 	return {
 		"id": definition.id,
 		"name": definition.display_name,
@@ -199,7 +228,7 @@ func _build_monster(definition: MonsterDefinition, hp_multiplier: float = 1.0, a
 		"next_wave_tick": 5.0,
 		"skip_next_attack": false,
 		"next_heal_lock_tick": 5.0,
-		"target_order": [&"warrior", &"hunter", &"mage"],
+		"target_order": resolved_target_order,
 		"crumbs": 5 if definition.id == &"bread_knight" else 0,
 		"half_hp_burst_used": false,
 		"received_hit_count": 0,
