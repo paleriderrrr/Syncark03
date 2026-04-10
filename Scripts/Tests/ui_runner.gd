@@ -9,6 +9,7 @@ func _run() -> void:
 	await process_frame
 	var run_state: Node = root.get_node("/root/RunState")
 	run_state.start_new_run()
+	run_state.tutorial_completed = false
 	var editor_scene: PackedScene = load("res://Scenes/main_editor_screen.tscn")
 	var editor: Node = editor_scene.instantiate()
 	root.add_child(editor)
@@ -55,11 +56,27 @@ func _run() -> void:
 	if help_button != null:
 		_assert(help_button.icon != null, "Main editor help button should render the configured question-mark icon")
 	_assert(guide_overlay != null, "Main editor should include a guide image overlay")
-	if guide_overlay != null:
-		_assert(not guide_overlay.visible, "Guide image overlay should stay hidden until help is pressed")
 	_assert(guide_image != null, "Guide image overlay should include a texture rect")
 	if guide_image != null:
 		_assert(guide_image.texture != null, "Guide image overlay should load the configured guide texture")
+	await create_timer(1.0).timeout
+	if guide_overlay != null:
+		_assert(guide_overlay.visible, "Guide image overlay should auto-open on the first editor entry before tutorial completion")
+		_assert(not run_state.is_tutorial_completed(), "Tutorial should remain incomplete until the auto-open guide is fully advanced")
+		var tutorial_advance_count: int = 0
+		while guide_overlay.visible and tutorial_advance_count < 8:
+			editor.call("_advance_guide_overlay")
+			await process_frame
+			tutorial_advance_count += 1
+		_assert(not guide_overlay.visible, "Guide image overlay should close after the final tutorial page is advanced")
+		_assert(run_state.is_tutorial_completed(), "Finishing the auto-open guide should mark the tutorial as completed")
+	if help_button != null:
+		help_button.pressed.emit()
+		await process_frame
+	if guide_overlay != null:
+		_assert(guide_overlay.visible, "Help button should reopen the guide overlay after tutorial completion")
+		editor.call("_hide_guide_overlay")
+		await process_frame
 	var market_strip: Node = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip")
 	_assert(market_strip.has_method("get_entry_count"), "Top market strip should expose grouped entries")
 	var market_viewport: Control = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip/VBox/StripHBox/Viewport")
@@ -150,7 +167,6 @@ func _run() -> void:
 		_assert(run_state.call("get_action_button_visual_key") == &"restart", "Finished runs should map to restart visual")
 		run_state.run_finished = false
 		run_state.current_route_index = 0
-	await create_timer(1.0).timeout
 	var viewport_rect := Rect2(Vector2.ZERO, editor.get_viewport().get_visible_rect().size)
 	_assert(_rect_inside_viewport(editor.get_node("TopMarketPanel/GoldIcon").get_global_rect(), viewport_rect), "Gold icon should remain inside the viewport")
 	_assert(_rect_inside_viewport(editor.get_node("RightPanel/StageInfoPanel").get_global_rect(), viewport_rect), "Stage info panel should remain inside the viewport")

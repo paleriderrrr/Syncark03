@@ -118,6 +118,7 @@ var _intro_animating: bool = false
 var _last_node_type: StringName = &""
 var _active_synergy_ids: Dictionary = {}
 var _guide_page_index: int = 0
+var _guide_marks_tutorial_complete: bool = false
 var item_tooltip_overlay: ImmediateItemTooltipOverlay
 var synergy_tooltip_overlay: ImmediateSynergyTooltipOverlay
 
@@ -316,6 +317,7 @@ func _play_intro_animation() -> void:
 		top_market_panel.mouse_filter = Control.MOUSE_FILTER_PASS if market_should_open else Control.MOUSE_FILTER_IGNORE
 		_intro_animating = false
 		_intro_tween = null
+		_maybe_show_first_time_tutorial()
 	)
 
 func _refresh_selected_role(character_id: StringName) -> void:
@@ -717,22 +719,35 @@ func _on_help_pressed() -> void:
 	_ui_sfx().play_button()
 	item_tooltip_overlay.hide_tooltip()
 	synergy_tooltip_overlay.hide_tooltip()
-	_show_guide_overlay()
+	_show_guide_overlay(false)
 
-func _show_guide_overlay() -> void:
+func _maybe_show_first_time_tutorial() -> void:
+	if _run_state().is_tutorial_completed():
+		return
+	_show_guide_overlay(true)
+
+func _show_guide_overlay(mark_tutorial_complete_on_finish: bool) -> void:
 	_guide_page_index = 0
+	_guide_marks_tutorial_complete = mark_tutorial_complete_on_finish
 	_apply_guide_page()
 	guide_overlay.visible = true
 
 func _hide_guide_overlay() -> void:
 	guide_overlay.visible = false
+	_guide_marks_tutorial_complete = false
 
 func _advance_guide_overlay() -> void:
 	_guide_page_index += 1
 	if _guide_page_index >= GUIDE_TEXTURES.size():
-		_hide_guide_overlay()
+		_complete_guide_overlay()
 		return
 	_apply_guide_page()
+
+func _complete_guide_overlay() -> void:
+	if _guide_marks_tutorial_complete:
+		_run_state().mark_tutorial_completed()
+	guide_overlay.visible = false
+	_guide_marks_tutorial_complete = false
 
 func _apply_guide_page() -> void:
 	if GUIDE_TEXTURES.is_empty():

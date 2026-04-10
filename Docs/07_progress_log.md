@@ -817,3 +817,10 @@
 - Blockers: Automatic runtime verification remains limited by the current local Godot headless crash, so this pass was validated through code-path inspection and runner updates only in the present environment.
 - Files Touched: Scripts/Autoload/run_state.gd, Scripts/Tests/smoke_runner.gd, Scripts/Tests/campaign_runner.gd, Docs/07_progress_log.md
 - Notes: Route-arrival side effects are now centralized so advancing into a market after combat and advancing out of market/rest through the action button use the same market-refresh logic instead of duplicating node-entry behavior.
+### 2026-04-11 09:56
+- Completed: Turned the existing help overlay into first-time onboarding. The main editor now auto-opens the guide after its intro animation when the persistent tutorial flag is still incomplete, marks completion only after the player advances through the full guide, and still allows the help button to reopen the same content afterward.
+- In Progress: Manual validation that the tutorial timing feels natural on first entry and that dismissing with Escape before the final page leaves the guide eligible to auto-open again on the next editor entry.
+- Next: Enter the editor on a fresh profile, confirm the guide opens automatically after the scene settles, click through to completion once, then re-enter the editor and verify it stays closed until the help button is pressed.
+- Blockers: Automatic runtime verification is still limited by the current local Godot headless crash, so this pass relies on code-path review and updated UI runner coverage in the present environment.
+- Files Touched: Scripts/UI/main_editor_screen.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
+- Notes: Manual help re-entry intentionally does not modify the completion flag, so onboarding state and optional reference usage remain separate.
