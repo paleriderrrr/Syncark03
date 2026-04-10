@@ -53,12 +53,13 @@ func _run() -> void:
 	_assert(placed, "Purchased food should be placeable somewhere on the base board")
 	await process_frame
 
-	run_state.advance_to_next_node()
-	_assert(run_state.current_route_index == 1, "Route index should advance from 0 to 1 after leaving the first market")
-
-	run_state.prepare_battle()
 	var popup: BattlePopup = editor.get_node("BattlePopup") as BattlePopup
-	popup.open_battle()
+	var blocker: Control = editor.get_node("BattleModalBlocker") as Control
+	run_state.perform_primary_action()
+	await process_frame
+	_assert(run_state.current_route_index == 1, "Primary action should advance from the first market directly to the next battle node")
+	_assert(blocker.visible, "One-step battle entry should raise the battle blocker immediately after leaving market")
+	_assert(popup.visible, "One-step battle entry should open the battle popup immediately after leaving market")
 	var start_button: Button = popup.get_node("%StartBattleButton") as Button
 	_assert(start_button.visible, "Battle popup should expose the Start Battle button before playback")
 	start_button.pressed.emit()

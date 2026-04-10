@@ -1513,10 +1513,10 @@ func perform_primary_action() -> bool:
 	match get_current_node_type():
 		NODE_MARKET, NODE_REST:
 			advance_to_next_node()
+			_request_battle_for_current_node()
 			return true
 		NODE_BATTLE, NODE_BOSS_BATTLE:
-			prepare_battle()
-			battle_requested.emit()
+			_request_battle_for_current_node()
 			return true
 		_:
 			return false
@@ -1524,11 +1524,20 @@ func perform_primary_action() -> bool:
 func advance_to_next_node() -> void:
 	if current_route_index < stage_flow_config.route_nodes.size() - 1:
 		current_route_index += 1
-		if get_current_node_type() == NODE_MARKET:
-			current_market_index = min(current_market_index + 1, 4)
-			current_reroll_count = 0
-			_generate_market_offers()
+		_apply_route_arrival_state()
 	state_changed.emit()
+
+func _request_battle_for_current_node() -> void:
+	match get_current_node_type():
+		NODE_BATTLE, NODE_BOSS_BATTLE:
+			prepare_battle()
+			battle_requested.emit()
+
+func _apply_route_arrival_state() -> void:
+	if get_current_node_type() == NODE_MARKET:
+		current_market_index = min(current_market_index + 1, 4)
+		current_reroll_count = 0
+		_generate_market_offers()
 
 func prepare_battle() -> void:
 	pre_battle_snapshot = _capture_snapshot()
@@ -1601,10 +1610,7 @@ func _apply_battle_victory(report: Dictionary) -> void:
 		run_finished = true
 	else:
 		current_route_index += 1
-		if get_current_node_type() == NODE_MARKET:
-			current_market_index = min(current_market_index + 1, 4)
-			current_reroll_count = 0
-			_generate_market_offers()
+		_apply_route_arrival_state()
 
 func _resolve_defeated_monster(report: Dictionary) -> MonsterDefinition:
 	var monster_id: StringName = report.get("monster_id", &"")

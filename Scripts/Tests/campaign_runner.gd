@@ -81,16 +81,26 @@ func _run() -> void:
 	run_state.select_pending_expansion(expansion_id)
 	_assert(run_state.try_place_selected_item(Vector2i(3, 0)), "Expansion should place adjacent to the base board")
 
+	var battle_requests: int = 0
+	run_state.battle_requested.connect(func() -> void:
+		battle_requests += 1
+	)
+
 	while not run_state.run_finished:
 		var route_index: int = run_state.current_route_index
 		if route_index in [0, 4, 8, 12]:
+			var requests_before_market: int = battle_requests
 			var left_market: bool = run_state.perform_primary_action()
 			_assert(left_market, "Market node should advance through the primary action")
+			_assert(route_index + 1 == run_state.current_route_index, "Market primary action should advance exactly one route node")
+			_assert(battle_requests == requests_before_market + 1, "Leaving a market for battle should request battle entry exactly once")
 		elif route_index in [2, 6, 10]:
+			var requests_before_rest: int = battle_requests
 			var left_rest: bool = run_state.perform_primary_action()
 			_assert(left_rest, "Rest node should advance through the primary action")
+			_assert(route_index + 1 == run_state.current_route_index, "Rest primary action should advance exactly one route node")
+			_assert(battle_requests == requests_before_rest + 1, "Leaving a rest node for battle should request battle entry exactly once")
 		else:
-			run_state.prepare_battle()
 			run_state.apply_battle_report({
 				"result": "win",
 				"bonus_gold": 0,

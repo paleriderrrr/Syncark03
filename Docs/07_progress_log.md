@@ -810,3 +810,10 @@
 - Blockers: Automatic runtime verification is still limited by the current local Godot headless crash, so this pass has code-level and scene-level validation only in the present environment.
 - Files Touched: Scenes/battle_popup.tscn, Scripts/UI/battle_popup.gd, Scripts/Core/combat_engine.gd, Scripts/Tests/battle_playback_runner.gd, Scripts/Tests/smoke_runner.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
 - Notes: This intentionally does not persist formation in RunState; the order lives only inside the popup preparation flow for the current fight, matching the revised UX requirement.
+### 2026-04-11 09:28
+- Completed: Implemented one-step battle entry for the main route flow. Pressing the primary action on market and rest nodes now advances to the next route node and immediately enters battle preparation when that destination is a battle or boss battle, instead of requiring a second confirm click after the route advance.
+- In Progress: Manual validation in the live editor that market -> battle and rest -> battle both open the battle popup immediately, keep the new preparation-state swap flow intact, and still resolve route progression normally after combat.
+- Next: In the editor, press the main action from a market node and from a rest node, confirm the popup opens in the same click, then press Start Battle and verify the run continues to the correct next route node after the result is applied.
+- Blockers: Automatic runtime verification remains limited by the current local Godot headless crash, so this pass was validated through code-path inspection and runner updates only in the present environment.
+- Files Touched: Scripts/Autoload/run_state.gd, Scripts/Tests/smoke_runner.gd, Scripts/Tests/campaign_runner.gd, Docs/07_progress_log.md
+- Notes: Route-arrival side effects are now centralized so advancing into a market after combat and advancing out of market/rest through the action button use the same market-refresh logic instead of duplicating node-entry behavior.
