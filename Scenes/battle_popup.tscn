@@ -66,14 +66,14 @@ visible = false
 layout_mode = 2
 text = "NODE"
 
-[node name="PreparationHintLabel" type="Label" parent="Margin/RootVBox/Header"]
+[node name="PreparationHintLabel" type="Label" parent="Margin/RootVBox/Header" unique_id=1461097580]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 2
 text = "Drag heroes to swap"
+horizontal_alignment = 2
 
-[node name="StartBattleButton" type="Button" parent="Margin/RootVBox/Header"]
+[node name="StartBattleButton" type="Button" parent="Margin/RootVBox/Header" unique_id=874088259]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Start Battle"
@@ -140,6 +140,7 @@ layout_mode = 1
 anchors_preset = 0
 offset_right = 200.0
 offset_bottom = 240.0
+mouse_filter = 1
 
 [node name="Hero1PortraitSprite" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor/Hero1PortraitFrame" unique_id=1753115536]
 unique_name_in_owner = true
@@ -186,6 +187,7 @@ layout_mode = 1
 anchors_preset = 0
 offset_right = 200.0
 offset_bottom = 240.0
+mouse_filter = 1
 
 [node name="Hero2PortraitSprite" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero2Actor/Hero2PortraitFrame" unique_id=1019931116]
 unique_name_in_owner = true
@@ -232,6 +234,7 @@ layout_mode = 1
 anchors_preset = 0
 offset_right = 200.0
 offset_bottom = 240.0
+mouse_filter = 1
 
 [node name="Hero3PortraitSprite" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor/Hero3PortraitFrame" unique_id=1779467619]
 unique_name_in_owner = true
