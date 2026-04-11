@@ -824,3 +824,10 @@
 - Blockers: Automatic runtime verification is still limited by the current local Godot headless crash, so this pass relies on code-path review and updated UI runner coverage in the present environment.
 - Files Touched: Scripts/UI/main_editor_screen.gd, Scripts/Tests/ui_runner.gd, Docs/07_progress_log.md
 - Notes: Manual help re-entry intentionally does not modify the completion flag, so onboarding state and optional reference usage remain separate.
+### 2026-04-12 10:24
+- Completed: Fixed four balance-critical implementation mismatches in combat and reward logic. `caramel_mille` and `power_coffee` now only trigger their timed team buffs when the food is actually present, `pudding_cup` now performs its holder-only timed healing during the opening window, and `godfather` now converts its computed economy bonus into real battle bonus gold.
+- In Progress: Manual balance feel validation that the corrected timed-food ownership checks and `godfather` payout now match the intended build expectations during live runs.
+- Next: Run a few battles with and without `caramel_mille`, `power_coffee`, `pudding_cup`, and `godfather`, and confirm the corrected effects are only visible when owned and feel proportionate before starting broader number retuning.
+- Blockers: Automatic runtime verification is still constrained by the current local Godot headless crash, so this pass relies on code inspection plus expanded food-effect runner coverage in the present environment.
+- Files Touched: Scripts/Core/combat_engine.gd, Scripts/Tests/food_effect_runner.gd, Docs/07_progress_log.md
+- Notes: This pass intentionally fixes implementation correctness before any economy or combat table rebalance, so later number tuning is based on effects that actually exist in runtime.

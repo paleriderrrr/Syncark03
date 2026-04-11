@@ -146,6 +146,9 @@ func _build_characters(run_state: Object, party_order: Array[StringName] = []) -
 			"frozen_extra_slow_chance": float(evaluation["frozen_extra_slow_chance"]),
 			"forbidden_attack_reduction": float(evaluation["forbidden_attack_reduction"]),
 			"economy_gold_bonus": float(evaluation["economy_gold_bonus"]),
+			"pudding_heal_amount": float(evaluation["pudding_heal_amount"]),
+			"pudding_heal_interval": float(evaluation["pudding_heal_interval"]),
+			"pudding_heal_until": float(evaluation["pudding_heal_until"]),
 			"adjacent_categories": evaluation["adjacent_categories"],
 			"monster_attack_down_stacks": 0,
 			"armor_break_stacks": 0,
@@ -154,6 +157,7 @@ func _build_characters(run_state: Object, party_order: Array[StringName] = []) -
 			"corrosion_until": 0.0,
 			"corrosion_damage_per_second": 0.0,
 			"next_corrosion_tick": 1.0,
+			"next_pudding_heal": float(evaluation["pudding_heal_interval"]) if float(evaluation["pudding_heal_amount"]) > 0.0 else -1.0,
 			"alive": true,
 		}
 		if actor["current_hp"] > actor["max_hp"]:
@@ -186,7 +190,9 @@ func _build_team_effects(characters: Array[Dictionary]) -> Dictionary:
 		"dessert_multiplier_after_20": false,
 		"tree_heal_every": false,
 		"next_tree_heal": 15.0,
+		"caramel_mille": false,
 		"caramel_triggered": false,
+		"power_coffee": false,
 		"power_coffee_triggered": false,
 		"fairy_speed_on_heal": false,
 	}
@@ -197,6 +203,10 @@ func _build_team_effects(characters: Array[Dictionary]) -> Dictionary:
 			effects["dessert_multiplier_after_20"] = true
 		if flags.get("tree_heal_every", false):
 			effects["tree_heal_every"] = true
+		if flags.get("caramel_mille", false):
+			effects["caramel_mille"] = true
+		if flags.get("power_coffee", false):
+			effects["power_coffee"] = true
 		if flags.get("fairy_speed_on_heal", false):
 			effects["fairy_speed_on_heal"] = true
 	return effects
@@ -255,6 +265,9 @@ func _evaluate_character_board(run_state: Object, definition: CharacterDefinitio
 		"frozen_extra_slow_chance": 0.0,
 		"forbidden_attack_reduction": 0.0,
 		"economy_gold_bonus": 0.0,
+		"pudding_heal_amount": 0.0,
+		"pudding_heal_interval": 0.0,
+		"pudding_heal_until": 0.0,
 		"adjacent_categories": {},
 		"team_aura_flags": {},
 	}
@@ -362,6 +375,9 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 			result["team_aura_flags"]["tree_heal_every"] = true
 		&"pudding_cup":
 			result["team_aura_flags"]["pudding"] = true
+			result["pudding_heal_amount"] = 8.0
+			result["pudding_heal_interval"] = 2.0
+			result["pudding_heal_until"] = 10.0
 		&"jam_cookie":
 			if adj.has(&"fruit"):
 				result["max_hp_bonus"] += 16.0
@@ -695,12 +711,12 @@ func _process_timed_team_effects(time: float, characters: Array[Dictionary], tea
 		for actor in characters:
 			_heal_actor(actor, 10.0, log, time)
 		team_effects["next_tree_heal"] += 15.0
-	if not team_effects["caramel_triggered"] and time >= 20.0:
+	if team_effects["caramel_mille"] and not team_effects["caramel_triggered"] and time >= 20.0:
 		team_effects["caramel_triggered"] = true
 		for actor in characters:
 			actor["attack_speed_bonus"] += 60.0
 		log.append("[20.0s] Caramel Mille grants the whole team +60% attack speed.")
-	if not team_effects["power_coffee_triggered"] and time >= 15.0:
+	if team_effects["power_coffee"] and not team_effects["power_coffee_triggered"] and time >= 15.0:
 		team_effects["power_coffee_triggered"] = true
 		for actor in characters:
 			actor["attack_speed_bonus"] += 5.0
@@ -735,6 +751,10 @@ func _process_character_status_effects(time: float, characters: Array[Dictionary
 		var actor: Dictionary = actor_variant
 		if not actor["alive"]:
 			continue
+		while float(actor.get("pudding_heal_amount", 0.0)) > 0.0 and float(actor.get("next_pudding_heal", -1.0)) >= 0.0 and time >= float(actor["next_pudding_heal"]) and float(actor["next_pudding_heal"]) <= float(actor.get("pudding_heal_until", 0.0)):
+			if float(actor["next_pudding_heal"]) >= float(actor.get("disable_until", 0.0)):
+				_heal_actor(actor, float(actor["pudding_heal_amount"]), log, float(actor["next_pudding_heal"]))
+			actor["next_pudding_heal"] = float(actor["next_pudding_heal"]) + float(actor.get("pudding_heal_interval", 0.0))
 		if actor["corrosion_damage_per_second"] > 0.0 and time >= actor["next_corrosion_tick"] and time <= actor["corrosion_until"]:
 			actor["next_corrosion_tick"] += 1.0
 			_apply_damage_to_actor(actor, actor["corrosion_damage_per_second"], log, time, "Corrosion")
@@ -993,7 +1013,11 @@ func _calculate_bonus_gold(run_state: Object, characters: Array[Dictionary], dur
 		hp_ratio += actor["current_hp"] / maxf(actor["max_hp"], 1.0)
 	hp_ratio /= maxf(float(characters.size()), 1.0)
 	var time_score: float = clampf(1.0 - duration / ATTRITION_START_TIME, 0.0, 1.0)
-	return int(round(base_gold * 0.5 * ((hp_ratio + time_score) * 0.5)))
+	var performance_bonus: int = int(round(base_gold * 0.5 * ((hp_ratio + time_score) * 0.5)))
+	var economy_bonus: int = 0
+	for actor in characters:
+		economy_bonus += int(round(float(actor.get("economy_gold_bonus", 0.0))))
+	return performance_bonus + economy_bonus
 
 func _cleanup_log(report: Dictionary, log: Array[String], characters: Array[Dictionary], monster: Dictionary) -> void:
 	var trimmed: Array[String] = log

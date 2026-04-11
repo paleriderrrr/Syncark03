@@ -16,6 +16,7 @@ func _run() -> void:
 	run_state.start_new_run()
 	_validate_food_catalog(run_state)
 	_run_food_cases(run_state)
+	_run_runtime_balance_fix_cases(run_state)
 	_finish()
 
 func _validate_food_catalog(run_state: Node) -> void:
@@ -317,6 +318,49 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_assert(float(_preview_actor(run_state)["forbidden_attack_reduction"]) == 0.05, "forbidden_herb should reduce enemy attack by 5% on hit")
 		_:
 			_assert(false, "Missing food automation case for %s" % String(food_id))
+
+func _run_runtime_balance_fix_cases(run_state: Node) -> void:
+	var engine: CombatEngine = CombatEngine.new()
+	var log: Array[String] = []
+
+	_reset_board(run_state, [])
+	var no_carousel_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var no_carousel_effects: Dictionary = engine._build_team_effects(no_carousel_characters)
+	engine._process_timed_team_effects(20.0, no_carousel_characters, no_carousel_effects, {"alive": true}, log)
+	_assert(float(no_carousel_characters[0]["attack_speed_bonus"]) == 0.0, "caramel_mille timing should not trigger without the food present")
+
+	_reset_board(run_state, [{"id": &"caramel_mille", "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 4)))
+	var caramel_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var caramel_effects: Dictionary = engine._build_team_effects(caramel_characters)
+	engine._process_timed_team_effects(20.0, caramel_characters, caramel_effects, {"alive": true}, log)
+	_assert(float(caramel_characters[0]["attack_speed_bonus"]) >= 60.0, "caramel_mille timing should grant its team speed bonus only when present")
+
+	_reset_board(run_state, [])
+	var no_coffee_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var no_coffee_effects: Dictionary = engine._build_team_effects(no_coffee_characters)
+	engine._process_timed_team_effects(15.0, no_coffee_characters, no_coffee_effects, {"alive": true}, log)
+	_assert(float(no_coffee_characters[0]["attack_speed_bonus"]) == 0.0, "power_coffee timing should not trigger without the food present")
+
+	_reset_board(run_state, [{"id": &"power_coffee", "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 3)))
+	var coffee_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var coffee_effects: Dictionary = engine._build_team_effects(coffee_characters)
+	engine._process_timed_team_effects(15.0, coffee_characters, coffee_effects, {"alive": true}, log)
+	_assert(float(coffee_characters[0]["attack_speed_bonus"]) >= 5.0, "power_coffee timing should grant its team speed bonus only when present")
+
+	_reset_board(run_state, [{"id": &"pudding_cup", "anchor": Vector2i(0, 0)}])
+	var pudding_characters: Array[Dictionary] = engine._build_characters(run_state)
+	pudding_characters[0]["current_hp"] = maxf(1.0, float(pudding_characters[0]["current_hp"]) - 20.0)
+	var pudding_hp_before: float = float(pudding_characters[0]["current_hp"])
+	engine._process_character_status_effects(2.0, pudding_characters, log)
+	_assert(float(pudding_characters[0]["current_hp"]) > pudding_hp_before, "pudding_cup should heal its holder on its first timed trigger")
+
+	_reset_board(run_state, [])
+	var baseline_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var baseline_bonus_gold: int = engine._calculate_bonus_gold(run_state, baseline_characters, 0.0)
+	_reset_board(run_state, [{"id": &"godfather", "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 5)))
+	var godfather_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var godfather_bonus_gold: int = engine._calculate_bonus_gold(run_state, godfather_characters, 0.0)
+	_assert(godfather_bonus_gold > baseline_bonus_gold, "godfather should convert its economy bonus into battle bonus gold")
 
 func _reset_board(run_state: Node, food_specs: Array, active_cells: Array[Vector2i] = [], hp_ratio: float = 1.0) -> void:
 	run_state.select_character(&"warrior")
