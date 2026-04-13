@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/syncark_numeric_editor/numeric_editor_panel.gd" id="1_script"]
+
+[node name="NumericEditorPanel" type="VBoxContainer"]
+offset_right = 1600.0
+offset_bottom = 900.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_script")
+
+[node name="Toolbar" type="HBoxContainer" parent="."]
+size_flags_horizontal = 3
+
+[node name="RefreshButton" type="Button" parent="Toolbar"]
+unique_name_in_owner = true
+text = "Refresh"
+
+[node name="SaveCurrentButton" type="Button" parent="Toolbar"]
+unique_name_in_owner = true
+text = "Save Current"
+
+[node name="SaveAllButton" type="Button" parent="Toolbar"]
+unique_name_in_owner = true
+text = "Save All"
+
+[node name="DirtyLabel" type="Label" parent="Toolbar"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+text = "Dirty tables: 0"
+horizontal_alignment = 2
+
+[node name="StatusLabel" type="Label" parent="."]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+text = ""
+autowrap_mode = 3
+
+[node name="TabContainer" type="TabContainer" parent="."]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 3
