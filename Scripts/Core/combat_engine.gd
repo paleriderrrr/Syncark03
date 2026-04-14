@@ -1,4 +1,4 @@
-﻿extends RefCounted
+extends RefCounted
 class_name CombatEngine
 
 const TICK := 0.25
@@ -185,8 +185,8 @@ func _resolve_party_order(run_state: Object, requested_order: Array[StringName])
 func _build_team_effects(characters: Array[Dictionary]) -> Dictionary:
 	var effects: Dictionary = {
 		"dessert_pulse_amount": 0.0,
-		"dessert_pulse_interval": 3.0,
-		"next_dessert_pulse": 3.0,
+		"dessert_pulse_interval": 4.0,
+		"next_dessert_pulse": 4.0,
 		"dessert_multiplier_after_20": false,
 		"tree_heal_every": false,
 		"next_tree_heal": 15.0,
@@ -239,7 +239,7 @@ func _build_monster(definition: MonsterDefinition, target_order: Array[StringNam
 		"skip_next_attack": false,
 		"next_heal_lock_tick": 5.0,
 		"target_order": resolved_target_order,
-		"crumbs": 5 if definition.id == &"bread_knight" else 0,
+		"crumbs": 3 if definition.id == &"bread_knight" else 0,
 		"half_hp_burst_used": false,
 		"received_hit_count": 0,
 		"attack_count": 0,
@@ -315,17 +315,17 @@ func _evaluate_character_board(run_state: Object, definition: CharacterDefinitio
 			var total_cells: int = int(category_cell_count[category])
 			match category:
 				&"fruit":
-					result["retaliate_damage"] += 1.0 + max(total_cells - 3, 0) * 0.5
+					result["retaliate_damage"] += 2.0 + max(total_cells - 3, 0) * 0.5
 				&"dessert":
-					result["team_aura_flags"]["dessert_pulse_amount"] = float(result["team_aura_flags"].get("dessert_pulse_amount", 0.0)) + 3.0 + max(total_cells - 3, 0)
+					result["team_aura_flags"]["dessert_pulse_amount"] = float(result["team_aura_flags"].get("dessert_pulse_amount", 0.0)) + 1.0 + floor(max(total_cells - 3, 0) / 2.0)
 				&"meat":
-					result["extra_meat_bonus"] += 1.5 + floor(max(total_cells - 3, 0) / 2.0)
+					result["extra_meat_bonus"] += 1.0 + floor(max(total_cells - 3, 0) / 3.0) * 0.5
 				&"drink":
-					result["enemy_attack_slow"] += minf(50.0, 5.0 + max(total_cells - 3, 0) * 1.5)
+					result["enemy_attack_slow"] += minf(20.0, 8.0 + max(total_cells - 3, 0) * 1.0)
 				&"staple":
-					result["execute_threshold"] += minf(20.0, 5.0 + max(total_cells - 3, 0))
+					result["execute_threshold"] += minf(8.0, 2.0 + max(total_cells - 3, 0) * 0.5)
 				&"spice":
-					result["bonus_damage"] += 1.0 + max(total_cells - 3, 0) * 0.5
+					result["bonus_damage"] += 1.5 + max(total_cells - 3, 0) * 0.5
 
 	if result["team_aura_flags"].has("dessert_pulse_amount"):
 		result["team_aura_flags"]["dessert_pulse_amount"] = float(result["team_aura_flags"]["dessert_pulse_amount"])
@@ -358,11 +358,11 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 	match food.id:
 		&"lettuce_leaf":
 			if _has_food_above(item, placed_foods):
-				result["max_hp_bonus"] += 16.0
+				result["max_hp_bonus"] += 8.0
 		&"lemon":
-			result["attack_bonus"] += 2.0 * _count_adjacent_categories(adj, [&"meat", &"staple"])
+			result["attack_bonus"] += 1.5 * _count_adjacent_categories(adj, [&"meat", &"staple"])
 		&"broccoli":
-			result["max_hp_bonus"] += 5.0 * _count_adjacent_empty_cells(item, board_state)
+			result["max_hp_bonus"] += 2.0 * _count_adjacent_empty_cells(item, board_state)
 		&"prickly_pear":
 			result["retaliate_damage"] *= 1.25
 		&"rock_melon":
@@ -380,10 +380,10 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 			result["pudding_heal_until"] = 10.0
 		&"jam_cookie":
 			if adj.has(&"fruit"):
-				result["max_hp_bonus"] += 16.0
+				result["max_hp_bonus"] += 8.0
 		&"sugar_donut":
 			if _donut_center_filled(item, placed_foods):
-				result["team_aura_flags"]["dessert_pulse_amount"] = float(result["team_aura_flags"].get("dessert_pulse_amount", 0.0)) + 8.0
+				result["team_aura_flags"]["dessert_pulse_amount"] = float(result["team_aura_flags"].get("dessert_pulse_amount", 0.0)) + 2.0
 		&"cherry_mousse":
 			if adj.has(&"drink"):
 				result["attack_speed_bonus"] += 10.0
@@ -417,7 +417,7 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 			result["enemy_attack_slow"] += 25.0
 		&"matcha":
 			if adj.has(&"dessert"):
-				result["attack_speed_bonus"] += 20.0
+				result["attack_speed_bonus"] += 10.0
 		&"honey_drink":
 			result["team_aura_flags"]["honey_drink"] = true
 		&"frozen_mint":
@@ -432,7 +432,7 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 			result["enemy_attack_slow"] += 5.0 * int(item.get("reroll_bonus_count", 0))
 		&"corn_cake":
 			if adj.has(&"fruit") and adj.has(&"meat"):
-				result["attack_bonus"] += 5.0
+				result["attack_bonus"] += 3.0
 		&"baguette":
 			result["team_aura_flags"]["baguette"] = true
 		&"sandwich":
@@ -448,9 +448,9 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 			pass
 		&"salt_pack":
 			if _is_below_category(item, placed_foods, run_state, [&"staple", &"meat"]):
-				result["bonus_damage"] += 5.0
+				result["bonus_damage"] += 3.0
 		&"wasabi":
-			result["bonus_damage"] += 1.0
+			result["bonus_damage"] += 3.0
 		&"soy_sauce":
 			pass
 		&"cilantro":
@@ -539,19 +539,19 @@ func _apply_food_post_passive(run_state: Object, food: FoodDefinition, item: Dic
 				result["retaliate_damage"] += float(category_distinct_count.get(&"fruit", 0))
 		&"puff_tower":
 			if unique_categories.size() >= 3:
-				result["attack_speed_bonus"] += 50.0
+				result["attack_speed_bonus"] += 20.0
 		&"parma_ham":
 			if int(category_distinct_count.get(&"meat", 0)) >= 3:
-				result["max_hp_bonus"] += 40.0
+				result["max_hp_bonus"] += 24.0
 		&"amber_tea":
 			result["amber_cancel_chance"] += 0.05 * _count_adjacent_items_in_categories(item, placed_foods, run_state, [&"drink"], true)
 		&"dragon_stove":
 			var category_count: int = unique_categories.size()
-			result["max_hp_bonus"] += 8.0 * category_count
-			result["attack_bonus"] += 1.5 * category_count
-			result["execute_threshold"] += 5.0 * category_count
+			result["max_hp_bonus"] += 4.0 * category_count
+			result["attack_bonus"] += 0.75 * category_count
+			result["execute_threshold"] += 2.0 * category_count
 		&"godfather":
-			result["economy_gold_bonus"] += 2.0 * _count_adjacent_empty_cells_orthogonal(item, board_state)
+			result["economy_gold_bonus"] += 1.0 * _count_adjacent_empty_cells_orthogonal(item, board_state)
 		&"soy_sauce":
 			var base_bonus: float = maxf(0.0, result["bonus_damage"] - float(food.bonus_damage))
 			result["bonus_damage"] = float(food.bonus_damage) + base_bonus + _count_adjacent_empty_cells_orthogonal(item, board_state)
@@ -675,7 +675,7 @@ func _apply_monster_opening_skill(monster: Dictionary, characters: Array[Diction
 			for actor_variant in characters:
 				var actor: Dictionary = actor_variant
 				actor["corrosion_damage_per_second"] = 1.0
-				actor["corrosion_until"] = 25.0
+				actor["corrosion_until"] = 15.0
 				actor["next_corrosion_tick"] = 1.0
 			log.append("[0.0s] %s applies corrosion to all characters." % monster["name"])
 		&"charging_beast":
@@ -686,8 +686,8 @@ func _apply_monster_opening_skill(monster: Dictionary, characters: Array[Diction
 					living.append(actor)
 			if not living.is_empty():
 				var target: Dictionary = living[randi() % living.size()]
-				target["disable_until"] = 5.0
-				log.append("[0.0s] %s disables %s's bento effects for 5s." % [monster["name"], target["name"]])
+				target["disable_until"] = 3.0
+				log.append("[0.0s] %s disables %s's bento effects for 3s." % [monster["name"], target["name"]])
 		_:
 			pass
 
@@ -828,7 +828,7 @@ func _calculate_actor_attack(actor: Dictionary, time: float) -> Dictionary:
 				bonus_pct *= 2.0
 			attack *= 1.0 + bonus_pct / 100.0
 		if actor["board_eval"].get("chicken_steak", false) and hp_ratio < 0.5:
-			attack += 4.5
+			attack += 3.0
 		if actor["board_eval"].get("flame_sausage", false):
 			speed_bonus += 8.0
 		if actor["board_eval"].get("honey_drink", false):
@@ -837,7 +837,7 @@ func _calculate_actor_attack(actor: Dictionary, time: float) -> Dictionary:
 			pass
 		if actor["board_eval"].get("monster_tartare", false):
 			var lost_ratio: float = 1.0 - hp_ratio
-			attack += floor(lost_ratio / 0.1) * 4.5
+			attack += floor(lost_ratio / 0.1) * 3.0
 	attack += 0.0
 	return {
 		"damage": attack + bonus_damage,
@@ -911,7 +911,7 @@ func _handle_monster_hit_by_character(monster: Dictionary, attacker: Dictionary,
 					var target: Dictionary = living[randi() % living.size()]
 					monster["half_hp_burst_used"] = true
 					log.append("[%.1fs] %s unleashes Burst Charge." % [time, monster["name"]])
-					_apply_damage_to_actor(target, 50.0, log, time, monster["name"])
+					_apply_damage_to_actor(target, 35.0, log, time, monster["name"])
 		&"nc2_auto_cooker":
 			monster["received_hit_count"] = int(monster.get("received_hit_count", 0)) + 1
 			if int(monster["received_hit_count"]) % 30 == 0:

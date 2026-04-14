@@ -20,12 +20,12 @@ func _run() -> void:
 
 func _validate_monster_roster(run_state: Node) -> void:
 	var expected: Dictionary = {
-		&"fruit_tree_king": {"hp": 320.0, "attack": 25.0, "interval": 3.0},
-		&"cream_overlord": {"hp": 360.0, "attack": 15.0, "interval": 1.2},
-		&"charging_beast": {"hp": 200.0, "attack": 40.0, "interval": 2.0},
-		&"water_giant": {"hp": 300.0, "attack": 15.0, "interval": 2.0},
-		&"bread_knight": {"hp": 340.0, "attack": 22.0, "interval": 2.5},
-		&"spice_wizard": {"hp": 290.0, "attack": 22.0, "interval": 1.8},
+		&"fruit_tree_king": {"hp": 320.0, "attack": 22.0, "interval": 3.0},
+		&"cream_overlord": {"hp": 300.0, "attack": 10.0, "interval": 1.6},
+		&"charging_beast": {"hp": 200.0, "attack": 30.0, "interval": 2.0},
+		&"water_giant": {"hp": 300.0, "attack": 15.0, "interval": 2.5},
+		&"bread_knight": {"hp": 340.0, "attack": 20.0, "interval": 2.8},
+		&"spice_wizard": {"hp": 290.0, "attack": 18.0, "interval": 1.8},
 		&"nc2_auto_cooker": {"hp": 1000.0, "attack": 60.0, "interval": 5.0},
 	}
 	for monster_variant in run_state.monster_roster.monsters:
@@ -56,13 +56,13 @@ func _test_fruit_tree_opening(run_state: Node, engine: CombatEngine) -> void:
 	for actor_variant in characters:
 		var actor: Dictionary = actor_variant
 		_assert(float(actor.get("corrosion_damage_per_second", 0.0)) == 1.0, "fruit_tree_king should apply 1 corrosion DPS at battle start")
-		_assert(float(actor.get("corrosion_until", 0.0)) == 25.0, "fruit_tree_king should apply corrosion for 25 seconds")
+		_assert(float(actor.get("corrosion_until", 0.0)) == 15.0, "fruit_tree_king should apply corrosion for 15 seconds")
 
 func _test_cream_overlord_on_hit(engine: CombatEngine) -> void:
 	_assert(engine.has_method("_handle_monster_hit_by_character"), "CombatEngine should expose _handle_monster_hit_by_character for monster reaction tests")
 	if not engine.has_method("_handle_monster_hit_by_character"):
 		return
-	var monster: Dictionary = _make_monster_stub(&"cream_overlord", 360.0, 15.0, 1.2)
+	var monster: Dictionary = _make_monster_stub(&"cream_overlord", 300.0, 10.0, 1.6)
 	monster["current_hp"] = 300.0
 	var attacker: Dictionary = _make_actor(&"warrior")
 	var characters: Array[Dictionary] = [attacker]
@@ -78,7 +78,7 @@ func _test_monster_death_stops_actions(engine: CombatEngine) -> void:
 	_assert(engine.has_method("_handle_monster_death"), "CombatEngine should expose _handle_monster_death for monster death flow")
 	if not engine.has_method("_handle_monster_death"):
 		return
-	var monster: Dictionary = _make_monster_stub(&"cream_overlord", 360.0, 15.0, 1.2)
+	var monster: Dictionary = _make_monster_stub(&"cream_overlord", 300.0, 10.0, 1.6)
 	var attacker: Dictionary = _make_actor(&"warrior")
 	var characters: Array[Dictionary] = [attacker]
 	var log: Array[String] = []
@@ -93,7 +93,7 @@ func _test_charging_beast_burst(engine: CombatEngine) -> void:
 	_assert(engine.has_method("_handle_monster_hit_by_character"), "CombatEngine should expose _handle_monster_hit_by_character for charging_beast burst")
 	if not engine.has_method("_handle_monster_hit_by_character"):
 		return
-	var monster: Dictionary = _make_monster_stub(&"charging_beast", 200.0, 40.0, 2.0)
+	var monster: Dictionary = _make_monster_stub(&"charging_beast", 200.0, 30.0, 2.0)
 	monster["current_hp"] = 90.0
 	var warrior: Dictionary = _make_actor(&"warrior")
 	var hunter: Dictionary = _make_actor(&"hunter")
@@ -106,41 +106,41 @@ func _test_charging_beast_burst(engine: CombatEngine) -> void:
 		var actor: Dictionary = actor_variant
 		if float(actor["current_hp"]) < float(actor["max_hp"]):
 			damaged_count += 1
-	_assert(damaged_count == 1, "charging_beast should burst one random role for 50 damage when dropping below 50% HP")
+	_assert(damaged_count == 1, "charging_beast should burst one random role for 35 damage when dropping below 50% HP")
 	_assert(bool(monster.get("half_hp_burst_used", false)), "charging_beast should only trigger the half-HP burst once")
 
 func _test_water_giant_rules(engine: CombatEngine) -> void:
 	_assert(engine.has_method("_apply_monster_incoming_damage_modifiers"), "CombatEngine should expose _apply_monster_incoming_damage_modifiers for water_giant reduction")
 	if engine.has_method("_apply_monster_incoming_damage_modifiers"):
-		var monster: Dictionary = _make_monster_stub(&"water_giant", 300.0, 15.0, 2.0)
+		var monster: Dictionary = _make_monster_stub(&"water_giant", 300.0, 15.0, 2.5)
 		monster["current_hp"] = 120.0
 		var reduced: float = float(engine._apply_monster_incoming_damage_modifiers(monster, 10.0))
 		_assert(is_equal_approx(reduced, 9.0), "water_giant should reduce each incoming hit by 1 below 50% HP")
-	var monster_for_attack: Dictionary = _make_monster_stub(&"water_giant", 300.0, 15.0, 2.0)
+	var monster_for_attack: Dictionary = _make_monster_stub(&"water_giant", 300.0, 15.0, 2.5)
 	var target: Dictionary = _make_actor(&"warrior")
 	target["current_hp"] = 120.0
 	target["max_hp"] = 180.0
 	var before_hp: float = float(target["current_hp"])
 	var log: Array[String] = []
-	engine._process_monster_attack(2.0, monster_for_attack, [target], {}, log)
+	engine._process_monster_attack(2.5, monster_for_attack, [target], {}, log)
 	_assert(is_equal_approx(before_hp - float(target["current_hp"]), 18.0), "water_giant should deal +3 damage when hitting a target above 50% HP")
 
 func _test_bread_knight_rules(engine: CombatEngine) -> void:
-	var monster: Dictionary = _make_monster_stub(&"bread_knight", 340.0, 22.0, 2.5)
-	monster["crumbs"] = 5
+	var monster: Dictionary = _make_monster_stub(&"bread_knight", 340.0, 20.0, 2.8)
+	monster["crumbs"] = 3
 	var attacker: Dictionary = _make_actor(&"warrior")
 	var log: Array[String] = []
 	var consumed_damage: float = 0.0
-	for _i in 5:
+	for _i in 3:
 		consumed_damage += float(engine._apply_monster_incoming_damage_modifiers(monster, 12.0)) if engine.has_method("_apply_monster_incoming_damage_modifiers") else 12.0
-	_assert(monster["crumbs"] == 0, "bread_knight should start with and consume exactly 5 crumbs")
+	_assert(monster["crumbs"] == 0, "bread_knight should start with and consume exactly 3 crumbs")
 	_assert(is_equal_approx(consumed_damage, 0.0), "bread_knight crumbs should fully negate damage while stacks remain")
 	var target: Dictionary = _make_actor(&"warrior")
-	engine._process_monster_attack(2.5, monster, [target], {}, log)
+	engine._process_monster_attack(2.8, monster, [target], {}, log)
 	_assert(int(target.get("armor_break_stacks", 0)) == 1, "bread_knight attacks should apply armor break")
 
 func _test_spice_wizard_rules(engine: CombatEngine) -> void:
-	var monster: Dictionary = _make_monster_stub(&"spice_wizard", 290.0, 22.0, 1.8)
+	var monster: Dictionary = _make_monster_stub(&"spice_wizard", 290.0, 18.0, 1.8)
 	var warrior: Dictionary = _make_actor(&"warrior")
 	var hunter: Dictionary = _make_actor(&"hunter")
 	var mage: Dictionary = _make_actor(&"mage")
@@ -162,7 +162,7 @@ func _test_spice_wizard_rules(engine: CombatEngine) -> void:
 	var before_hp: float = float(target["current_hp"])
 	var attack_log: Array[String] = []
 	engine._process_monster_attack(1.8, monster, [target], {}, attack_log)
-	_assert(is_equal_approx(before_hp - float(target["current_hp"]), 23.5), "spice_wizard should deal 1% current-HP bonus damage against healing-limited targets")
+	_assert(is_equal_approx(before_hp - float(target["current_hp"]), 19.5), "spice_wizard should deal 1% current-HP bonus damage against healing-limited targets")
 
 func _test_boss_rules(engine: CombatEngine) -> void:
 	_assert(engine.has_method("_handle_monster_hit_by_character"), "CombatEngine should expose _handle_monster_hit_by_character for boss hit-count reactions")

@@ -724,7 +724,7 @@ func _apply_food_purchase_side_effects(instance: Dictionary) -> void:
 			free_food_purchase_count += 1
 			_generate_market_offers()
 		&"curry_can":
-			current_gold += 4
+			current_gold += 3
 			spice_purchase_refund += 1
 		_:
 			pass

@@ -54,9 +54,9 @@ func _run() -> void:
 		quit(1)
 		return
 
-	var changed_food_rows := food_table.duplicate_rows()
+	var changed_food_rows: Array[Dictionary] = food_table.duplicate_rows()
 	changed_food_rows[0]["gold_value"] = "99"
-	var food_apply := food_adapter.apply_rows(food_catalog, changed_food_rows)
+	var food_apply: Dictionary = food_adapter.apply_rows(food_catalog, changed_food_rows)
 	if not bool(food_apply.get("ok", false)) or food_catalog.foods[0].gold_value != 99:
 		printerr("NUMERIC_EDITOR_ADAPTER_FAIL: food apply")
 		quit(1)
@@ -70,9 +70,9 @@ func _run() -> void:
 		quit(1)
 		return
 
-	var bad_quantity_rows := quantity_table.duplicate_rows()
+	var bad_quantity_rows: Array[Dictionary] = quantity_table.duplicate_rows()
 	bad_quantity_rows[0]["min"] = "bad"
-	var bad_quantity_apply := market_adapter.apply_quantity_ranges_rows(market_config, bad_quantity_rows)
+	var bad_quantity_apply: Dictionary = market_adapter.apply_quantity_ranges_rows(market_config, bad_quantity_rows)
 	if bool(bad_quantity_apply.get("ok", true)):
 		printerr("NUMERIC_EDITOR_ADAPTER_FAIL: invalid quantity row accepted")
 		quit(1)

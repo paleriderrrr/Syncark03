@@ -81,11 +81,12 @@ func build_quantity_ranges_table(config: MarketConfig) -> NumericEditorTableMode
 func build_expansion_offers_table(config: MarketConfig) -> NumericEditorTableModel:
 	var rows: Array[Dictionary] = []
 	for entry in config.expansion_offers:
+		var shape: Array[Vector2i] = _as_vector2i_array(entry.get("shape", []))
 		rows.append({
 			"label": str(entry.get("label", "")),
 			"price": str(int(entry.get("price", 0))),
 			"weight": str(float(entry.get("weight", 0.0))),
-			"shape": _parser.format_vector2i_array(entry.get("shape", [])),
+			"shape": _parser.format_vector2i_array(shape),
 		})
 	return NumericEditorTableModel.new().setup("Market/Expansion Offers", "Market/Expansion Offers", EXPANSION_COLUMNS, rows)
 
@@ -168,3 +169,8 @@ func apply_expansion_offer_rows(config: MarketConfig, rows: Array[Dictionary]) -
 		})
 	config.expansion_offers = next_offers
 	return {"ok": true}
+func _as_vector2i_array(values: Array) -> Array[Vector2i]:
+	var typed_values: Array[Vector2i] = []
+	for value in values:
+		typed_values.append(value as Vector2i)
+	return typed_values

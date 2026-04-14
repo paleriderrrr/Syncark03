@@ -49,13 +49,13 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"red_berry", "anchor": Vector2i(0, 0)},
 				{"id": food_id, "anchor": Vector2i(0, 1)},
 			])
-			_assert(_hp_bonus(_preview_actor(run_state)) == 32.0, "lettuce_leaf should add +16 HP to food placed above it")
+			_assert(_hp_bonus(_preview_actor(run_state)) == 24.0, "lettuce_leaf should add +8 HP to food placed above it")
 		&"lemon":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
 				{"id": &"bacon_strip", "anchor": Vector2i(1, 0)},
 			])
-			_assert(_attack_bonus(_preview_actor(run_state)) == 5.0, "lemon should gain +2 ATK when adjacent to meat or staple food")
+			_assert(_attack_bonus(_preview_actor(run_state)) == 3.0, "lemon should gain +1.5 ATK when adjacent to meat or staple food")
 		&"broccoli":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 3)))
 			_assert(_hp_bonus(_preview_actor(run_state)) > 20.0, "broccoli should gain extra HP from adjacent empty cells")
@@ -114,14 +114,14 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": food_id, "anchor": Vector2i(0, 0)},
 				{"id": &"red_berry", "anchor": Vector2i(1, 0)},
 			])
-			_assert(_hp_bonus(_preview_actor(run_state)) == 24.0, "jam_cookie should gain +16 HP when adjacent to fruit")
+			_assert(_hp_bonus(_preview_actor(run_state)) == 16.0, "jam_cookie should gain +8 HP when adjacent to fruit")
 		&"sugar_donut":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
 				{"id": &"red_berry", "anchor": Vector2i(1, 1)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 4)))
 			var donut_actor: Dictionary = _preview_actor(run_state)
-			_assert(float(donut_actor["team_aura_flags"].get("dessert_pulse_amount", 0.0)) >= 8.0, "sugar_donut should boost dessert pulse when its center is filled")
+			_assert(float(donut_actor["team_aura_flags"].get("dessert_pulse_amount", 0.0)) >= 2.0, "sugar_donut should boost dessert pulse when its center is filled")
 		&"cherry_mousse":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
@@ -137,7 +137,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"red_berry", "anchor": Vector2i(3, 0)},
 				{"id": &"bacon_strip", "anchor": Vector2i(4, 0)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(6, 5)))
-			_assert(float(_preview_actor(run_state)["attack_speed_bonus"]) >= 50.0, "puff_tower should gain +50% speed with at least 3 categories present")
+			_assert(float(_preview_actor(run_state)["attack_speed_bonus"]) >= 20.0, "puff_tower should gain +20% speed with at least 3 categories present")
 		&"ice_cream_sundae":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 6)))
 			var sundae_actor: Dictionary = _preview_actor(run_state)
@@ -148,7 +148,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("fairy_speed_on_heal", false)), "fairy_candy_castle should add speed on heal")
 		&"bacon_strip":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}])
-			_assert(_attack_bonus(_preview_actor(run_state)) == 3.0, "bacon_strip should grant +3 ATK")
+			_assert(_attack_bonus(_preview_actor(run_state)) == 1.5, "bacon_strip should grant +1.5 ATK")
 		&"chicken_steak":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _full_grid_cells(), 0.4)
 			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("chicken_steak", false)), "chicken_steak should mark its low-HP attack trigger")
@@ -176,7 +176,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"bacon_strip", "anchor": Vector2i(3, 0)},
 				{"id": &"chicken_steak", "anchor": Vector2i(4, 0)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(6, 4)))
-			_assert(_hp_bonus(_preview_actor(run_state)) >= 40.0, "parma_ham should grant its +40 HP bonus when at least 3 meat foods are present")
+			_assert(_hp_bonus(_preview_actor(run_state)) >= 24.0, "parma_ham should grant its +24 HP bonus when at least 3 meat foods are present")
 		&"dragon_tail":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 5)), 0.35)
 			var dragon_tail_actor: Dictionary = _preview_actor(run_state)
@@ -198,7 +198,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": food_id, "anchor": Vector2i(0, 0)},
 				{"id": &"gummy_block", "anchor": Vector2i(2, 0)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 3)))
-			_assert(float(_preview_actor(run_state)["attack_speed_bonus"]) == 30.0, "matcha should gain +20% speed when adjacent to dessert")
+			_assert(float(_preview_actor(run_state)["attack_speed_bonus"]) == 20.0, "matcha should gain +10% speed when adjacent to dessert")
 		&"honey_drink":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 3)))
 			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("honey_drink", false)), "honey_drink should register its on-hit slow trigger")
@@ -229,7 +229,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 		&"mashed_potato":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}])
 			var potato_actor: Dictionary = _preview_actor(run_state)
-			_assert(_hp_bonus(potato_actor) == 8.0 and _attack_bonus(potato_actor) == 1.0, "mashed_potato should grant +8 HP and +1 ATK")
+			_assert(_hp_bonus(potato_actor) == 8.0 and _attack_bonus(potato_actor) == 1.5, "mashed_potato should grant +8 HP and +1.5 ATK")
 		&"ramen":
 			_assert(run_state.get_food_categories(run_state.get_food_definition(food_id)).has(&"drink"), "ramen should count as drink")
 		&"corn_cake":
@@ -238,7 +238,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"red_berry", "anchor": Vector2i(0, 1)},
 				{"id": &"bacon_strip", "anchor": Vector2i(2, 1)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 4)))
-			_assert(_attack_bonus(_preview_actor(run_state)) == 8.0, "corn_cake should gain +5 ATK when adjacent to fruit and meat")
+			_assert(_attack_bonus(_preview_actor(run_state)) == 4.5, "corn_cake should gain +3 ATK when adjacent to fruit and meat")
 		&"baguette":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 5)))
 			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("baguette", false)), "baguette should register its stacking staple trigger")
@@ -276,7 +276,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"bacon_strip", "anchor": Vector2i(5, 0)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(7, 4)))
 			var stove_actor: Dictionary = _preview_actor(run_state)
-			_assert(_hp_bonus(stove_actor) >= 24.0 and _attack_bonus(stove_actor) >= 4.5, "dragon_stove should scale with unique categories present")
+			_assert(_hp_bonus(stove_actor) >= 20.0 and _attack_bonus(stove_actor) >= 3.75, "dragon_stove should scale with unique categories present")
 		&"sesame":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}])
 			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 1.5, "sesame should grant +1.5 bonus damage")
@@ -285,10 +285,10 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"mashed_potato", "anchor": Vector2i(0, 0)},
 				{"id": food_id, "anchor": Vector2i(0, 1)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 4)))
-			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 5.0, "salt_pack should gain +5 bonus damage when under staple or meat")
+			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 3.0, "salt_pack should gain +3 bonus damage when under staple or meat")
 		&"wasabi":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}])
-			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 1.0, "wasabi should add one extra damage")
+			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 3.0, "wasabi should add three extra damage")
 		&"soy_sauce":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 4)))
 			_assert(float(_preview_actor(run_state)["bonus_damage"]) > 1.0, "soy_sauce should gain bonus damage from adjacent empty cells")
@@ -308,7 +308,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			var curry_instance: Dictionary = run_state.generate_item_instance(food_id)
 			run_state.shared_inventory.append(curry_instance)
 			run_state._apply_food_purchase_side_effects(curry_instance)
-			_assert(run_state.current_gold == gold_before + 4, "curry_can should refund 4 gold on purchase")
+			_assert(run_state.current_gold == gold_before + 3, "curry_can should refund 3 gold on purchase")
 			_assert(run_state.spice_purchase_refund == 1, "curry_can should increase spice purchase refund counter")
 		&"sage_ashes":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 3)))

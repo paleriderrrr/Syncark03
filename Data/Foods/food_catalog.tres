@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="FoodCatalog" load_steps=57 format=3]
+[gd_resource type="Resource" script_class="FoodCatalog" format=3 uid="uid://du3qnkdv6xguo"]
 
-[ext_resource type="Script" path="res://Scripts/Data/food_catalog.gd" id="1_catalog"]
-[ext_resource type="Script" path="res://Scripts/Data/food_definition.gd" id="2_definition"]
+[ext_resource type="Script" uid="uid://bsuoed5n674p5" path="res://Scripts/Data/food_catalog.gd" id="1_catalog"]
+[ext_resource type="Script" uid="uid://cp7f2112ncnbg" path="res://Scripts/Data/food_definition.gd" id="2_definition"]
 
 [sub_resource type="Resource" id="Food_red_berry"]
 script = ExtResource("2_definition")
@@ -10,7 +10,7 @@ display_name = "红浆果"
 category = &"fruit"
 rarity = &"common"
 gold_value = 1
-shape_cells = [Vector2i(0, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0)])
 hp_bonus = 8
 
 [sub_resource type="Resource" id="Food_lettuce_leaf"]
@@ -20,9 +20,9 @@ display_name = "生菜叶"
 category = &"fruit"
 rarity = &"common"
 gold_value = 2
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1)])
 hp_bonus = 8
-passive_text = "垫在任何食物下方时，该食物额外获得+16 HP。"
+passive_text = "垫在任何食物下方时，该食物额外获得+8 HP。"
 
 [sub_resource type="Resource" id="Food_lemon"]
 script = ExtResource("2_definition")
@@ -31,8 +31,8 @@ display_name = "柠檬"
 category = &"fruit"
 rarity = &"common"
 gold_value = 2
-shape_cells = [Vector2i(0, 0)]
-passive_text = "相邻4格每有一个[肉类]或[主食]，ATK+2。"
+shape_cells = Array[Vector2i]([Vector2i(0, 0)])
+passive_text = "相邻4格每有一个[肉类]或[主食]，ATK+1.5。"
 
 [sub_resource type="Resource" id="Food_broccoli"]
 script = ExtResource("2_definition")
@@ -41,9 +41,9 @@ display_name = "西蓝花"
 category = &"fruit"
 rarity = &"rare"
 gold_value = 5
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(1, 1)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(1, 1)])
 hp_bonus = 20
-passive_text = "相邻8格每有一个空格子，额外+5 HP。"
+passive_text = "相邻8格每有一个空格子，额外+2 HP。"
 
 [sub_resource type="Resource" id="Food_prickly_pear"]
 script = ExtResource("2_definition")
@@ -52,7 +52,7 @@ display_name = "刺梨"
 category = &"fruit"
 rarity = &"rare"
 gold_value = 5
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)])
 passive_text = "[蔬果]羁绊触发时，反伤值额外提高25%。"
 
 [sub_resource type="Resource" id="Food_rock_melon"]
@@ -62,7 +62,7 @@ display_name = "磐石岩瓜"
 category = &"fruit"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)])
 hp_bonus = 24
 passive_text = "战斗开始后，持有者受到的第一次伤害降低50%。"
 
@@ -73,7 +73,7 @@ display_name = "迷迭香番茄"
 category = &"fruit"
 rarity = &"rare"
 gold_value = 7
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0)])
 hp_bonus = 16
 passive_text = "若与[香料]相邻，反伤额外附加等同于[蔬果]层数的伤害。"
 
@@ -84,7 +84,7 @@ display_name = "恶魔榴莲"
 category = &"fruit"
 rarity = &"epic"
 gold_value = 10
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2)])
 hp_bonus = 20
 passive_text = "[蔬果]羁绊造成的反伤翻倍；但其相邻8格中的食物属性失效。"
 
@@ -93,11 +93,11 @@ script = ExtResource("2_definition")
 id = &"tree_fruit"
 display_name = "甘泉之树果"
 category = &"fruit"
-hybrid_categories = [&"dessert"]
+hybrid_categories = Array[StringName]([&"dessert"])
 rarity = &"epic"
 gold_value = 10
-shape_cells = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2)]
-hp_bonus = 64
+shape_cells = Array[Vector2i]([Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2)])
+hp_bonus = 48
 passive_text = "判定时同时视为1个[蔬果]和1个[甜品]；战斗每过15秒全队额外+10 HP。"
 
 [sub_resource type="Resource" id="Food_gummy_block"]
@@ -107,7 +107,7 @@ display_name = "软糖块"
 category = &"dessert"
 rarity = &"common"
 gold_value = 2
-shape_cells = [Vector2i(0, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0)])
 heal_per_second = 1.0
 
 [sub_resource type="Resource" id="Food_pudding_cup"]
@@ -117,7 +117,7 @@ display_name = "布丁杯"
 category = &"dessert"
 rarity = &"common"
 gold_value = 3
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0)])
 passive_text = "战斗开始后前10秒，持有者每2秒回复5 HP。"
 
 [sub_resource type="Resource" id="Food_jam_cookie"]
@@ -127,9 +127,9 @@ display_name = "果酱夹心饼"
 category = &"dessert"
 rarity = &"common"
 gold_value = 3
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1)])
 heal_per_second = 1.0
-passive_text = "若与[蔬果]相邻，额外+16 HP。"
+passive_text = "若与[蔬果]相邻，额外+8 HP。"
 
 [sub_resource type="Resource" id="Food_sugar_donut"]
 script = ExtResource("2_definition")
@@ -138,8 +138,8 @@ display_name = "糖霜甜甜圈"
 category = &"dessert"
 rarity = &"rare"
 gold_value = 4
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2)]
-passive_text = "若中间一格有食物，[甜品]羁绊回复量+8 HP。"
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2)])
+passive_text = "若中间一格有食物，[甜品]羁绊回复量+2 HP。"
 
 [sub_resource type="Resource" id="Food_cherry_mousse"]
 script = ExtResource("2_definition")
@@ -148,7 +148,7 @@ display_name = "樱桃慕斯"
 category = &"dessert"
 rarity = &"rare"
 gold_value = 4
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)])
 heal_per_second = 2.0
 passive_text = "若与[饮品]相邻，额外+10% 攻速。"
 
@@ -159,7 +159,7 @@ display_name = "焦糖千层"
 category = &"dessert"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)])
 passive_text = "战斗20秒后，全队额外+60% 攻速。"
 
 [sub_resource type="Resource" id="Food_puff_tower"]
@@ -169,20 +169,20 @@ display_name = "雪顶泡芙塔"
 category = &"dessert"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
-hp_bonus = 24
-heal_per_second = 2.0
-passive_text = "若当前便当中有至少3种不同类别食物，额外+50% 攻速。"
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)])
+hp_bonus = 16
+heal_per_second = 1.0
+passive_text = "若当前便当中有至少3种不同类别食物，额外+20% 攻速。"
 
 [sub_resource type="Resource" id="Food_ice_cream_sundae"]
 script = ExtResource("2_definition")
 id = &"ice_cream_sundae"
 display_name = "永不融化圣代"
 category = &"dessert"
-hybrid_categories = [&"drink"]
+hybrid_categories = Array[StringName]([&"drink"])
 rarity = &"epic"
 gold_value = 8
-shape_cells = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2), Vector2i(1, 3)]
+shape_cells = Array[Vector2i]([Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2), Vector2i(1, 3)])
 passive_text = "判定时同时视为1个[甜品]和1个[饮品]；战斗超过20秒后，[甜品]羁绊回复量提高50%。"
 
 [sub_resource type="Resource" id="Food_fairy_candy_castle"]
@@ -192,7 +192,7 @@ display_name = "童话糖堡"
 category = &"dessert"
 rarity = &"epic"
 gold_value = 12
-shape_cells = [Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(3, 1)]
+shape_cells = Array[Vector2i]([Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(3, 1)])
 hp_bonus = 40
 passive_text = "每次回复时，额外使受到回复的角色+10% 攻速。"
 
@@ -203,8 +203,8 @@ display_name = "培根条"
 category = &"meat"
 rarity = &"common"
 gold_value = 2
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1)]
-attack_bonus = 3.0
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1)])
+attack_bonus = 1.5
 passive_text = "售出时额外获得1金币。"
 
 [sub_resource type="Resource" id="Food_chicken_steak"]
@@ -214,8 +214,8 @@ display_name = "鸡腿排"
 category = &"meat"
 rarity = &"common"
 gold_value = 2
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0)]
-passive_text = "持有者血量低于50%时，额外+4.5 ATK。"
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0)])
+passive_text = "持有者血量低于50%时，额外+3 ATK。"
 
 [sub_resource type="Resource" id="Food_sausage_skewer"]
 script = ExtResource("2_definition")
@@ -224,8 +224,8 @@ display_name = "熏肠串"
 category = &"meat"
 rarity = &"common"
 gold_value = 3
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
-attack_bonus = 4.5
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)])
+attack_bonus = 3.0
 passive_text = "相邻8格每有一个[主食]，额外+1层[肉类]羁绊。"
 
 [sub_resource type="Resource" id="Food_lamb_rib"]
@@ -235,7 +235,7 @@ display_name = "羊肋排"
 category = &"meat"
 rarity = &"rare"
 gold_value = 5
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)])
 attack_bonus = 7.5
 passive_text = "[肉类]羁绊触发时，每层[肉类]羁绊额外+0.5% ATK。"
 
@@ -246,7 +246,7 @@ display_name = "战斧牛排"
 category = &"meat"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2)])
 passive_text = "相邻8格若有[香料]，每次攻击有25%几率造成双倍伤害。"
 
 [sub_resource type="Resource" id="Food_flame_sausage"]
@@ -256,7 +256,7 @@ display_name = "烈焰香肠"
 category = &"meat"
 rarity = &"rare"
 gold_value = 7
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0)])
 attack_bonus = 6.0
 passive_text = "敌方血量低于50%时，持有者额外+8% 攻速。"
 
@@ -267,19 +267,19 @@ display_name = "帕尔马火腿"
 category = &"meat"
 rarity = &"rare"
 gold_value = 7
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)])
 attack_bonus = 7.5
-passive_text = "若当前便当中有至少3个[肉类]，额外+40 HP。"
+passive_text = "若当前便当中有至少3个[肉类]，额外+24 HP。"
 
 [sub_resource type="Resource" id="Food_dragon_tail"]
 script = ExtResource("2_definition")
 id = &"dragon_tail"
 display_name = "炙烤龙尾"
 category = &"meat"
-hybrid_categories = [&"staple"]
+hybrid_categories = Array[StringName]([&"staple"])
 rarity = &"epic"
 gold_value = 12
-shape_cells = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2)]
+shape_cells = Array[Vector2i]([Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2)])
 passive_text = "判定时同时视为1个[肉类]和1个[主食]；持有者血量低于40%时，[肉类]羁绊增幅翻倍。"
 
 [sub_resource type="Resource" id="Food_monster_tartare"]
@@ -289,9 +289,9 @@ display_name = "怪物鞑靼"
 category = &"meat"
 rarity = &"epic"
 gold_value = 14
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(2, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(2, 2)])
 attack_bonus = 12.0
-passive_text = "持有者在战斗开始时受到40点伤害；但每损失10%生命，额外+4.5 ATK。"
+passive_text = "持有者在战斗开始时受到40点伤害；但每损失10%生命，额外+3 ATK。"
 
 [sub_resource type="Resource" id="Food_iced_black_tea"]
 script = ExtResource("2_definition")
@@ -300,7 +300,7 @@ display_name = "冰红茶"
 category = &"drink"
 rarity = &"common"
 gold_value = 1
-shape_cells = [Vector2i(0, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0)])
 attack_speed_percent = 10.0
 
 [sub_resource type="Resource" id="Food_soda"]
@@ -310,7 +310,7 @@ display_name = "柠气苏打"
 category = &"drink"
 rarity = &"common"
 gold_value = 3
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)])
 passive_text = "战斗开始后前10秒，敌方攻速-25%。"
 
 [sub_resource type="Resource" id="Food_matcha"]
@@ -320,9 +320,9 @@ display_name = "解腻抹茶"
 category = &"drink"
 rarity = &"common"
 gold_value = 2
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0)])
 attack_speed_percent = 10.0
-passive_text = "若与[甜品]相邻，额外+20%攻速。"
+passive_text = "若与[甜品]相邻，额外+10%攻速。"
 
 [sub_resource type="Resource" id="Food_honey_drink"]
 script = ExtResource("2_definition")
@@ -331,7 +331,7 @@ display_name = "蜂蜜特饮"
 category = &"drink"
 rarity = &"rare"
 gold_value = 3
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0)])
 attack_speed_percent = 5.0
 passive_text = "[饮品]羁绊触发时，敌方每攻击一次-5%攻速。"
 
@@ -342,8 +342,8 @@ display_name = "教父"
 category = &"drink"
 rarity = &"rare"
 gold_value = 4
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
-passive_text = "相邻4格每有一个空格，获得2金币。"
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)])
+passive_text = "相邻4格每有一个空格，获得1金币。"
 
 [sub_resource type="Resource" id="Food_frozen_mint"]
 script = ExtResource("2_definition")
@@ -352,8 +352,8 @@ display_name = "急冻薄荷"
 category = &"drink"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
-attack_speed_percent = 60.0
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)])
+attack_speed_percent = 40.0
 passive_text = "若与[主食]相邻，攻击时有20%概率额外施加-5%攻速。"
 
 [sub_resource type="Resource" id="Food_power_coffee"]
@@ -363,7 +363,7 @@ display_name = "超给力咖啡"
 category = &"drink"
 rarity = &"rare"
 gold_value = 4
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0)])
 passive_text = "战斗15秒后，全队额外+5% 攻速。"
 
 [sub_resource type="Resource" id="Food_amber_tea"]
@@ -373,8 +373,8 @@ display_name = "时停琥珀茶"
 category = &"drink"
 rarity = &"epic"
 gold_value = 10
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1)]
-attack_speed_percent = 80.0
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1)])
+attack_speed_percent = 60.0
 passive_text = "相邻八格每有一杯[饮品]，造成伤害时有5%几率使怪物下一次攻击无效。"
 
 [sub_resource type="Resource" id="Food_cellar_vintage"]
@@ -384,7 +384,7 @@ display_name = "时空窖藏"
 category = &"drink"
 rarity = &"epic"
 gold_value = 12
-shape_cells = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2)]
+shape_cells = Array[Vector2i]([Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2)])
 attack_speed_percent = 40.0
 passive_text = "购买后，每刷新一次商店，该种饮品获得10%攻速加成和敌方攻速-5%。"
 
@@ -395,19 +395,19 @@ display_name = "奶油土豆泥"
 category = &"staple"
 rarity = &"common"
 gold_value = 2
-shape_cells = [Vector2i(0, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0)])
 hp_bonus = 8
-attack_bonus = 1.0
+attack_bonus = 1.5
 
 [sub_resource type="Resource" id="Food_ramen"]
 script = ExtResource("2_definition")
 id = &"ramen"
 display_name = "浓汤拉面"
 category = &"staple"
-hybrid_categories = [&"drink"]
+hybrid_categories = Array[StringName]([&"drink"])
 rarity = &"common"
-gold_value = 1
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1)]
+gold_value = 2
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1)])
 hp_bonus = 8
 passive_text = "同时作为[主食][饮品]。"
 
@@ -418,9 +418,9 @@ display_name = "玉米饼"
 category = &"staple"
 rarity = &"common"
 gold_value = 3
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0)])
 hp_bonus = 8
-passive_text = "若同时与[蔬果][肉类]相邻，额外+5 ATK。"
+passive_text = "若同时与[蔬果][肉类]相邻，额外+3 ATK。"
 
 [sub_resource type="Resource" id="Food_baguette"]
 script = ExtResource("2_definition")
@@ -429,7 +429,7 @@ display_name = "长枪法棍"
 category = &"staple"
 rarity = &"rare"
 gold_value = 5
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2), Vector2i(0, 3)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2), Vector2i(0, 3)])
 passive_text = "每攻击一次，+2层[主食]羁绊。"
 
 [sub_resource type="Resource" id="Food_sandwich"]
@@ -439,7 +439,7 @@ display_name = "夹心三明治"
 category = &"staple"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)])
 hp_bonus = 16
 attack_bonus = 3.0
 passive_text = "相邻4格每有一种不同类别食物，额外+8 HP。"
@@ -451,7 +451,7 @@ display_name = "海鲜炒饭"
 category = &"staple"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)])
 hp_bonus = 8
 attack_bonus = 2.0
 passive_text = "若与[饮品]相邻，额外+4% 攻速。"
@@ -463,7 +463,7 @@ display_name = "远行便当"
 category = &"staple"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(0, 2), Vector2i(1, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(0, 2), Vector2i(1, 2)])
 passive_text = "购买后立即免费刷新1次商店，并获得一次在当前商店免费购买食物的机会。"
 
 [sub_resource type="Resource" id="Food_mixed_feast"]
@@ -471,10 +471,10 @@ script = ExtResource("2_definition")
 id = &"mixed_feast"
 display_name = "八珍大杂烩"
 category = &"staple"
-hybrid_categories = [&"fruit", &"dessert", &"meat", &"drink", &"spice"]
+hybrid_categories = Array[StringName]([&"fruit", &"dessert", &"meat", &"drink", &"spice"])
 rarity = &"epic"
 gold_value = 10
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(2, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(2, 2)])
 passive_text = "判定时同时视为所有种类食物。每有一个激活的羁绊，+3 ATK, +16 HP, +10% 攻速。"
 
 [sub_resource type="Resource" id="Food_dragon_stove"]
@@ -484,8 +484,8 @@ display_name = "龙熄炙石炉"
 category = &"staple"
 rarity = &"epic"
 gold_value = 12
-shape_cells = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2)]
-passive_text = "当前便当中每有1种不同类别食物，全队额外+8 HP、+1.5 ATK。当前便当中每有1种不同类别食物，+5层[主食]羁绊。"
+shape_cells = Array[Vector2i]([Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2)])
+passive_text = "当前便当中每有1种不同类别食物，全队额外+4 HP、+0.75 ATK。当前便当中每有1种不同类别食物，+2层[主食]羁绊。"
 
 [sub_resource type="Resource" id="Food_sesame"]
 script = ExtResource("2_definition")
@@ -494,7 +494,7 @@ display_name = "芝麻"
 category = &"spice"
 rarity = &"common"
 gold_value = 1
-shape_cells = [Vector2i(0, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0)])
 bonus_damage = 1.5
 
 [sub_resource type="Resource" id="Food_salt_pack"]
@@ -504,8 +504,8 @@ display_name = "海盐包"
 category = &"spice"
 rarity = &"common"
 gold_value = 2
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1)]
-passive_text = "垫在[主食]或[肉类]下方时，+5 附加伤害。"
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1)])
+passive_text = "垫在[主食]或[肉类]下方时，+3 附加伤害。"
 
 [sub_resource type="Resource" id="Food_wasabi"]
 script = ExtResource("2_definition")
@@ -514,8 +514,8 @@ display_name = "芥末"
 category = &"spice"
 rarity = &"common"
 gold_value = 2
-shape_cells = [Vector2i(0, 0)]
-passive_text = "每次造成伤害时额外造成一点伤害（不算伤害次数）。"
+shape_cells = Array[Vector2i]([Vector2i(0, 0)])
+passive_text = "每次造成伤害时额外造成3点伤害（不算伤害次数）。"
 
 [sub_resource type="Resource" id="Food_soy_sauce"]
 script = ExtResource("2_definition")
@@ -524,7 +524,7 @@ display_name = "酱油"
 category = &"spice"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1)])
 bonus_damage = 1.0
 passive_text = "相邻4格每一个空格，攻击造成一次1点附加伤害。"
 
@@ -535,7 +535,7 @@ display_name = "香菜"
 category = &"spice"
 rarity = &"rare"
 gold_value = 4
-shape_cells = [Vector2i(0, 0)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0)])
 bonus_damage = 9.0
 passive_text = "相邻4格每有一个食物，-3附加伤害。"
 
@@ -546,7 +546,7 @@ display_name = "百味椒束"
 category = &"spice"
 rarity = &"rare"
 gold_value = 4
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2), Vector2i(0, 3)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2), Vector2i(0, 3)])
 bonus_damage = 1.0
 passive_text = "若与[蔬果]相邻，攻击造成1.5附伤。"
 
@@ -557,8 +557,8 @@ display_name = "咖喱罐"
 category = &"spice"
 rarity = &"rare"
 gold_value = 6
-shape_cells = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
-passive_text = "购买后返还4金币；本局每购买一次香料，返还1金币。"
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)])
+passive_text = "购买后返还3金币；本局每购买一次香料，返还1金币。"
 
 [sub_resource type="Resource" id="Food_sage_ashes"]
 script = ExtResource("2_definition")
@@ -567,7 +567,7 @@ display_name = "贤者骨灰"
 category = &"spice"
 rarity = &"epic"
 gold_value = 8
-shape_cells = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1)]
+shape_cells = Array[Vector2i]([Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1)])
 passive_text = "角色濒临死亡时复活，回复30%生命值。"
 
 [sub_resource type="Resource" id="Food_forbidden_herb"]
@@ -577,10 +577,10 @@ display_name = "禁忌折耳根"
 category = &"spice"
 rarity = &"epic"
 gold_value = 8
-shape_cells = [Vector2i(0, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2)]
+shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2)])
 bonus_damage = 3.0
 passive_text = "每次造成伤害时额外减少敌方5%攻击力。"
 
 [resource]
 script = ExtResource("1_catalog")
-foods = [SubResource("Food_red_berry"), SubResource("Food_lettuce_leaf"), SubResource("Food_lemon"), SubResource("Food_broccoli"), SubResource("Food_prickly_pear"), SubResource("Food_rock_melon"), SubResource("Food_rosemary_tomato"), SubResource("Food_demon_durian"), SubResource("Food_tree_fruit"), SubResource("Food_gummy_block"), SubResource("Food_pudding_cup"), SubResource("Food_jam_cookie"), SubResource("Food_sugar_donut"), SubResource("Food_cherry_mousse"), SubResource("Food_caramel_mille"), SubResource("Food_puff_tower"), SubResource("Food_ice_cream_sundae"), SubResource("Food_fairy_candy_castle"), SubResource("Food_bacon_strip"), SubResource("Food_chicken_steak"), SubResource("Food_sausage_skewer"), SubResource("Food_lamb_rib"), SubResource("Food_tomahawk_steak"), SubResource("Food_flame_sausage"), SubResource("Food_parma_ham"), SubResource("Food_dragon_tail"), SubResource("Food_monster_tartare"), SubResource("Food_iced_black_tea"), SubResource("Food_soda"), SubResource("Food_matcha"), SubResource("Food_honey_drink"), SubResource("Food_godfather"), SubResource("Food_frozen_mint"), SubResource("Food_power_coffee"), SubResource("Food_amber_tea"), SubResource("Food_cellar_vintage"), SubResource("Food_mashed_potato"), SubResource("Food_ramen"), SubResource("Food_corn_cake"), SubResource("Food_baguette"), SubResource("Food_sandwich"), SubResource("Food_seafood_rice"), SubResource("Food_travel_bento"), SubResource("Food_mixed_feast"), SubResource("Food_dragon_stove"), SubResource("Food_sesame"), SubResource("Food_salt_pack"), SubResource("Food_wasabi"), SubResource("Food_soy_sauce"), SubResource("Food_cilantro"), SubResource("Food_pepper_bundle"), SubResource("Food_curry_can"), SubResource("Food_sage_ashes"), SubResource("Food_forbidden_herb")]
+foods = Array[ExtResource("2_definition")]([SubResource("Food_red_berry"), SubResource("Food_lettuce_leaf"), SubResource("Food_lemon"), SubResource("Food_broccoli"), SubResource("Food_prickly_pear"), SubResource("Food_rock_melon"), SubResource("Food_rosemary_tomato"), SubResource("Food_demon_durian"), SubResource("Food_tree_fruit"), SubResource("Food_gummy_block"), SubResource("Food_pudding_cup"), SubResource("Food_jam_cookie"), SubResource("Food_sugar_donut"), SubResource("Food_cherry_mousse"), SubResource("Food_caramel_mille"), SubResource("Food_puff_tower"), SubResource("Food_ice_cream_sundae"), SubResource("Food_fairy_candy_castle"), SubResource("Food_bacon_strip"), SubResource("Food_chicken_steak"), SubResource("Food_sausage_skewer"), SubResource("Food_lamb_rib"), SubResource("Food_tomahawk_steak"), SubResource("Food_flame_sausage"), SubResource("Food_parma_ham"), SubResource("Food_dragon_tail"), SubResource("Food_monster_tartare"), SubResource("Food_iced_black_tea"), SubResource("Food_soda"), SubResource("Food_matcha"), SubResource("Food_honey_drink"), SubResource("Food_godfather"), SubResource("Food_frozen_mint"), SubResource("Food_power_coffee"), SubResource("Food_amber_tea"), SubResource("Food_cellar_vintage"), SubResource("Food_mashed_potato"), SubResource("Food_ramen"), SubResource("Food_corn_cake"), SubResource("Food_baguette"), SubResource("Food_sandwich"), SubResource("Food_seafood_rice"), SubResource("Food_travel_bento"), SubResource("Food_mixed_feast"), SubResource("Food_dragon_stove"), SubResource("Food_sesame"), SubResource("Food_salt_pack"), SubResource("Food_wasabi"), SubResource("Food_soy_sauce"), SubResource("Food_cilantro"), SubResource("Food_pepper_bundle"), SubResource("Food_curry_can"), SubResource("Food_sage_ashes"), SubResource("Food_forbidden_herb")])
