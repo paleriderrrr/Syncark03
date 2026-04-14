@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="CharacterRoster" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="CharacterRoster" format=3 uid="uid://ba2p012dj3e5k"]
 
-[ext_resource type="Script" path="res://Scripts/Data/character_roster.gd" id="1_roster"]
-[ext_resource type="Script" path="res://Scripts/Data/character_definition.gd" id="2_definition"]
+[ext_resource type="Script" uid="uid://bxpy1bbkcabpf" path="res://Scripts/Data/character_roster.gd" id="1_roster"]
+[ext_resource type="Script" uid="uid://c2cf7h30y4fkp" path="res://Scripts/Data/character_definition.gd" id="2_definition"]
 
 [sub_resource type="Resource" id="CharacterDefinition_warrior"]
 script = ExtResource("2_definition")
@@ -29,5 +29,4 @@ attack_interval = 2.5
 
 [resource]
 script = ExtResource("1_roster")
-characters = [SubResource("CharacterDefinition_warrior"), SubResource("CharacterDefinition_hunter"), SubResource("CharacterDefinition_mage")]
-
+characters = Array[ExtResource("2_definition")]([SubResource("CharacterDefinition_warrior"), SubResource("CharacterDefinition_hunter"), SubResource("CharacterDefinition_mage")])

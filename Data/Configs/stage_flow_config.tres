@@ -1,13 +1,11 @@
-[gd_resource type="Resource" script_class="StageFlowConfig" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="StageFlowConfig" format=3 uid="uid://d4d0ub6kj4meh"]
 
-[ext_resource type="Script" path="res://Scripts/Data/stage_flow_config.gd" id="1_stage_flow"]
+[ext_resource type="Script" uid="uid://c6pragycvxbly" path="res://Scripts/Data/stage_flow_config.gd" id="1_stage_flow"]
 
 [resource]
 script = ExtResource("1_stage_flow")
-route_nodes = [&"market", &"battle", &"rest", &"battle", &"market", &"battle", &"rest", &"battle", &"market", &"battle", &"rest", &"battle", &"market", &"boss_battle"]
-normal_battle_reward_gold = [12, 18, 24, 32, 40, 55]
-normal_drop_value_curve = [8, 10, 14, 18, 24, 30]
-monster_hp_multiplier_curve = [0.9, 1.05, 1.2, 1.35, 1.55, 1.75, 1.0]
-monster_attack_multiplier_curve = [0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.0]
-initial_gold = 30
-
+route_nodes = Array[StringName]([&"market", &"battle", &"rest", &"battle", &"market", &"battle", &"rest", &"battle", &"market", &"battle", &"rest", &"battle", &"market", &"boss_battle"])
+normal_battle_reward_gold = Array[int]([12, 18, 24, 32, 40, 55])
+normal_drop_value_curve = Array[int]([8, 10, 14, 18, 24, 30])
+monster_hp_multiplier_curve = Array[float]([0.9, 1.05, 1.2, 1.35, 1.55, 1.75, 1.0])
+monster_attack_multiplier_curve = Array[float]([0.85, 0.95, 1.05, 1.15, 1.25, 1.35, 1.0])
