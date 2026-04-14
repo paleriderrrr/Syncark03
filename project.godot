@@ -30,6 +30,10 @@ window/stretch/mode="viewport"
 window/stretch/aspect="expand"
 window/per_pixel_transparency/allowed=true
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/syncark_numeric_editor/plugin.cfg")
+
 [gui]
 
 theme/custom="res://Themes/default_ui_theme.tres"
