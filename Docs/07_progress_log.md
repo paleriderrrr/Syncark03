@@ -1,16 +1,16 @@
 # Development Progress Log
 
 ## Current Status
-- Phase: Godot Foundation Implementation In Progress
+- Phase: Program Fix And UI Blockout Planning
 - Overall Progress: 20%
-- Current Goal: Build the resource-driven data layer, autoload state, and first UI/scene shell for the confirmed Godot implementation.
+- Current Goal: Fix gameplay-blocking program issues first, build UI blockouts while final art assets are pending, then integrate formal art after behavior contracts are stable.
 - Current Owner: AI
-- Last Updated: 2026-03-28 22:40
+- Last Updated: 2026-04-27 00:00
 
 ## Active Risks
-- Risk: Godot runtime verification is currently blocked because no local Godot executable is available in PATH from this environment.
-- Impact: Scene/script syntax and resource loading cannot be fully runtime-validated in this round.
-- Mitigation: Perform static checks on created assets and scripts now, and run runtime verification as soon as a callable Godot executable is available.
+- Risk: Formal art assets for the battle-stage popup, backpack/detail panels, lunchbox polish, and loading animation are still pending.
+- Impact: Final visual replacement cannot be completed in this pass.
+- Mitigation: Prioritize program fixes and UI blockouts with stable positions, sizes, states, and named replacement surfaces so later art integration is direct.
 
 ## Update Log
 
@@ -831,3 +831,11 @@
 - Blockers: Automatic runtime verification is still constrained by the current local Godot headless crash, so this pass relies on code inspection plus expanded food-effect runner coverage in the present environment.
 - Files Touched: Scripts/Core/combat_engine.gd, Scripts/Tests/food_effect_runner.gd, Docs/07_progress_log.md
 - Notes: This pass intentionally fixes implementation correctness before any economy or combat table rebalance, so later number tuning is based on effects that actually exist in runtime.
+
+### 2026-04-27 00:00
+- Completed: Added a new implementation plan for the current program-fix and UI-blockout wave, prioritizing lab crash repair, inventory paging visibility, purchase unification, lunchbox rotation/placement stability, food description/effect consistency, adjacency synergy visualization, and the battle-stage popup blockout while final art assets are pending.
+- In Progress: Preparing to execute the new plan with program fixes before final art integration.
+- Next: Start with the highest-risk runtime blockers: reproduce and fix the `pudding_cup` food-effect lab crash, then reproduce and fix the hidden third-page inventory item issue for `时停伯爵茶`.
+- Blockers: Formal art assets are not available yet; final battle-stage, backpack/detail, lunchbox, and loading-animation art integration should wait until assets are delivered.
+- Files Touched: Docs/superpowers/plans/2026-04-27-program-fix-and-ui-blockout-plan.md, Docs/07_progress_log.md
+- Notes: Program fixes have higher priority than final art. UI blockouts are allowed now, but they must preserve final layout contracts and use real gameplay rules rather than visual-only heuristics.
