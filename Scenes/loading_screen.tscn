@@ -1,35 +1,84 @@
-[gd_scene format=3 uid="uid://b0xy3qkbqvxom"]
+[gd_scene load_steps=11 format=3 uid="uid://b0xy3qkbqvxom"]
 
-[ext_resource type="Script" uid="uid://by8lts1vhfpvb" path="res://Scripts/UI/loading_screen.gd" id="1_loading"]
+[ext_resource type="Script" path="res://Scripts/UI/loading_screen.gd" id="9_l4h3f"]
 
-[node name="LoadingScreen" type="Control" unique_id=408185468]
+[ext_resource type="Texture2D" uid="uid://gbqu6aauv7fv" path="res://Art/Loading/frame_00001.png" id="1_m2hk5"]
+[ext_resource type="Texture2D" uid="uid://cplhgxtpuh6lc" path="res://Art/Loading/frame_00002.png" id="2_1opfs"]
+[ext_resource type="Texture2D" uid="uid://bkm6630rvw2kv" path="res://Art/Loading/frame_00003.png" id="3_xbrhi"]
+[ext_resource type="Texture2D" uid="uid://kjqmr58juh25" path="res://Art/Loading/frame_00004.png" id="4_iom8t"]
+[ext_resource type="Texture2D" uid="uid://p3uynhw61khn" path="res://Art/Loading/frame_00005.png" id="5_nw6gx"]
+[ext_resource type="Texture2D" uid="uid://c30acmn3gxsd4" path="res://Art/Loading/frame_00006.png" id="6_x8yqx"]
+[ext_resource type="Texture2D" uid="uid://mebxtxrw46wi" path="res://Art/Loading/frame_00007.png" id="7_qbyj8"]
+[ext_resource type="Texture2D" uid="uid://mxqnexg1mx48" path="res://Art/Loading/frame_00008.png" id="8_5emdp"]
+
+[sub_resource type="Animation" id="Animation_umxys"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CenterContainer/Knight:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_m2hk5")]
+}
+
+[sub_resource type="Animation" id="Animation_4v7p6"]
+resource_name = "run"
+length = 0.48
+loop_mode = 1
+step = 0.06
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CenterContainer/Knight:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.06, 0.12, 0.18, 0.24, 0.3, 0.36, 0.42),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_m2hk5"), ExtResource("2_1opfs"), ExtResource("3_xbrhi"), ExtResource("4_iom8t"), ExtResource("5_nw6gx"), ExtResource("6_x8yqx"), ExtResource("7_qbyj8"), ExtResource("8_5emdp")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_b2msm"]
+_data = {
+&"RESET": SubResource("Animation_umxys"),
+&"run": SubResource("Animation_4v7p6")
+}
+
+[node name="LoadingScreen" type="Control" unique_id=213320144]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_loading")
+script = ExtResource("9_l4h3f")
 
-[node name="Backdrop" type="ColorRect" parent="." unique_id=165381585]
-unique_name_in_owner = true
+[node name="Backdrop" type="ColorRect" parent="." unique_id=13351391]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 1)
+color = Color(0.08627451, 0.08235294, 0.07843138, 1)
 
-[node name="LoadingKnight" type="TextureRect" parent="." unique_id=333378131]
-unique_name_in_owner = true
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1098527544]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
+
+[node name="Knight" type="TextureRect" parent="CenterContainer" unique_id=1993251010]
+custom_minimum_size = Vector2(320, 440)
+layout_mode = 2
+texture = ExtResource("1_m2hk5")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1332626128]
+autoplay = "run"
+libraries/ = SubResource("AnimationLibrary_b2msm")
