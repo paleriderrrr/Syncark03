@@ -142,6 +142,7 @@ func _run() -> void:
 			break
 	_assert(saw_expansion_entry, "Pending character expansions should appear in the shared inventory strip data")
 	_assert(not expansion_inventory_entry.is_empty(), "Pending expansion inventory entry should remain available for drag validation")
+	_assert(String(expansion_inventory_entry.get("display_name", "")).contains("\u62d3\u5c55"), "Pending expansion inventory entry should keep a readable Chinese title")
 	run_state.select_character(&"mage")
 	_assert(run_state.select_pending_expansion(&"drag_expansion", expansion_inventory_entry.get("target_character_id", &"")), "Selecting a pending expansion from shared inventory should resolve its owning role")
 	_assert(run_state.selected_character_id == &"warrior", "Selecting a warrior expansion from shared inventory should focus the warrior board")
@@ -178,6 +179,14 @@ func _run() -> void:
 		"target_character_id": run_state.selected_character_id,
 		"price": 5,
 	})
+	var market_package_entries_with_expansion: Array[Dictionary] = run_state.get_market_package_entries()
+	var market_expansion_entry: Dictionary = {}
+	for entry_variant in market_package_entries_with_expansion:
+		if entry_variant.get("offer_id", &"") == market_expansion_offer_id:
+			market_expansion_entry = entry_variant
+			break
+	_assert(not market_expansion_entry.is_empty(), "Market expansion entry should be exposed in the package list")
+	_assert(String(market_expansion_entry.get("display_name", "")).contains("\u62d3\u5c55"), "Market expansion entry should keep a readable Chinese title")
 	run_state.current_gold = maxi(run_state.current_gold, 20)
 	var market_expansion_gold_before: int = run_state.current_gold
 	_assert(not run_state.begin_market_expansion_action(market_expansion_offer_id).is_empty(), "Market expansion drag should enter an explicit selected-item action")

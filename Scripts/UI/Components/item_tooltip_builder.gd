@@ -45,11 +45,11 @@ static func build_tooltip_panel(entry: Dictionary) -> PanelContainer:
 	vbox.add_theme_constant_override("separation", 6)
 	margin.add_child(vbox)
 	vbox.add_child(_build_tooltip_label(String(entry.get("tooltip_name", entry.get("display_name", ""))), false))
-	vbox.add_child(_build_tooltip_label("基础加成: %s" % String(entry.get("tooltip_base_bonus", "无基础加成")), true))
-	vbox.add_child(_build_tooltip_label("特殊效果: %s" % String(entry.get("tooltip_special_effect", "无")), true))
+	vbox.add_child(_build_tooltip_label("\u57fa\u7840\u52a0\u6210: %s" % String(entry.get("tooltip_base_bonus", "\u65e0\u57fa\u7840\u52a0\u6210")), true))
+	vbox.add_child(_build_tooltip_label("\u7279\u6b8a\u6548\u679c: %s" % String(entry.get("tooltip_special_effect", "\u65e0")), true))
 	var shape_cells: Array[Vector2i] = _get_tooltip_shape_cells(entry)
 	if not shape_cells.is_empty():
-		vbox.add_child(_build_tooltip_label("形状", false))
+		vbox.add_child(_build_tooltip_label("\u5f62\u72b6", false))
 		var shape_preview := TooltipShapePreview.new()
 		shape_preview.set_cells(shape_cells)
 		vbox.add_child(shape_preview)
@@ -64,8 +64,8 @@ static func apply_to_labels(
 	shape_preview: TooltipShapePreview
 ) -> void:
 	title_label.text = String(entry.get("tooltip_name", entry.get("display_name", "")))
-	base_bonus_label.text = "基础加成: %s" % String(entry.get("tooltip_base_bonus", "无基础加成"))
-	special_effect_label.text = "特殊效果: %s" % String(entry.get("tooltip_special_effect", "无"))
+	base_bonus_label.text = "\u57fa\u7840\u52a0\u6210: %s" % String(entry.get("tooltip_base_bonus", "\u65e0\u57fa\u7840\u52a0\u6210"))
+	special_effect_label.text = "\u7279\u6b8a\u6548\u679c: %s" % String(entry.get("tooltip_special_effect", "\u65e0"))
 	var shape_cells: Array[Vector2i] = _get_tooltip_shape_cells(entry)
 	shape_title_label.visible = not shape_cells.is_empty()
 	shape_preview.visible = not shape_cells.is_empty()

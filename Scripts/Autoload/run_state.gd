@@ -367,11 +367,11 @@ func get_current_node_type() -> StringName:
 func get_node_display_name(node_type: StringName) -> String:
 	match node_type:
 		NODE_MARKET:
-			return "甯傚満"
+			return "市场"
 		NODE_BATTLE:
-			return "鎴樻枟"
+			return "战斗"
 		NODE_REST:
-			return "浼戞暣"
+			return "休整"
 		NODE_BOSS_BATTLE:
 			return "Boss战"
 		_:
@@ -1320,28 +1320,28 @@ func _has_food_on_cells(character_id: StringName, cells: Array[Vector2i]) -> boo
 
 func get_selected_item_summary() -> String:
 	if selected_item.is_empty():
-		return "鏈€夋嫨鐗╁搧"
+		return "未选择物品"
 	if selected_item["source"] == &"inventory":
 		var item: Dictionary = _find_inventory_item(selected_item["instance_id"])
 		if item.is_empty():
-			return "鏈€夋嫨鐗╁搧"
+			return "未选择物品"
 		var definition: FoodDefinition = get_food_definition(item["definition_id"])
-		return "鏀剧疆椋熺墿: %s" % definition.display_name
+		return "放置食物: %s" % definition.display_name
 	if selected_item["source"] == &"market_expansion":
 		var market_expansion: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
 		if market_expansion.is_empty():
-			return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
-		return "閺€鍓х枂妤楊厾娲呴幏鎾崇潔: %s" % str(market_expansion.get("label", ""))
+			return "未找到拓展"
+		return "市场拓展: %s" % str(market_expansion.get("label", ""))
 	if selected_item["source"] == &"board_expansion":
 		var board_expansion: Dictionary = _find_placed_expansion(selected_character_id, selected_item.get("instance_id", &""))
 		if board_expansion.is_empty():
-			return "鏈€夋嫨鐗╁搧"
-		return "鏀剧疆楗洅鎷撳睍: %s" % board_expansion.get("label", "")
+			return "未选择物品"
+		return "已放置拓展: %s" % board_expansion.get("label", "")
 	var expansion_owner_id: StringName = selected_item.get("target_character_id", selected_character_id)
 	var expansion: Dictionary = _find_pending_expansion(expansion_owner_id, selected_item["instance_id"])
 	if expansion.is_empty():
-		return "鏈€夋嫨鐗╁搧"
-	return "鏀剧疆楗洅鎷撳睍: %s" % expansion["label"]
+		return "未选择物品"
+	return "待放置拓展: %s" % expansion["label"]
 
 func get_inventory_display_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
@@ -1356,44 +1356,44 @@ func get_inventory_display_entries() -> Array[Dictionary]:
 
 func get_selected_item_summary_safe() -> String:
 	if selected_item.is_empty():
-		return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
+		return "未选择物品"
 	match selected_item.get("source", &""):
 		&"inventory":
 			var inventory_item: Dictionary = _find_inventory_item(selected_item.get("instance_id", &""))
 			if inventory_item.is_empty():
-				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
+				return "未选择物品"
 			var inventory_definition: FoodDefinition = get_food_definition(inventory_item.get("definition_id", &""))
-			return "閺€鍓х枂妞嬬喓澧? %s" % (inventory_definition.display_name if inventory_definition != null else "")
+			return "食物: %s" % (inventory_definition.display_name if inventory_definition != null else "")
 		&"market_offer":
 			var market_offer: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
 			if market_offer.is_empty():
-				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
+				return "未选择物品"
 			var market_definition: FoodDefinition = get_food_definition(market_offer.get("definition_id", &""))
-			return "閺€鍓х枂妞嬬喓澧? %s" % (market_definition.display_name if market_definition != null else "")
+			return "市场食物: %s" % (market_definition.display_name if market_definition != null else "")
 		&"board_food":
 			var placed_food: Dictionary = _find_placed_food(selected_character_id, selected_item.get("instance_id", &""))
 			if placed_food.is_empty():
-				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
+				return "未选择物品"
 			var placed_definition: FoodDefinition = get_food_definition(placed_food.get("definition_id", &""))
-			return "閺€鍓х枂妞嬬喓澧? %s" % (placed_definition.display_name if placed_definition != null else "")
+			return "已放置食物: %s" % (placed_definition.display_name if placed_definition != null else "")
 		&"board_expansion":
 			var placed_expansion: Dictionary = _find_placed_expansion(selected_character_id, selected_item.get("instance_id", &""))
 			if placed_expansion.is_empty():
-				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
-			return "閺€鍓х枂妞嬬喓澧? %s" % str(placed_expansion.get("label", ""))
+				return "未选择物品"
+			return "已放置拓展: %s" % str(placed_expansion.get("label", ""))
 		&"pending_expansion", &"expansion":
 			var pending_owner_id: StringName = selected_item.get("target_character_id", selected_character_id)
 			var pending_expansion: Dictionary = _find_pending_expansion(pending_owner_id, selected_item.get("instance_id", &""))
 			if pending_expansion.is_empty():
-				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
-			return "閺€鍓х枂妤楊厾娲呴幏鎾崇潔: %s" % str(pending_expansion.get("label", ""))
+				return "未选择物品"
+			return "待放置拓展: %s" % str(pending_expansion.get("label", ""))
 		&"market_expansion":
 			var offer_expansion: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
 			if offer_expansion.is_empty():
-				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
-			return "閺€鍓х枂妤楊厾娲呴幏鎾崇潔: %s" % str(offer_expansion.get("label", ""))
+				return "未选择物品"
+			return "市场拓展: %s" % str(offer_expansion.get("label", ""))
 		_:
-			return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
+			return "未选择物品"
 
 func get_grouped_inventory_entries() -> Array[Dictionary]:
 	var grouped: Dictionary = {}
@@ -1429,7 +1429,7 @@ func get_grouped_inventory_entries() -> Array[Dictionary]:
 				"group_key": pending["instance_id"],
 				"instance_id": pending["instance_id"],
 				"definition_id": &"",
-				"display_name": "%s 鎷撳睍 %s" % [get_character_display_names().get(character_id, String(character_id)), pending["label"]],
+				"display_name": "%s 拓展 %s" % [get_character_display_names().get(character_id, String(character_id)), pending["label"]],
 				"count": 1,
 				"category": &"expansion",
 				"rarity": &"rare",
@@ -1445,7 +1445,7 @@ func get_pending_expansion_entries(character_id: StringName) -> Array[Dictionary
 	for item in get_character_state(character_id).get("pending_expansions", []):
 		entries.append({
 			"instance_id": item["instance_id"],
-			"label": "鎷撳睍 %s" % item["label"],
+			"label": "拓展 %s" % item["label"],
 		})
 	return entries
 
@@ -1493,7 +1493,7 @@ func get_market_package_entries() -> Array[Dictionary]:
 				"group_key": offer["offer_id"],
 				"offer_id": offer["offer_id"],
 				"kind": &"expansion",
-				"display_name": "鎷撳睍 %s" % offer["label"],
+				"display_name": "拓展 %s" % offer["label"],
 				"count": 1,
 				"category": &"expansion",
 				"rarity": &"rare",
@@ -1564,13 +1564,13 @@ func get_action_button_text() -> String:
 		return "重新开始"
 	match get_current_node_type():
 		NODE_MARKET:
-			return "绂诲紑甯傚満"
+			return "离开市场"
 		NODE_REST:
-			return "缁撴潫浼戞暣"
+			return "结束休整"
 		NODE_BATTLE, NODE_BOSS_BATTLE:
 			return "开始战斗"
 		_:
-			return "缁х画"
+			return "继续"
 
 func get_action_button_visual_key() -> StringName:
 	if run_finished:
