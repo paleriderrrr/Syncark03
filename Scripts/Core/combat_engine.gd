@@ -20,6 +20,72 @@ static func preview_effective_interval(base_interval: float, speed_bonus_pct: fl
 	var engine: CombatEngine = CombatEngine.new()
 	return engine._effective_interval(base_interval, speed_bonus_pct)
 
+static func preview_adjacency_synergy(run_state: Object, character_id: StringName, source_instance_id: StringName) -> Dictionary:
+	var engine: CombatEngine = CombatEngine.new()
+	return engine._preview_adjacency_synergy_internal(run_state, character_id, source_instance_id)
+
+func _preview_adjacency_synergy_internal(run_state: Object, character_id: StringName, source_instance_id: StringName) -> Dictionary:
+	var state: Dictionary = run_state.get_character_state(character_id)
+	var source_item: Dictionary = {}
+	for item_variant in state.get("placed_foods", []):
+		var item: Dictionary = item_variant
+		if item.get("instance_id", &"") == source_instance_id:
+			source_item = item
+			break
+	if source_item.is_empty():
+		return {
+			"selected_cells": [],
+			"checked_cells": [],
+			"partner_cells": [],
+			"missing_cells": [],
+			"invalid_cells": [],
+			"adjacent_categories": {},
+		}
+	var active_lookup: Dictionary = ShapeUtils.cells_to_lookup(state.get("active_cells", []))
+	var occupied_lookup: Dictionary = ShapeUtils.cells_to_lookup(_flatten_food_cells(state.get("placed_foods", [])))
+	var checked_lookup: Dictionary = {}
+	var partner_lookup: Dictionary = {}
+	var missing_lookup: Dictionary = {}
+	var invalid_lookup: Dictionary = {}
+	var adjacent_categories: Dictionary = {}
+	for cell_variant in source_item.get("cells", []):
+		var cell: Vector2i = cell_variant
+		for neighbor in [
+			Vector2i(cell.x + 1, cell.y),
+			Vector2i(cell.x - 1, cell.y),
+			Vector2i(cell.x, cell.y + 1),
+			Vector2i(cell.x, cell.y - 1),
+		]:
+			var key: String = "%d:%d" % [neighbor.x, neighbor.y]
+			if active_lookup.has(key):
+				checked_lookup[key] = neighbor
+				if not occupied_lookup.has(key):
+					missing_lookup[key] = neighbor
+			else:
+				invalid_lookup[key] = neighbor
+	for other_variant in state.get("placed_foods", []):
+		var other: Dictionary = other_variant
+		if other.get("instance_id", &"") == source_item.get("instance_id", &""):
+			continue
+		if not _items_touch(source_item, other):
+			continue
+		var definition: FoodDefinition = run_state.get_food_definition(other.get("definition_id", &""))
+		if definition != null:
+			adjacent_categories[definition.category] = true
+			for hybrid_variant in definition.hybrid_categories:
+				adjacent_categories[hybrid_variant] = true
+		for partner_cell_variant in other.get("cells", []):
+			var partner_cell: Vector2i = partner_cell_variant
+			partner_lookup["%d:%d" % [partner_cell.x, partner_cell.y]] = partner_cell
+	return {
+		"selected_cells": _clone_cell_array(source_item.get("cells", [])),
+		"checked_cells": _cell_lookup_values(checked_lookup),
+		"partner_cells": _cell_lookup_values(partner_lookup),
+		"missing_cells": _cell_lookup_values(missing_lookup),
+		"invalid_cells": _cell_lookup_values(invalid_lookup),
+		"adjacent_categories": adjacent_categories,
+	}
+
 func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) -> Dictionary:
 	var report: Dictionary = {
 		"result": "lose",
@@ -49,22 +115,22 @@ func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) 
 
 	var time: float = 0.0
 	var attrition_started: bool = false
-	var log: Array[String] = []
+	var battle_log: Array[String] = []
 
-	_apply_monster_opening_skill(monster, characters, log)
-	_apply_character_opening_effects(characters, team_effects, log)
+	_apply_monster_opening_skill(monster, characters, battle_log)
+	_apply_character_opening_effects(characters, team_effects, battle_log)
 
 	while true:
-		_process_timed_team_effects(time, characters, team_effects, monster, log)
-		_process_monster_timed_effects(time, monster, characters, log)
-		_process_character_status_effects(time, characters, log)
-		_apply_regeneration(TICK, time, characters, team_effects, log)
+		_process_timed_team_effects(time, characters, team_effects, monster, battle_log)
+		_process_monster_timed_effects(time, monster, characters, battle_log)
+		_process_character_status_effects(time, characters, battle_log)
+		_apply_regeneration(TICK, time, characters, team_effects, battle_log)
 
 		if time >= ATTRITION_START_TIME:
 			if not attrition_started:
 				attrition_started = true
-				log.append("[60.0s] Battle enters attrition mode.")
-			_apply_attrition(TICK, time, monster, characters, log)
+				battle_log.append("[60.0s] Battle enters attrition mode.")
+			_apply_attrition(TICK, time, monster, characters, battle_log)
 		if not bool(monster.get("alive", true)) or monster["current_hp"] <= 0.0:
 			report["result"] = "win"
 			report["duration"] = time
@@ -74,12 +140,12 @@ func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) 
 			report["duration"] = time
 			break
 
-		_process_character_attacks(time, characters, monster, team_effects, log)
+		_process_character_attacks(time, characters, monster, team_effects, battle_log)
 		if not bool(monster.get("alive", true)) or monster["current_hp"] <= 0.0:
 			report["result"] = "win"
 			report["duration"] = time
 			break
-		_process_monster_attack(time, monster, characters, team_effects, log)
+		_process_monster_attack(time, monster, characters, team_effects, battle_log)
 		_cleanup_expired_buffs(time, characters)
 
 		if not bool(monster.get("alive", true)) or monster["current_hp"] <= 0.0:
@@ -98,7 +164,7 @@ func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) 
 	else:
 		report["title"] = "鎴樻枟澶辫触"
 		report["bonus_gold"] = 0
-	_cleanup_log(report, log, characters, monster)
+	_cleanup_log(report, battle_log, characters, monster)
 	return report
 
 func _build_characters(run_state: Object, party_order: Array[StringName] = []) -> Array[Dictionary]:
@@ -398,7 +464,7 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 		&"chicken_steak":
 			result["team_aura_flags"]["chicken_steak"] = true
 		&"sausage_skewer":
-			result["extra_meat_bonus"] += float(_count_adjacent_categories(adj, [&"staple"]))
+			result["extra_meat_bonus"] += float(_count_adjacent_items_in_categories(item, placed_foods, run_state, [&"staple"], true))
 		&"lamb_rib":
 			result["extra_meat_bonus"] += 0.5
 		&"tomahawk_steak":
@@ -565,6 +631,18 @@ func _flatten_food_cells(placed_foods: Array) -> Array[Vector2i]:
 			result.append(cell)
 	return result
 
+func _clone_cell_array(cells: Array) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for cell_variant in cells:
+		result.append(cell_variant)
+	return result
+
+func _cell_lookup_values(lookup: Dictionary) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for cell_variant in lookup.values():
+		result.append(cell_variant)
+	return result
+
 func _count_adjacent_items_in_categories(item: Dictionary, placed_foods: Array, run_state: Object, categories: Array[StringName], include_diagonals: bool) -> int:
 	var count: int = 0
 	for other_variant in placed_foods:
@@ -669,7 +747,7 @@ func _is_below_category(item: Dictionary, placed_foods: Array, run_state: Object
 					return true
 	return false
 
-func _apply_monster_opening_skill(monster: Dictionary, characters: Array[Dictionary], log: Array[String]) -> void:
+func _apply_monster_opening_skill(monster: Dictionary, characters: Array[Dictionary], _log: Array[String]) -> void:
 	match monster["id"]:
 		&"fruit_tree_king":
 			for actor_variant in characters:
@@ -677,7 +755,7 @@ func _apply_monster_opening_skill(monster: Dictionary, characters: Array[Diction
 				actor["corrosion_damage_per_second"] = 1.0
 				actor["corrosion_until"] = 15.0
 				actor["next_corrosion_tick"] = 1.0
-			log.append("[0.0s] %s applies corrosion to all characters." % monster["name"])
+			_log.append("[0.0s] %s applies corrosion to all characters." % monster["name"])
 		&"charging_beast":
 			var living: Array[Dictionary] = []
 			for actor_variant in characters:
@@ -687,42 +765,42 @@ func _apply_monster_opening_skill(monster: Dictionary, characters: Array[Diction
 			if not living.is_empty():
 				var target: Dictionary = living[randi() % living.size()]
 				target["disable_until"] = 3.0
-				log.append("[0.0s] %s disables %s's bento effects for 3s." % [monster["name"], target["name"]])
+				_log.append("[0.0s] %s disables %s's bento effects for 3s." % [monster["name"], target["name"]])
 		_:
 			pass
 
-func _apply_character_opening_effects(characters: Array[Dictionary], team_effects: Dictionary, log: Array[String]) -> void:
+func _apply_character_opening_effects(characters: Array[Dictionary], team_effects: Dictionary, _log: Array[String]) -> void:
 	for actor in characters:
 		if actor["board_eval"].get("monster_tartare", false):
 			actor["current_hp"] = maxf(1.0, actor["current_hp"] - 40.0)
-			log.append("[0.0s] %s loses 40 HP from Monster Tartare." % actor["name"])
+			_log.append("[0.0s] %s loses 40 HP from Monster Tartare." % actor["name"])
 
-func _process_timed_team_effects(time: float, characters: Array[Dictionary], team_effects: Dictionary, monster: Dictionary, log: Array[String]) -> void:
+func _process_timed_team_effects(time: float, characters: Array[Dictionary], team_effects: Dictionary, monster: Dictionary, _log: Array[String]) -> void:
 	if team_effects["dessert_pulse_amount"] > 0.0 and time >= team_effects["next_dessert_pulse"]:
 		var heal_amount: float = float(team_effects["dessert_pulse_amount"])
 		if team_effects["dessert_multiplier_after_20"] and time >= 20.0:
 			heal_amount *= 1.5
 		for actor in characters:
-			_heal_actor(actor, heal_amount, log, time)
+			_heal_actor(actor, heal_amount, _log, time)
 			if team_effects["fairy_speed_on_heal"]:
 				_add_temporary_speed(actor, 10.0, time + 4.0)
 		team_effects["next_dessert_pulse"] += team_effects["dessert_pulse_interval"]
 	if team_effects["tree_heal_every"] and time >= team_effects["next_tree_heal"]:
 		for actor in characters:
-			_heal_actor(actor, 10.0, log, time)
+			_heal_actor(actor, 10.0, _log, time)
 		team_effects["next_tree_heal"] += 15.0
 	if team_effects["caramel_mille"] and not team_effects["caramel_triggered"] and time >= 20.0:
 		team_effects["caramel_triggered"] = true
 		for actor in characters:
 			actor["attack_speed_bonus"] += 60.0
-		log.append("[20.0s] Caramel Mille grants the whole team +60% attack speed.")
+		_log.append("[20.0s] Caramel Mille grants the whole team +60% attack speed.")
 	if team_effects["power_coffee"] and not team_effects["power_coffee_triggered"] and time >= 15.0:
 		team_effects["power_coffee_triggered"] = true
 		for actor in characters:
 			actor["attack_speed_bonus"] += 5.0
-		log.append("[15.0s] Power Coffee grants the whole team +5% attack speed.")
+		_log.append("[15.0s] Power Coffee grants the whole team +5% attack speed.")
 
-func _process_monster_timed_effects(time: float, monster: Dictionary, characters: Array[Dictionary], log: Array[String]) -> void:
+func _process_monster_timed_effects(time: float, monster: Dictionary, characters: Array[Dictionary], _log: Array[String]) -> void:
 	if not bool(monster.get("alive", true)):
 		return
 	if monster["id"] == &"cream_overlord" and time >= float(monster.get("next_cream_heal_tick", 5.0)):
@@ -732,7 +810,7 @@ func _process_monster_timed_effects(time: float, monster: Dictionary, characters
 		var healed_amount: float = float(monster["current_hp"]) - before_hp
 		monster["next_cream_heal_tick"] = float(monster.get("next_cream_heal_tick", 5.0)) + 5.0
 		if healed_amount > 0.0:
-			log.append("[%.1fs] %s restores %.1f HP through Milky Sweetness." % [time, monster["name"], healed_amount])
+			_log.append("[%.1fs] %s restores %.1f HP through Milky Sweetness." % [time, monster["name"], healed_amount])
 	if monster["id"] == &"spice_wizard" and time >= float(monster.get("next_heal_lock_tick", 5.0)):
 		var living: Array[Dictionary] = []
 		for actor_variant in characters:
@@ -743,39 +821,39 @@ func _process_monster_timed_effects(time: float, monster: Dictionary, characters
 			var target: Dictionary = living[randi() % living.size()]
 			target["healing_reduction_until"] = time + 3.0
 			target["healing_reduction_pct"] = 0.5
-			log.append("[%.1fs] %s applies heal reduction to %s." % [time, monster["name"], target["name"]])
+			_log.append("[%.1fs] %s applies heal reduction to %s." % [time, monster["name"], target["name"]])
 		monster["next_heal_lock_tick"] = float(monster.get("next_heal_lock_tick", 5.0)) + 5.0
 
-func _process_character_status_effects(time: float, characters: Array[Dictionary], log: Array[String]) -> void:
+func _process_character_status_effects(time: float, characters: Array[Dictionary], _log: Array[String]) -> void:
 	for actor_variant in characters:
 		var actor: Dictionary = actor_variant
 		if not actor["alive"]:
 			continue
 		while float(actor.get("pudding_heal_amount", 0.0)) > 0.0 and float(actor.get("next_pudding_heal", -1.0)) >= 0.0 and time >= float(actor["next_pudding_heal"]) and float(actor["next_pudding_heal"]) <= float(actor.get("pudding_heal_until", 0.0)):
 			if float(actor["next_pudding_heal"]) >= float(actor.get("disable_until", 0.0)):
-				_heal_actor(actor, float(actor["pudding_heal_amount"]), log, float(actor["next_pudding_heal"]))
+				_heal_actor(actor, float(actor["pudding_heal_amount"]), _log, float(actor["next_pudding_heal"]))
 			actor["next_pudding_heal"] = float(actor["next_pudding_heal"]) + float(actor.get("pudding_heal_interval", 0.0))
 		if actor["corrosion_damage_per_second"] > 0.0 and time >= actor["next_corrosion_tick"] and time <= actor["corrosion_until"]:
 			actor["next_corrosion_tick"] += 1.0
-			_apply_damage_to_actor(actor, actor["corrosion_damage_per_second"], log, time, "Corrosion")
+			_apply_damage_to_actor(actor, actor["corrosion_damage_per_second"], _log, time, "Corrosion")
 
-func _apply_regeneration(delta: float, time: float, characters: Array[Dictionary], team_effects: Dictionary, log: Array[String]) -> void:
+func _apply_regeneration(delta: float, time: float, characters: Array[Dictionary], team_effects: Dictionary, _log: Array[String]) -> void:
 	for actor_variant in characters:
 		var actor: Dictionary = actor_variant
 		if actor["alive"] and actor["heal_per_second"] > 0.0:
-			_heal_actor(actor, actor["heal_per_second"] * delta, log, time)
+			_heal_actor(actor, actor["heal_per_second"] * delta, _log, time)
 
-func _apply_attrition(delta: float, time: float, monster: Dictionary, characters: Array[Dictionary], log: Array[String]) -> void:
+func _apply_attrition(delta: float, time: float, monster: Dictionary, characters: Array[Dictionary], _log: Array[String]) -> void:
 	monster["current_hp"] -= ATTRITION_DPS * delta
 	if monster["current_hp"] <= 0.0:
-		_handle_monster_death(monster, log, time)
+		_handle_monster_death(monster, _log, time)
 	for actor in characters:
 		if actor["alive"]:
 			actor["current_hp"] -= ATTRITION_DPS * delta
 			if actor["current_hp"] <= 0.0:
-				_handle_actor_death(actor, log, ATTRITION_START_TIME)
+				_handle_actor_death(actor, _log, ATTRITION_START_TIME)
 
-func _process_character_attacks(time: float, characters: Array[Dictionary], monster: Dictionary, team_effects: Dictionary, log: Array[String]) -> void:
+func _process_character_attacks(time: float, characters: Array[Dictionary], monster: Dictionary, team_effects: Dictionary, _log: Array[String]) -> void:
 	for actor in characters:
 		if not actor["alive"] or not bool(monster.get("alive", true)) or monster["current_hp"] <= 0.0:
 			continue
@@ -786,10 +864,10 @@ func _process_character_attacks(time: float, characters: Array[Dictionary], mons
 		var speed_bonus_pct: float = float(attack_data["speed_bonus_pct"])
 		if randf() < actor["crit_chance"]:
 			damage *= actor["crit_multiplier"]
-			log.append("[%.1fs] %s lands a critical hit for %.1f." % [time, actor["name"], damage])
+			_log.append("[%.1fs] %s lands a critical hit for %.1f." % [time, actor["name"], damage])
 		damage = _apply_monster_incoming_damage_modifiers(monster, damage)
 		monster["current_hp"] -= damage
-		_handle_monster_hit_by_character(monster, actor, characters, damage, time, log)
+		_handle_monster_hit_by_character(monster, actor, characters, damage, time, _log)
 		if actor["forbidden_attack_reduction"] > 0.0 and damage > 0.0:
 			monster["attack_multiplier"] *= maxf(0.1, 1.0 - actor["forbidden_attack_reduction"])
 		if actor["amber_cancel_chance"] > 0.0 and randf() < actor["amber_cancel_chance"]:
@@ -800,11 +878,11 @@ func _process_character_attacks(time: float, characters: Array[Dictionary], mons
 			monster["attack_speed_slow"] = minf(80.0, monster["attack_speed_slow"] + attack_data["extra_enemy_slow"])
 		if actor["execute_threshold"] + actor["dynamic_execute_bonus"] > 0.0 and monster["current_hp"] / monster["max_hp"] <= (actor["execute_threshold"] + actor["dynamic_execute_bonus"]) / 100.0:
 			monster["current_hp"] = 0.0
-			log.append("[%.1fs] %s executes %s." % [time, actor["name"], monster["name"]])
+			_log.append("[%.1fs] %s executes %s." % [time, actor["name"], monster["name"]])
 		else:
-			log.append("[%.1fs] %s deals %.1f damage to %s." % [time, actor["name"], damage, monster["name"]])
+			_log.append("[%.1fs] %s deals %.1f damage to %s." % [time, actor["name"], damage, monster["name"]])
 		if monster["current_hp"] <= 0.0:
-			_handle_monster_death(monster, log, time)
+			_handle_monster_death(monster, _log, time)
 		if actor["board_eval"].get("baguette", false):
 			actor["dynamic_execute_bonus"] += 2.0
 		actor["next_attack_time"] = time + _effective_interval(actor["base_interval"], speed_bonus_pct + _temporary_speed(actor))
@@ -845,7 +923,7 @@ func _calculate_actor_attack(actor: Dictionary, time: float) -> Dictionary:
 		"extra_enemy_slow": extra_enemy_slow,
 	}
 
-func _process_monster_attack(time: float, monster: Dictionary, characters: Array[Dictionary], team_effects: Dictionary, log: Array[String]) -> void:
+func _process_monster_attack(time: float, monster: Dictionary, characters: Array[Dictionary], team_effects: Dictionary, _log: Array[String]) -> void:
 	if not bool(monster.get("alive", true)) or monster["current_hp"] <= 0.0:
 		return
 	if time + 0.001 < monster["next_attack_time"]:
@@ -853,7 +931,7 @@ func _process_monster_attack(time: float, monster: Dictionary, characters: Array
 	if monster["skip_next_attack"]:
 		monster["skip_next_attack"] = false
 		monster["next_attack_time"] = time + _effective_interval(monster["base_interval"], -monster["attack_speed_slow"])
-		log.append("[%.1fs] %s's next attack is cancelled." % [time, monster["name"]])
+		_log.append("[%.1fs] %s's next attack is cancelled." % [time, monster["name"]])
 		return
 	var target: Dictionary = _select_monster_target(characters, monster["target_order"])
 	if target.is_empty():
@@ -869,12 +947,12 @@ func _process_monster_attack(time: float, monster: Dictionary, characters: Array
 		damage *= (1.0 - target["first_hit_reduction"])
 		target["first_hit_spent"] = true
 	var source_name: String = String(monster["name"])
-	_apply_damage_to_actor(target, damage, log, time, source_name)
+	_apply_damage_to_actor(target, damage, _log, time, source_name)
 	if target["alive"] and target["retaliate_damage"] > 0.0 and time >= target["disable_until"]:
 		monster["current_hp"] -= target["retaliate_damage"]
-		log.append("[%.1fs] %s retaliates for %.1f damage." % [time, target["name"], target["retaliate_damage"]])
+		_log.append("[%.1fs] %s retaliates for %.1f damage." % [time, target["name"], target["retaliate_damage"]])
 		if monster["current_hp"] <= 0.0:
-			_handle_monster_death(monster, log, time)
+			_handle_monster_death(monster, _log, time)
 	if monster["id"] == &"bread_knight" and target["alive"]:
 		target["armor_break_stacks"] = mini(int(target.get("armor_break_stacks", 0)) + 1, 5)
 	if monster["id"] == &"nc2_auto_cooker":
@@ -894,7 +972,7 @@ func _apply_monster_incoming_damage_modifiers(monster: Dictionary, damage: float
 			final_damage = maxf(0.0, final_damage - 1.0)
 	return final_damage
 
-func _handle_monster_hit_by_character(monster: Dictionary, attacker: Dictionary, characters: Array[Dictionary], damage: float, time: float, log: Array[String]) -> void:
+func _handle_monster_hit_by_character(monster: Dictionary, attacker: Dictionary, characters: Array[Dictionary], _damage: float, time: float, _log: Array[String]) -> void:
 	if not bool(monster.get("alive", true)):
 		return
 	match monster["id"]:
@@ -910,8 +988,8 @@ func _handle_monster_hit_by_character(monster: Dictionary, attacker: Dictionary,
 				if not living.is_empty():
 					var target: Dictionary = living[randi() % living.size()]
 					monster["half_hp_burst_used"] = true
-					log.append("[%.1fs] %s unleashes Burst Charge." % [time, monster["name"]])
-					_apply_damage_to_actor(target, 35.0, log, time, monster["name"])
+					_log.append("[%.1fs] %s unleashes Burst Charge." % [time, monster["name"]])
+					_apply_damage_to_actor(target, 35.0, _log, time, monster["name"])
 		&"nc2_auto_cooker":
 			monster["received_hit_count"] = int(monster.get("received_hit_count", 0)) + 1
 			if int(monster["received_hit_count"]) % 30 == 0:
@@ -921,16 +999,16 @@ func _handle_monster_hit_by_character(monster: Dictionary, attacker: Dictionary,
 					rotated = order.slice(1, order.size())
 					rotated.append(order[0])
 					monster["target_order"] = rotated
-					log.append("[%.1fs] %s shifts target order." % [time, monster["name"]])
+					_log.append("[%.1fs] %s shifts target order." % [time, monster["name"]])
 		_:
 			pass
 
-func _handle_monster_death(monster: Dictionary, log: Array[String], time: float) -> void:
+func _handle_monster_death(monster: Dictionary, _log: Array[String], time: float) -> void:
 	if not bool(monster.get("alive", true)):
 		return
 	monster["alive"] = false
 	monster["current_hp"] = 0.0
-	log.append("[%.1fs] %s is defeated." % [time, monster["name"]])
+	_log.append("[%.1fs] %s is defeated." % [time, monster["name"]])
 
 func _select_monster_target(characters: Array[Dictionary], order: Array) -> Dictionary:
 	for role_id in order:
@@ -939,28 +1017,28 @@ func _select_monster_target(characters: Array[Dictionary], order: Array) -> Dict
 				return actor
 	return {}
 
-func _apply_damage_to_actor(actor: Dictionary, amount: float, log: Array[String], time: float, source_name: String) -> void:
+func _apply_damage_to_actor(actor: Dictionary, amount: float, _log: Array[String], time: float, source_name: String) -> void:
 	if not actor["alive"]:
 		return
 	var final_amount: float = amount
 	if float(actor.get("armor_break_stacks", 0)) > 0:
 		final_amount *= 1.0 + 0.1 * float(actor["armor_break_stacks"])
 	actor["current_hp"] -= final_amount
-	log.append("[%.1fs] %s deals %.1f damage to %s." % [time, source_name, final_amount, actor["name"]])
+	_log.append("[%.1fs] %s deals %.1f damage to %s." % [time, source_name, final_amount, actor["name"]])
 	if actor["current_hp"] <= 0.0:
 		if actor["revive_pct"] > 0.0 and not actor["revived"]:
 			actor["revived"] = true
 			actor["current_hp"] = actor["max_hp"] * actor["revive_pct"]
-			log.append("[%.1fs] %s revives with %.1f HP." % [time, actor["name"], actor["current_hp"]])
+			_log.append("[%.1fs] %s revives with %.1f HP." % [time, actor["name"], actor["current_hp"]])
 		else:
-			_handle_actor_death(actor, log, time)
+			_handle_actor_death(actor, _log, time)
 
-func _handle_actor_death(actor: Dictionary, log: Array[String], time: float) -> void:
+func _handle_actor_death(actor: Dictionary, _log: Array[String], time: float) -> void:
 	actor["alive"] = false
 	actor["current_hp"] = 0.0
-	log.append("[%.1fs] %s is defeated." % [time, actor["name"]])
+	_log.append("[%.1fs] %s is defeated." % [time, actor["name"]])
 
-func _heal_actor(actor: Dictionary, amount: float, log: Array[String], time: float) -> void:
+func _heal_actor(actor: Dictionary, amount: float, _log: Array[String], time: float) -> void:
 	if not actor["alive"] or amount <= 0.0:
 		return
 	var final_amount: float = amount
@@ -970,7 +1048,7 @@ func _heal_actor(actor: Dictionary, amount: float, log: Array[String], time: flo
 	actor["current_hp"] = minf(actor["max_hp"], actor["current_hp"] + final_amount)
 	var healed: float = float(actor["current_hp"]) - before
 	if healed > 0.0:
-		log.append("[%.1fs] %s restores %.1f HP." % [time, actor["name"], healed])
+		_log.append("[%.1fs] %s restores %.1f HP." % [time, actor["name"], healed])
 
 func _add_temporary_speed(actor: Dictionary, amount: float, expires_at: float) -> void:
 	actor["temporary_speed_buffs"].append({
@@ -1019,8 +1097,8 @@ func _calculate_bonus_gold(run_state: Object, characters: Array[Dictionary], dur
 		economy_bonus += int(round(float(actor.get("economy_gold_bonus", 0.0))))
 	return performance_bonus + economy_bonus
 
-func _cleanup_log(report: Dictionary, log: Array[String], characters: Array[Dictionary], monster: Dictionary) -> void:
-	var trimmed: Array[String] = log
+func _cleanup_log(report: Dictionary, _log: Array[String], characters: Array[Dictionary], monster: Dictionary) -> void:
+	var trimmed: Array[String] = _log
 	if trimmed.size() > 120:
 		trimmed = trimmed.slice(trimmed.size() - 120, trimmed.size())
 	report["log"] = PackedStringArray(trimmed)

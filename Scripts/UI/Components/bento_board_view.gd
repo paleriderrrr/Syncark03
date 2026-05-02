@@ -13,6 +13,11 @@ const BOARD_RANGE_BACKGROUND_COLOR := Color(1.0, 1.0, 1.0, 0.085)
 const GRID_CELL_COLOR := Color(1.0, 1.0, 1.0, 0.12)
 const VALID_PREVIEW_COLOR := Color(0.44, 0.9, 0.52, 0.55)
 const INVALID_PREVIEW_COLOR := Color(0.92, 0.36, 0.36, 0.55)
+const SYNERGY_SELECTED_COLOR := Color(1.0, 0.88, 0.28, 0.42)
+const SYNERGY_CHECKED_COLOR := Color(0.45, 0.75, 1.0, 0.28)
+const SYNERGY_PARTNER_COLOR := Color(0.32, 1.0, 0.68, 0.46)
+const SYNERGY_MISSING_COLOR := Color(1.0, 0.6, 0.28, 0.34)
+const SYNERGY_INVALID_COLOR := Color(0.88, 0.22, 0.22, 0.26)
 const FOOD_BACKGROUND_ALPHA := 0.18
 const CELL_CORNER_RADIUS := 14.0
 const BOARD_RANGE_CORNER_RADIUS := 24.0
@@ -34,6 +39,7 @@ var _expansion_lunchbox_textures: Dictionary = {}
 var _hover_cells: Array[Vector2i] = []
 var _hover_valid: bool = false
 var _hovered_food_instance_id: StringName = &""
+var _synergy_highlights: Dictionary = {}
 
 func _ready() -> void:
 	_apply_cell_metrics()
@@ -76,6 +82,19 @@ func refresh_board(character_state: Dictionary, preview_cells: Array[Vector2i], 
 	_apply_cell_metrics()
 	queue_redraw()
 
+func set_synergy_highlights(highlights: Dictionary) -> void:
+	_synergy_highlights = highlights.duplicate(true)
+	queue_redraw()
+
+func clear_synergy_highlights() -> void:
+	if _synergy_highlights.is_empty():
+		return
+	_synergy_highlights.clear()
+	queue_redraw()
+
+func set_synergy_highlights_for_item(run_state: Object, character_id: StringName, source_instance_id: StringName) -> void:
+	set_synergy_highlights(CombatEngine.preview_adjacency_synergy(run_state, character_id, source_instance_id))
+
 func _apply_cell_metrics() -> void:
 	custom_minimum_size = Vector2(GRID_WIDTH * cell_pixel_size, GRID_HEIGHT * cell_pixel_size)
 
@@ -90,6 +109,7 @@ func _draw() -> void:
 	_draw_base_lunchbox(character_id)
 	for expansion in _character_state.get("placed_expansions", []):
 		_draw_expansion_lunchbox(character_id, expansion)
+	_draw_synergy_highlights()
 	for item in _character_state.get("placed_foods", []):
 		_draw_food_item(item)
 	var overlay_color: Color = VALID_PREVIEW_COLOR if _hover_valid else INVALID_PREVIEW_COLOR
@@ -113,6 +133,20 @@ func _draw_food_item(item: Dictionary) -> void:
 		draw_texture_rect(_texture_lookup[item.get("definition_id", &"")], texture_rect, false)
 	elif definition != null and not definition.display_name.is_empty():
 			draw_string(get_theme_default_font(), bounds.position + Vector2(10, bounds.size.y * 0.55), definition.display_name.left(2), HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x - 20, 18, Color.BLACK)
+
+func _draw_synergy_highlights() -> void:
+	if _synergy_highlights.is_empty():
+		return
+	_draw_highlight_cell_group(_synergy_highlights.get("checked_cells", []), SYNERGY_CHECKED_COLOR)
+	_draw_highlight_cell_group(_synergy_highlights.get("missing_cells", []), SYNERGY_MISSING_COLOR)
+	_draw_highlight_cell_group(_synergy_highlights.get("invalid_cells", []), SYNERGY_INVALID_COLOR)
+	_draw_highlight_cell_group(_synergy_highlights.get("partner_cells", []), SYNERGY_PARTNER_COLOR)
+	_draw_highlight_cell_group(_synergy_highlights.get("selected_cells", []), SYNERGY_SELECTED_COLOR)
+
+func _draw_highlight_cell_group(cells: Array, color: Color) -> void:
+	for cell_variant in cells:
+		var cell: Vector2i = cell_variant
+		_draw_overlay_cell(cell, color)
 
 func _draw_board_range_background(board_rect: Rect2) -> void:
 	_draw_rounded_rect_with_radius(board_rect.grow(-BOARD_RANGE_INSET), BOARD_RANGE_BACKGROUND_COLOR, BOARD_RANGE_CORNER_RADIUS)
@@ -471,17 +505,17 @@ func _remove_cell(cells: Array[Vector2i], target: Vector2i) -> void:
 			cells.remove_at(index)
 			return
 
-func _position_to_cell(position: Vector2) -> Vector2i:
+func _position_to_cell(pointer_position: Vector2) -> Vector2i:
 	return Vector2i(
-		clampi(int(position.x / cell_pixel_size), 0, GRID_WIDTH - 1),
-		clampi(int(position.y / cell_pixel_size), 0, GRID_HEIGHT - 1)
+		clampi(int(pointer_position.x / cell_pixel_size), 0, GRID_WIDTH - 1),
+		clampi(int(pointer_position.y / cell_pixel_size), 0, GRID_HEIGHT - 1)
 	)
 
 func _is_cell_in_bounds(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.y >= 0 and cell.x < GRID_WIDTH and cell.y < GRID_HEIGHT
 
-func _update_food_hover(position: Vector2) -> void:
-	var cell: Vector2i = _position_to_cell(position)
+func _update_food_hover(pointer_position: Vector2) -> void:
+	var cell: Vector2i = _position_to_cell(pointer_position)
 	if not _is_cell_in_bounds(cell):
 		_clear_food_hover()
 		return

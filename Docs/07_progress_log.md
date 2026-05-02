@@ -1,11 +1,11 @@
 # Development Progress Log
 
 ## Current Status
-- Phase: Program Fix And UI Blockout Planning
-- Overall Progress: 20%
-- Current Goal: Fix gameplay-blocking program issues first, build UI blockouts while final art assets are pending, then integrate formal art after behavior contracts are stable.
+- Phase: Program Fix And UI Blockout Implementation
+- Overall Progress: 65%
+- Current Goal: Validate the program-fix and UI-blockout pass in the Godot editor because local headless startup currently crashes before script runners execute.
 - Current Owner: AI
-- Last Updated: 2026-04-27 00:00
+- Last Updated: 2026-04-27 19:20
 
 ## Active Risks
 - Risk: Formal art assets for the battle-stage popup, backpack/detail panels, lunchbox polish, and loading animation are still pending.
@@ -839,3 +839,11 @@
 - Blockers: Formal art assets are not available yet; final battle-stage, backpack/detail, lunchbox, and loading-animation art integration should wait until assets are delivered.
 - Files Touched: Docs/superpowers/plans/2026-04-27-program-fix-and-ui-blockout-plan.md, Docs/07_progress_log.md
 - Notes: Program fixes have higher priority than final art. UI blockouts are allowed now, but they must preserve final layout contracts and use real gameplay rules rather than visual-only heuristics.
+
+### 2026-04-27 19:20
+- Completed: Implemented the first program-fix and UI-blockout pass from the new plan: food-effect lab preview state now exposes battle multipliers for `pudding_cup` preview coverage; item-strip paging no longer back-shifts the last page into a clipped first card; food and expansion market clicks share the package purchase API; market expansion drag placement preserves rotation and shape cells; `sausage_skewer` now counts staple items in the 8-neighbor rule; `godfather` and `sausage_skewer` descriptions were corrected; board hover now draws adjacency highlights from CombatEngine adjacency data; and the battle popup now has named stage blockout surfaces, curtain phases, monster reveal, and result announcement board state.
+- In Progress: Manual runtime verification in the Godot editor, because local headless automation crashes before runner code can report pass/fail.
+- Next: In the editor, open the food-effect lab and preview `pudding_cup`; page the inventory/market strip to its last page and confirm the first card is fully visible; test food click, food drag, expansion click, and expansion drag purchase paths; rotate and place a market expansion; hover adjacent foods on the board; open a battle popup, confirm hero-side preparation, press Start Battle, confirm monster reveal, and watch the result announcement board.
+- Blockers: `E:\GODOT\Godot_v4.6.1-stable_win64_console.exe --headless --path E:\GODOT\MyProject\Syncark03 --quit-after 1` currently crashes with native signal 11 before any GDScript runner can execute. The same native crash blocks `food_effect_lab_runner.gd`, `food_effect_runner.gd`, `item_strip_runner.gd`, and `editor_dragdrop_runner.gd`.
+- Files Touched: Data/Foods/food_catalog.tres, Scripts/Autoload/run_state.gd, Scripts/Core/combat_engine.gd, Scripts/Tools/food_effect_lab_state.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/Components/item_strip.gd, Scripts/UI/battle_popup.gd, Scripts/UI/main_editor_screen.gd, Scripts/Tests/battle_playback_runner.gd, Scripts/Tests/editor_dragdrop_runner.gd, Scripts/Tests/food_effect_lab_runner.gd, Scripts/Tests/food_effect_runner.gd, Scripts/Tests/item_strip_runner.gd, Docs/07_progress_log.md
+- Notes: The adjacency visualization uses `CombatEngine.preview_adjacency_synergy` rather than a visual-only rule path. The battle-stage blockout is intentionally made of named replacement surfaces so later final art can swap colors/textures without changing gameplay state flow.

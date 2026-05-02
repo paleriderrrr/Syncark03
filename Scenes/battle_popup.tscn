@@ -1,10 +1,13 @@
 [gd_scene format=3 uid="uid://b0wr73a7c5kgm"]
 
 [ext_resource type="Script" uid="uid://bo7fqs2u0n8c3" path="res://Scripts/UI/battle_popup.gd" id="1_popup"]
-[ext_resource type="Texture2D" uid="uid://bw43og74rivm0" path="res://Art/BattleBackground/大弹窗.png" id="2_2gaqe"]
-[ext_resource type="Texture2D" uid="uid://dymqwi5kxusei" path="res://Art/BattleBackground/大弹窗关闭按钮.png" id="3_dd2x6"]
-[ext_resource type="Texture2D" uid="uid://b7g71tsboelu0" path="res://Art/BattleBackground/战斗背景白天版（.png" id="3_yba81"]
-[ext_resource type="Texture2D" uid="uid://dc331bikrmge1" path="res://Art/BattleBackground/战斗幕布.png" id="4_2gaqe"]
+[ext_resource type="Texture2D" uid="uid://dqxygc1hvt2xn" path="res://Art/NewBattleBackground/battle_stage_popup_bg.png" id="2_2gaqe"]
+[ext_resource type="Texture2D" uid="uid://bgmu3chvpk60w" path="res://Art/NewBattleBackground/battle_close_normal.png" id="3_dd2x6"]
+[ext_resource type="Texture2D" uid="uid://b3ak2efyoh81c" path="res://Art/NewBattleBackground/battle_stage_overlay.png" id="3_yba81"]
+[ext_resource type="Texture2D" uid="uid://bhet08tifega0" path="res://Art/NewBattleBackground/battle_start_normal.png" id="4_1start"]
+[ext_resource type="Texture2D" uid="uid://i2wgxnqcmjx0" path="res://Art/NewBattleBackground/舞台最上层.png" id="4_2gaqe"]
+[ext_resource type="Texture2D" uid="uid://32slji28umr1" path="res://Art/NewBattleBackground/battle_curtain_left_panel.png" id="4_4left"]
+[ext_resource type="Texture2D" uid="uid://dogqs5vy77nis" path="res://Art/NewBattleBackground/battle_curtain_right_panel.png" id="4_5right"]
 [ext_resource type="Texture2D" uid="uid://cgy4s55u1ipym" path="res://Art/PaperCharacters/剑盾纸片.png" id="5_dd2x6"]
 [ext_resource type="Texture2D" uid="uid://ck2lqq3tvkopk" path="res://Art/PaperCharacters/猎人纸片.png" id="7_7llj4"]
 [ext_resource type="Texture2D" uid="uid://r3ofrxbuqmhi" path="res://Art/PaperCharacters/法师纸片.png" id="8_kuq81"]
@@ -15,7 +18,7 @@
 [node name="BattlePopup" type="PopupPanel" unique_id=1367356641]
 unique_name_in_owner = true
 oversampling_override = 1.0
-size = Vector2i(1540, 780)
+size = Vector2i(1600, 900)
 visible = true
 theme_override_styles/panel = SubResource("StyleBoxEmpty_battle_popup")
 script = ExtResource("1_popup")
@@ -37,7 +40,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.94102347, 0.9262602)
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 24
@@ -66,33 +68,16 @@ visible = false
 layout_mode = 2
 text = "NODE"
 
-[node name="PreparationHintLabel" type="Label" parent="Margin/RootVBox/Header" unique_id=1461097580]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Drag heroes to swap"
-horizontal_alignment = 2
-
-[node name="StartBattleButton" type="Button" parent="Margin/RootVBox/Header" unique_id=874088259]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Start Battle"
-
-[node name="CloseBattleButton" type="Button" parent="Margin/RootVBox/Header" unique_id=1570596535]
-unique_name_in_owner = true
-layout_mode = 2
-icon = ExtResource("3_dd2x6")
-flat = true
-
 [node name="ArenaPanel" type="PanelContainer" parent="Margin/RootVBox" unique_id=1474463065]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 520)
-layout_mode = 0
-offset_left = 37.635017
-offset_top = 124.66777
-offset_right = 1521.635
-offset_bottom = 648.6678
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_battle_popup")
 
 [node name="ArenaStage" type="Control" parent="Margin/RootVBox/ArenaPanel" unique_id=718533906]
 unique_name_in_owner = true
@@ -110,10 +95,11 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("3_yba81")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
 
 [node name="StageOverlay" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1139290500]
 unique_name_in_owner = true
+z_index = 30
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -123,22 +109,94 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("4_2gaqe")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
+
+[node name="PreparationHintLabel" type="Label" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1461097580]
+unique_name_in_owner = true
+z_index = 38
+layout_mode = 0
+offset_left = 535.0
+offset_top = 142.0
+offset_right = 1015.0
+offset_bottom = 262.0
+text = "调整出战顺序"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StartBattleButton" type="Button" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=874088259]
+unique_name_in_owner = true
+z_index = 40
+layout_mode = 0
+offset_left = 1136.0
+offset_top = 567.0
+offset_right = 1445.0
+offset_bottom = 797.0
+icon = ExtResource("4_1start")
+flat = true
+expand_icon = true
+
+[node name="CloseBattleButton" type="Button" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1570596535]
+unique_name_in_owner = true
+z_index = 40
+layout_mode = 0
+offset_left = 1158.0
+offset_top = -84.0
+offset_right = 1485.0
+offset_bottom = 260.0
+icon = ExtResource("3_dd2x6")
+flat = true
+expand_icon = true
+
+[node name="LeftCurtainBlockout" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=2139290501]
+unique_name_in_owner = true
+visible = false
+z_index = 10
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_right = 746.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_4left")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RightCurtainBlockout" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=2139290502]
+unique_name_in_owner = true
+z_index = 11
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -800.0
+offset_right = 42.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_5right")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Hero1Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=77219137]
 unique_name_in_owner = true
+z_index = 5
 anchors_preset = 0
-offset_left = 472.88937
-offset_top = 62.6174
-offset_right = 672.8894
-offset_bottom = 374.6174
+offset_left = 505.0
+offset_top = 222.0
+offset_right = 705.0
+offset_bottom = 534.0
 scale = Vector2(1.8932682, 1.7647917)
+mouse_filter = 2
 
 [node name="Hero1PortraitFrame" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero1Actor" unique_id=216216529]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 0
-offset_right = 200.0
+offset_left = 36.444912
+offset_right = 152.11789
 offset_bottom = 240.0
 mouse_filter = 1
 
@@ -174,18 +232,21 @@ horizontal_alignment = 1
 
 [node name="Hero2Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1686591380]
 unique_name_in_owner = true
+z_index = 5
 anchors_preset = 0
-offset_left = 229.53732
-offset_top = 62.617386
-offset_right = 429.53732
-offset_bottom = 374.61737
+offset_left = 325.00003
+offset_top = 224.0
+offset_right = 525.0
+offset_bottom = 536.0
 scale = Vector2(1.8932682, 1.7647917)
+mouse_filter = 2
 
 [node name="Hero2PortraitFrame" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero2Actor" unique_id=1136600272]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 0
-offset_right = 200.0
+offset_left = 42.254955
+offset_right = 155.28699
 offset_bottom = 240.0
 mouse_filter = 1
 
@@ -221,19 +282,22 @@ horizontal_alignment = 1
 
 [node name="Hero3Actor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1911396048]
 unique_name_in_owner = true
+z_index = 5
 anchors_preset = 0
-offset_left = 9.564053
-offset_top = 62.617386
-offset_right = 209.56406
-offset_bottom = 374.61737
+offset_left = 159.99998
+offset_top = 221.99998
+offset_right = 360.0
+offset_bottom = 534.0
 scale = Vector2(1.8932682, 1.7647917)
+mouse_filter = 2
 
 [node name="Hero3PortraitFrame" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor" unique_id=897562087]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 0
-offset_right = 200.0
-offset_bottom = 240.0
+offset_left = 21.655682
+offset_right = 183.28096
+offset_bottom = 240.00002
 mouse_filter = 1
 
 [node name="Hero3PortraitSprite" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage/Hero3Actor/Hero3PortraitFrame" unique_id=1779467619]
@@ -244,8 +308,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -7.8580613
 offset_top = 9.78799
-offset_right = -7.8580627
-offset_bottom = 9.787994
+offset_right = -9.50737
+offset_bottom = 10.454483
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("8_kuq81")
@@ -272,12 +336,14 @@ horizontal_alignment = 1
 
 [node name="MonsterActor" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1409564179]
 unique_name_in_owner = true
+z_index = 5
 anchors_preset = 0
-offset_left = 964.90686
-offset_top = 23.751425
-offset_right = 1264.907
-offset_bottom = 393.75143
+offset_left = 884.0
+offset_top = 188.0
+offset_right = 1184.0002
+offset_bottom = 558.0
 scale = Vector2(1.5849091, 1.6770225)
+mouse_filter = 2
 
 [node name="MonsterPortraitFrame" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage/MonsterActor" unique_id=1196077034]
 unique_name_in_owner = true
@@ -316,6 +382,7 @@ horizontal_alignment = 1
 
 [node name="BattleFloatLayer" type="Control" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=511132240]
 unique_name_in_owner = true
+z_index = 45
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -327,9 +394,12 @@ mouse_filter = 2
 [node name="ResultBanner" type="TextureRect" parent="Margin/RootVBox/ArenaPanel/ArenaStage" unique_id=1845207737]
 unique_name_in_owner = true
 visible = false
+z_index = 50
 layout_mode = 0
-offset_right = 822.0
-offset_bottom = 727.0
+offset_left = 591.0
+offset_top = 68.0
+offset_right = 1000.0
+offset_bottom = 511.0
 mouse_filter = 2
 texture = ExtResource("9_tdt7w")
 expand_mode = 1

@@ -82,9 +82,8 @@ func _refresh_page_state() -> void:
 	_page_index = clampi(_page_index, 0, max_page)
 	var visible_width: float = viewport_control.size.x
 	var content_width: float = maxf(_entry_count * CARD_WIDTH + max(_entry_count - 1, 0) * CARD_GAP, 0.0)
-	var max_offset: float = maxf(content_width - visible_width, 0.0)
 	var page_stride: float = maxf(float(visible_slots * (CARD_WIDTH + CARD_GAP)), 1.0)
-	var target_offset: float = minf(float(_page_index) * page_stride, max_offset)
+	var target_offset: float = float(_page_index) * page_stride
 	if content_width <= visible_width:
 		card_row.position = Vector2(0.0, float(content_top_padding))
 	else:
@@ -111,6 +110,30 @@ func _get_max_page_index_for_slots(visible_slots: int) -> int:
 	if visible_slots <= 0:
 		return 0
 	return max(0, int(ceil(float(max(_entry_count - visible_slots, 0)) / float(visible_slots))))
+
+func debug_set_page_index(page_index: int) -> void:
+	_page_index = page_index
+	_refresh_page_state()
+
+func debug_set_viewport_size(viewport_size: Vector2) -> void:
+	viewport_control.custom_minimum_size = viewport_size
+	viewport_control.size = viewport_size
+	_refresh_page_state()
+
+func get_page_index() -> int:
+	return _page_index
+
+func get_first_visible_entry_index_for_page(page_index: int = -1) -> int:
+	var resolved_page_index: int = _page_index if page_index < 0 else page_index
+	return mini(maxi(resolved_page_index, 0) * _get_visible_slot_count(), max(_entry_count - 1, 0))
+
+func get_entry_visible_rect(entry_index: int) -> Rect2:
+	var slot_width: float = float(CARD_WIDTH + CARD_GAP)
+	var card_left: float = float(entry_index) * slot_width + card_row.position.x
+	return Rect2(Vector2(card_left, card_row.position.y), Vector2(CARD_WIDTH, CARD_WIDTH))
+
+func get_viewport_visible_rect() -> Rect2:
+	return Rect2(Vector2.ZERO, viewport_control.size)
 
 func _on_card_clicked(entry: Dictionary) -> void:
 	entry_clicked.emit(entry)

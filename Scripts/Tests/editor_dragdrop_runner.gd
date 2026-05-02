@@ -168,6 +168,36 @@ func _run() -> void:
 	var current_food_cell: Vector2i = placed_foods_after_moves[0]["cells"][0]
 	_assert(run_state.remove_item_at_cell(current_food_cell), "Right-click return path should still be backed by state-side item return")
 
+	var market_expansion_offer_id: StringName = &"drag_expansion_offer_test"
+	run_state.current_market_offers.append({
+		"offer_id": market_expansion_offer_id,
+		"slot_index": 97,
+		"kind": &"expansion",
+		"label": "2x1",
+		"shape_cells": [Vector2i(0, 0), Vector2i(1, 0)],
+		"target_character_id": run_state.selected_character_id,
+		"price": 5,
+	})
+	run_state.current_gold = maxi(run_state.current_gold, 20)
+	var market_expansion_gold_before: int = run_state.current_gold
+	_assert(not run_state.begin_market_expansion_action(market_expansion_offer_id).is_empty(), "Market expansion drag should enter an explicit selected-item action")
+	var expansion_before_rotation: Array[Vector2i] = run_state.get_selected_item_cells()
+	run_state.rotate_selected_item()
+	var expansion_after_rotation: Array[Vector2i] = run_state.get_selected_item_cells()
+	_assert(expansion_before_rotation != expansion_after_rotation, "Rotating a market expansion action should change its placement cells")
+	_assert(not run_state.can_place_selected_item(run_state.get_selected_character_state().get("base_anchor", Vector2i.ZERO)), "Expansion placement should reject overlap with the active lunchbox")
+	var market_expansion_anchor: Vector2i = _find_valid_anchor_for_selected_item(run_state)
+	_assert(market_expansion_anchor != Vector2i(-1, -1), "Rotated market expansion should have a legal edge anchor")
+	_assert(run_state.try_place_selected_item(market_expansion_anchor), "Rotated market expansion should place directly from the market")
+	_assert(run_state.current_gold == market_expansion_gold_before - 5, "Market expansion drag placement should spend gold once")
+	var placed_expansion: Dictionary = run_state.get_selected_character_state()["placed_expansions"].back()
+	_assert(int(placed_expansion.get("rotation", 0)) == 1, "Placed market expansion should persist its rotation")
+	var expansion_move_anchor: Vector2i = _find_valid_expansion_move_anchor(run_state, placed_expansion.get("instance_id", &""))
+	_assert(expansion_move_anchor != Vector2i(-1, -1), "Placed rotated expansion should have a valid move anchor")
+	_assert(run_state.move_placed_expansion(placed_expansion["cells"][0], expansion_move_anchor), "Moving a rotated expansion should preserve a valid occupied-cell calculation")
+	var moved_expansion: Dictionary = run_state.get_selected_character_state()["placed_expansions"].back()
+	_assert(int(moved_expansion.get("rotation", 0)) == 1, "Moving a placed expansion should not lose its rotation")
+
 	var next_monster: Dictionary = run_state.get_next_monster_summary()
 	_assert(not next_monster.is_empty(), "Next monster summary should exist on active route")
 	var synergy_summary: Dictionary = run_state.get_synergy_summary(&"warrior")
@@ -185,6 +215,36 @@ func _find_valid_anchor_for_selected_item(run_state: Node) -> Vector2i:
 		for x in range(run_state.GRID_WIDTH):
 			var anchor := Vector2i(x, y)
 			if run_state.can_place_selected_item(anchor):
+				return anchor
+	return Vector2i(-1, -1)
+
+func _find_valid_expansion_move_anchor(run_state: Node, instance_id: StringName) -> Vector2i:
+	var state: Dictionary = run_state.get_selected_character_state()
+	var expansion: Dictionary = {}
+	for candidate_variant in state.get("placed_expansions", []):
+		var candidate: Dictionary = candidate_variant
+		if candidate.get("instance_id", &"") == instance_id:
+			expansion = candidate
+			break
+	if expansion.is_empty():
+		return Vector2i(-1, -1)
+	var original_anchor: Vector2i = expansion.get("anchor", Vector2i.ZERO)
+	for y in range(run_state.GRID_HEIGHT):
+		for x in range(run_state.GRID_WIDTH):
+			var anchor := Vector2i(x, y)
+			if anchor == original_anchor:
+				continue
+			var probe_state: Dictionary = state.duplicate(true)
+			var active_without_self: Array[Vector2i] = []
+			for cell_variant in probe_state.get("active_cells", []):
+				var active_cell: Vector2i = cell_variant
+				if not expansion.get("cells", []).has(active_cell):
+					active_without_self.append(active_cell)
+			var placed_cells: Array[Vector2i] = ShapeUtils.translate_cells(
+				ShapeUtils.rotate_cells(expansion.get("shape_cells", []), int(expansion.get("rotation", 0))),
+				anchor
+			)
+			if ShapeUtils.within_bounds(placed_cells, run_state.GRID_WIDTH, run_state.GRID_HEIGHT) and not ShapeUtils.overlaps(active_without_self, placed_cells) and ShapeUtils.shares_edge(placed_cells, active_without_self):
 				return anchor
 	return Vector2i(-1, -1)
 

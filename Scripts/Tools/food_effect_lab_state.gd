@@ -110,6 +110,12 @@ func get_food_categories(definition: FoodDefinition) -> Array[StringName]:
 func get_completed_battle_count() -> int:
 	return 0
 
+func get_current_monster_multipliers() -> Dictionary:
+	return {
+		"hp": _get_stage_curve_value("monster_hp_multiplier_curve", 1.0),
+		"attack": _get_stage_curve_value("monster_attack_multiplier_curve", 1.0),
+	}
+
 func get_full_grid_cells() -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for y in range(GRID_HEIGHT):
@@ -272,3 +278,14 @@ func _next_instance_id(prefix: String) -> StringName:
 	var value: String = "%s_%d" % [prefix, _instance_counter]
 	_instance_counter += 1
 	return StringName(value)
+
+func _get_stage_curve_value(property_name: StringName, default_value: float) -> float:
+	if stage_flow_config == null:
+		return default_value
+	var values_variant: Variant = stage_flow_config.get(property_name)
+	if not (values_variant is Array):
+		return default_value
+	var values: Array = values_variant
+	if values.is_empty():
+		return default_value
+	return float(values[0])

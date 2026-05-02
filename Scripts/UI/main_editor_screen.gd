@@ -57,6 +57,8 @@ const TEXT_RISK_DANGEROUS := "\u9669\u8c61\u73af\u751f"
 const TEXT_RISK_FATAL := "\u4e5d\u6b7b\u4e00\u751f"
 const TEXT_ROLE_TAB_STATS_PLACEHOLDER := "HP 0/0\nATK 0\nINT 0.0s"
 const TEXT_ROLE_TAB_STATS := "HP %d/%d\nATK %s\nINT %ss"
+const BATTLE_MODAL_BLOCKER_ALPHA := 0.56
+const BATTLE_MODAL_BLOCKER_FADE_TIME := 0.18
 
 @onready var gold_label: Label = %GoldLabel
 @onready var route_label: Label = %RouteLabel
@@ -90,7 +92,7 @@ const TEXT_ROLE_TAB_STATS := "HP %d/%d\nATK %s\nINT %ss"
 @onready var next_monster_skill_label: Label = %NextMonsterSkillLabel
 @onready var monster_tooltip_panel: PanelContainer = %MonsterTooltipPanel
 @onready var synergy_panel: Control = %SynergyPanel
-@onready var battle_modal_blocker: Control = %BattleModalBlocker
+@onready var battle_modal_blocker: ColorRect = %BattleModalBlocker
 @onready var battle_popup: BattlePopup = %BattlePopup
 
 @onready var tab_buttons: Dictionary = {
@@ -119,6 +121,7 @@ var _last_node_type: StringName = &""
 var _active_synergy_ids: Dictionary = {}
 var _guide_page_index: int = 0
 var _guide_marks_tutorial_complete: bool = false
+var _battle_modal_blocker_tween: Tween
 var item_tooltip_overlay: ImmediateItemTooltipOverlay
 var synergy_tooltip_overlay: ImmediateSynergyTooltipOverlay
 
@@ -574,12 +577,13 @@ func _on_selected_character_changed(character_id: StringName) -> void:
 	_refresh()
 
 func _on_market_entry_clicked(entry: Dictionary) -> void:
-	if entry.get("kind", &"") == &"expansion":
-		var gained: Array[Dictionary] = _run_state().purchase_market_offer_package(entry.get("offer_id", &""))
-		if gained.is_empty():
-			_ui_sfx().play_purchase_denied()
-		else:
-			_ui_sfx().play_purchase_success()
+	if entry.get("kind", &"") != &"food" and entry.get("kind", &"") != &"expansion":
+		return
+	var gained: Array[Dictionary] = _run_state().purchase_market_offer_package(entry.get("offer_id", &""))
+	if gained.is_empty():
+		_ui_sfx().play_purchase_denied()
+	else:
+		_ui_sfx().play_purchase_success()
 
 func _on_inventory_entry_clicked(entry: Dictionary) -> void:
 	if entry.get("entry_kind", &"food") == &"expansion":
@@ -660,7 +664,9 @@ func _on_board_hover_food_changed(item: Dictionary, global_rect: Rect2) -> void:
 	var definition: FoodDefinition = run_state.get_food_definition(item.get("definition_id", &""))
 	if definition == null:
 		item_tooltip_overlay.hide_tooltip()
+		board_view.clear_synergy_highlights()
 		return
+	board_view.set_synergy_highlights_for_item(run_state, run_state.selected_character_id, item.get("instance_id", &""))
 	synergy_tooltip_overlay.hide_tooltip()
 	var entry: Dictionary = {
 		"display_name": definition.display_name,
@@ -670,6 +676,7 @@ func _on_board_hover_food_changed(item: Dictionary, global_rect: Rect2) -> void:
 	item_tooltip_overlay.show_entry(entry, global_rect)
 
 func _on_board_hover_food_cleared() -> void:
+	board_view.clear_synergy_highlights()
 	item_tooltip_overlay.hide_tooltip()
 
 func _on_strip_item_hover_started(entry: Dictionary, global_rect: Rect2) -> void:
@@ -785,11 +792,11 @@ func _on_market_refresh_pressed() -> void:
 		_ui_sfx().play_purchase_denied()
 
 func _on_battle_requested() -> void:
-	battle_modal_blocker.visible = true
+	_show_battle_modal_blocker()
 	battle_popup.open_battle()
 
 func _on_battle_popup_hidden() -> void:
-	battle_modal_blocker.visible = false
+	_hide_battle_modal_blocker()
 
 func _on_monster_hover_entered() -> void:
 	if next_monster_stats_label.text == "-" and next_monster_skill_label.text == "-":
@@ -836,6 +843,36 @@ func _estimate_risk_label() -> String:
 	if ratio >= 0.6:
 		return TEXT_RISK_DANGEROUS
 	return TEXT_RISK_FATAL
+
+func _show_battle_modal_blocker() -> void:
+	if is_instance_valid(_battle_modal_blocker_tween):
+		_battle_modal_blocker_tween.kill()
+	battle_modal_blocker.visible = true
+	battle_modal_blocker.color.a = 0.0
+	_battle_modal_blocker_tween = create_tween()
+	_battle_modal_blocker_tween.tween_property(
+		battle_modal_blocker,
+		"color:a",
+		BATTLE_MODAL_BLOCKER_ALPHA,
+		BATTLE_MODAL_BLOCKER_FADE_TIME
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+func _hide_battle_modal_blocker() -> void:
+	if is_instance_valid(_battle_modal_blocker_tween):
+		_battle_modal_blocker_tween.kill()
+		_battle_modal_blocker_tween = null
+	if not battle_modal_blocker.visible:
+		return
+	_battle_modal_blocker_tween = create_tween()
+	_battle_modal_blocker_tween.tween_property(
+		battle_modal_blocker,
+		"color:a",
+		0.0,
+		BATTLE_MODAL_BLOCKER_FADE_TIME
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	await _battle_modal_blocker_tween.finished
+	battle_modal_blocker.visible = false
+	_battle_modal_blocker_tween = null
 func _on_role_tab_pressed(character_id: StringName) -> void:
 	_ui_sfx().play_button()
 	item_tooltip_overlay.hide_tooltip()

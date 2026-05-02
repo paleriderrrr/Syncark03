@@ -60,7 +60,8 @@ func _run() -> void:
 	_assert(run_state.current_route_index == 1, "Primary action should advance from the first market directly to the next battle node")
 	_assert(blocker.visible, "One-step battle entry should raise the battle blocker immediately after leaving market")
 	_assert(popup.visible, "One-step battle entry should open the battle popup immediately after leaving market")
-	var start_button: Button = popup.get_node("%StartBattleButton") as Button
+	var start_button: Button = popup.find_child("StartBattleButton", true, false) as Button
+	_assert(start_button != null, "Battle popup should expose the Start Battle button before playback")
 	_assert(start_button.visible, "Battle popup should expose the Start Battle button before playback")
 	start_button.pressed.emit()
 	await process_frame

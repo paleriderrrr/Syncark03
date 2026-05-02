@@ -32,6 +32,10 @@ func _validate_food_catalog(run_state: Node) -> void:
 		seen_ids[definition.id] = true
 		_assert(not definition.shape_cells.is_empty(), "Food %s should define shape cells" % String(definition.id))
 		_assert(definition.gold_value > 0, "Food %s should have positive gold value" % String(definition.id))
+		if definition.id == &"godfather":
+			_assert(definition.passive_text.contains("orthogonally adjacent empty active cell"), "godfather description should name the actual orthogonal-empty-cell rule")
+		if definition.id == &"sausage_skewer":
+			_assert(definition.passive_text.contains("8 surrounding cells"), "sausage_skewer description should name the actual 8-neighbor staple rule")
 
 func _run_food_cases(run_state: Node) -> void:
 	for food_variant in run_state.food_catalog.foods:
@@ -156,8 +160,9 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
 				{"id": &"mashed_potato", "anchor": Vector2i(1, 1)},
-			], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 4)))
-			_assert(float(_preview_actor(run_state)["extra_meat_bonus"]) >= 1.0, "sausage_skewer should add meat bond value when adjacent to staple")
+				{"id": &"ramen", "anchor": Vector2i(1, 3)},
+			], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 5)))
+			_assert(float(_preview_actor(run_state)["extra_meat_bonus"]) == 2.0, "sausage_skewer should add one meat bond value for each staple in its 8-neighbor area")
 		&"lamb_rib":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 3)))
 			_assert(float(_preview_actor(run_state)["extra_meat_bonus"]) == 0.5, "lamb_rib should add extra meat scaling")
@@ -361,6 +366,16 @@ func _run_runtime_balance_fix_cases(run_state: Node) -> void:
 	var godfather_characters: Array[Dictionary] = engine._build_characters(run_state)
 	var godfather_bonus_gold: int = engine._calculate_bonus_gold(run_state, godfather_characters, 0.0)
 	_assert(godfather_bonus_gold > baseline_bonus_gold, "godfather should convert its economy bonus into battle bonus gold")
+
+	_reset_board(run_state, [
+		{"id": &"lemon", "anchor": Vector2i(1, 1)},
+		{"id": &"bacon_strip", "anchor": Vector2i(2, 1)},
+	], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 4)))
+	var highlight_report: Dictionary = CombatEngine.preview_adjacency_synergy(run_state, &"warrior", &"test_lemon_1_1")
+	_assert(highlight_report.get("selected_cells", []).has(Vector2i(1, 1)), "Adjacency highlight should include the selected food cells")
+	_assert(highlight_report.get("checked_cells", []).has(Vector2i(2, 1)), "Adjacency highlight should check the same orthogonal cells used by gameplay")
+	_assert(highlight_report.get("partner_cells", []).has(Vector2i(2, 1)), "Adjacency highlight should mark real adjacent synergy partners")
+	_assert(bool(highlight_report.get("adjacent_categories", {}).get(&"meat", false)), "Adjacency highlight categories should match gameplay adjacency categories")
 
 func _reset_board(run_state: Node, food_specs: Array, active_cells: Array[Vector2i] = [], hp_ratio: float = 1.0) -> void:
 	run_state.select_character(&"warrior")

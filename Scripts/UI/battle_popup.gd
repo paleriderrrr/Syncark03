@@ -1,7 +1,6 @@
 extends PopupPanel
 class_name BattlePopup
-
-const POPUP_SIZE := Vector2i(1540, 760)
+const POPUP_SIZE := Vector2i(1600, 900)
 const ATTACK_ANIMATION_TIME := 0.3
 const ATTACK_JUMP_HEIGHT := 36.0
 const FLOAT_TEXT_TIME := 0.8
@@ -24,23 +23,42 @@ const MONSTER_TEXTURE_COWDRAGON := preload("res://Art/PaperEnemies/cowdragon.png
 const MONSTER_TEXTURE_WATER := preload("res://Art/PaperEnemies/water.png")
 const MONSTER_TEXTURE_BREAD := preload("res://Art/PaperEnemies/bread.png")
 const MONSTER_TEXTURE_MUSHROOM := preload("res://Art/PaperEnemies/mushroom.png")
+const STAGE_BACKGROUND_TEXTURE := preload("res://Art/NewBattleBackground/battle_stage_popup_bg.png")
+const STAGE_OVERLAY_TEXTURE := preload("res://Art/NewBattleBackground/battle_stage_overlay.png")
+const STAGE_CLOSED_LEFT_CURTAIN_TEXTURE := preload("res://Art/NewBattleBackground/battle_curtain_left_panel.png")
+const STAGE_CLOSED_RIGHT_CURTAIN_TEXTURE := preload("res://Art/NewBattleBackground/battle_curtain_right_panel.png")
+const STAGE_FRAME_TEXTURE := preload("res://Art/NewBattleBackground/舞台最上层.png")
+const START_BUTTON_NORMAL_TEXTURE := preload("res://Art/NewBattleBackground/battle_start_normal.png")
+const START_BUTTON_HOVER_TEXTURE := preload("res://Art/NewBattleBackground/battle_start_hover.png")
+const CLOSE_BUTTON_NORMAL_TEXTURE := preload("res://Art/NewBattleBackground/battle_close_normal.png")
+const CLOSE_BUTTON_HOVER_TEXTURE := preload("res://Art/NewBattleBackground/battle_close_hover.png")
 const VICTORY_BANNER_TEXTURE := preload("res://Art/BattleBackground/victory.png")
 const DEFEAT_BANNER_TEXTURE := preload("res://Art/BattleBackground/defeat.png")
-const RESULT_BANNER_TOP_MARGIN := 8.0
 const RESULT_BANNER_START_OFFSET := 40.0
-const RESULT_BANNER_MAX_WIDTH_RATIO := 0.56
-const RESULT_BANNER_MAX_HEIGHT_RATIO := 0.72
 const RESULT_BANNER_DROP_TIME := 0.42
 const RESULT_BANNER_SETTLE_TIME := 0.14
 const RESULT_BANNER_OVERSHOOT := 18.0
 const FORMATION_SWAP_TIME := 0.22
+const HERO_DRAG_HIT_INSET_X := 24.0
+const HERO_DRAG_HIT_INSET_Y := 20.0
+const HERO_DROP_HIT_INSET_X := 18.0
+const HERO_DROP_HIT_INSET_Y := 18.0
 const TARGET_BADGE_COLOR := Color(1.0, 0.93, 0.58)
 const TARGET_BADGE_OUTLINE_COLOR := Color(0.24, 0.11, 0.05, 0.95)
-
+const BATTLE_REVEAL_TIME := 0.25
+const STAGE_PHASE_PREPARATION: StringName = &"preparation"
+const STAGE_PHASE_MONSTER_REVEAL: StringName = &"monster_reveal"
+const STAGE_PHASE_BATTLE: StringName = &"battle"
+const STAGE_PHASE_RESULT: StringName = &"result"
 @export var show_timeline_panel: bool = false
-
 @onready var title_label: Label = %TitleLabel
 @onready var route_label: Label = %BattleRouteLabel
+@onready var header: Control = $Margin/RootVBox/Header
+@onready var stage_backdrop: TextureRect = $WindowArt
+@onready var stage_overlay_art: TextureRect = %StageArt
+@onready var stage_frame_art: TextureRect = %StageOverlay
+@onready var left_curtain_panel: TextureRect = %LeftCurtainBlockout
+@onready var right_curtain_panel: TextureRect = %RightCurtainBlockout
 @onready var hero_actor_nodes: Array[Control] = [%Hero1Actor, %Hero2Actor, %Hero3Actor]
 @onready var hero_portrait_frames: Array[Control] = [%Hero1PortraitFrame, %Hero2PortraitFrame, %Hero3PortraitFrame]
 @onready var hero_portrait_sprites: Array[TextureRect] = [%Hero1PortraitSprite, %Hero2PortraitSprite, %Hero3PortraitSprite]
@@ -52,6 +70,7 @@ const TARGET_BADGE_OUTLINE_COLOR := Color(0.24, 0.11, 0.05, 0.95)
 @onready var timeline_panel: Control = $Margin/RootVBox/TimelinePanel
 @onready var battle_float_layer: Control = %BattleFloatLayer
 @onready var result_banner: TextureRect = %ResultBanner
+@onready var arena_stage: Control = %ArenaStage
 @onready var preparation_hint_label: Label = %PreparationHintLabel
 @onready var monster_actor: Control = %MonsterActor
 @onready var monster_portrait_frame: Control = %MonsterPortraitFrame
@@ -60,7 +79,6 @@ const TARGET_BADGE_OUTLINE_COLOR := Color(0.24, 0.11, 0.05, 0.95)
 @onready var monster_arena_hp_label: Label = %MonsterArenaHpLabel
 @onready var start_battle_button: Button = %StartBattleButton
 @onready var close_button: Button = %CloseBattleButton
-
 var _is_playing: bool = false
 var _is_preparing: bool = false
 var _recent_lines: Array[String] = []
@@ -81,36 +99,41 @@ var _default_hero_arena_hp_labels: Array[Label] = []
 var _party_slot_positions: Array[Vector2] = []
 var _dragged_actor: Control
 var _drag_pointer_offset := Vector2.ZERO
-
+var _result_banner_target_position := Vector2.ZERO
+var _result_banner_target_size := Vector2.ZERO
+var _stage_phase: StringName = STAGE_PHASE_PREPARATION
+func get_stage_phase() -> StringName:
+	return _stage_phase
 func _run_state() -> Node:
 	return get_node("/root/RunState")
-
 func _bgm_player() -> Node:
 	return get_node("/root/BgmPlayer")
-
 func _ui_sfx() -> Node:
 	return get_node("/root/UiSfxPlayer")
-
 func _ready() -> void:
 	_apply_timeline_panel_visibility()
-	close_button.text = "Close"
-	start_battle_button.text = "Start Battle"
-	preparation_hint_label.text = "Drag heroes to swap positions before the fight."
+	_configure_stage_controls()
 	close_button.pressed.connect(_on_close_pressed)
 	start_battle_button.pressed.connect(_on_start_battle_pressed)
+	start_battle_button.mouse_entered.connect(_on_start_button_hover_entered)
+	start_battle_button.mouse_exited.connect(_on_start_button_hover_exited)
+	close_button.mouse_entered.connect(_on_close_button_hover_entered)
+	close_button.mouse_exited.connect(_on_close_button_hover_exited)
 	close_requested.connect(_on_close_pressed)
 	popup_hide.connect(_on_popup_hidden)
-	for hero_actor in hero_actor_nodes:
-		hero_actor.gui_input.connect(_on_hero_actor_gui_input.bind(hero_actor))
+	for hero_portrait_frame in hero_portrait_frames:
+		hero_portrait_frame.gui_input.connect(_on_hero_portrait_frame_gui_input.bind(hero_portrait_frame))
 	set_process(true)
 	set_process_input(true)
 	popup_window = false
 	_cache_default_party_node_order()
 	_cache_actor_base_positions()
 	_cache_party_slot_positions()
+	_cache_result_banner_target_rect()
 	_create_target_badges()
 	_reset_preparation_state()
-
+	_apply_stage_art()
+	_configure_stage_visibility()
 func open_battle() -> void:
 	if _is_playing or _is_preparing:
 		return
@@ -119,16 +142,18 @@ func open_battle() -> void:
 	start_battle_button.disabled = false
 	start_battle_button.visible = true
 	preparation_hint_label.visible = true
+	_configure_stage_controls()
 	var run_state: Node = _run_state()
 	_restore_default_party_node_order()
 	_display_party = _capture_initial_party_state(run_state)
 	_display_monster = _capture_initial_monster_state(run_state)
 	_rebuild_name_lookup()
 	_prepare_pre_battle_preview()
+	_set_stage_phase(STAGE_PHASE_PREPARATION)
 	popup_centered(POPUP_SIZE)
 	await get_tree().process_frame
 	_normalize_popup_layout()
-
+	_set_stage_phase(STAGE_PHASE_PREPARATION)
 func _on_start_battle_pressed() -> void:
 	if _is_playing or not _is_preparing:
 		return
@@ -140,6 +165,7 @@ func _on_start_battle_pressed() -> void:
 	close_button.disabled = true
 	_ui_sfx().play_battle_start()
 	_bgm_player().play_battle()
+	await _play_battle_start_reveal()
 	var run_state: Node = _run_state()
 	var report: Dictionary = CombatEngine.simulate(run_state, _current_party_order())
 	_prepare_playback()
@@ -148,7 +174,6 @@ func _on_start_battle_pressed() -> void:
 	await _render_final_report(report)
 	close_button.disabled = false
 	_is_playing = false
-
 func _prepare_playback() -> void:
 	title_label.text = "Battle In Progress"
 	route_label.text = _run_state().get_route_label()
@@ -159,7 +184,7 @@ func _prepare_playback() -> void:
 	_reset_all_attack_animations()
 	_reset_result_banner()
 	_refresh_battle_visual_state()
-
+	_set_stage_phase(STAGE_PHASE_BATTLE)
 func _prepare_pre_battle_preview() -> void:
 	title_label.text = "Battle Ready"
 	route_label.text = _run_state().get_route_label()
@@ -170,7 +195,6 @@ func _prepare_pre_battle_preview() -> void:
 	_reset_all_attack_animations()
 	_reset_result_banner()
 	_refresh_battle_visual_state()
-
 func _reset_preparation_state() -> void:
 	_is_preparing = false
 	_dragged_actor = null
@@ -180,17 +204,99 @@ func _reset_preparation_state() -> void:
 	preparation_hint_label.visible = true
 	_stop_formation_animation()
 	_apply_party_layout(false)
-
 func _current_party_order() -> Array[StringName]:
 	var order: Array[StringName] = []
 	for entry_variant in _display_party:
 		var entry: Dictionary = entry_variant
 		order.append(entry.get("id", &""))
 	return order
-
 func _apply_timeline_panel_visibility() -> void:
 	timeline_panel.visible = show_timeline_panel
-
+func _apply_stage_art() -> void:
+	stage_backdrop.texture = STAGE_BACKGROUND_TEXTURE
+	stage_overlay_art.texture = STAGE_OVERLAY_TEXTURE
+	stage_frame_art.texture = STAGE_FRAME_TEXTURE
+	stage_backdrop.z_index = -10
+	stage_overlay_art.z_index = 2
+	stage_frame_art.z_index = 30
+	left_curtain_panel.z_index = 10
+	right_curtain_panel.z_index = 11
+func _configure_stage_controls() -> void:
+	if start_battle_button.get_parent() != arena_stage:
+		start_battle_button.reparent(arena_stage)
+	if close_button.get_parent() != arena_stage:
+		close_button.reparent(arena_stage)
+	if preparation_hint_label.get_parent() != arena_stage:
+		preparation_hint_label.reparent(arena_stage)
+	header.visible = false
+	title_label.visible = false
+	route_label.visible = false
+	start_battle_button.text = ""
+	close_button.text = ""
+	start_battle_button.flat = true
+	close_button.flat = true
+	start_battle_button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	close_button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	start_battle_button.expand_icon = true
+	close_button.expand_icon = true
+	start_battle_button.icon = START_BUTTON_NORMAL_TEXTURE
+	close_button.icon = CLOSE_BUTTON_NORMAL_TEXTURE
+	start_battle_button.z_index = 40
+	close_button.z_index = 40
+	preparation_hint_label.visible = true
+	preparation_hint_label.z_index = 38
+func _configure_stage_visibility() -> void:
+	left_curtain_panel.visible = false
+	right_curtain_panel.visible = true
+	stage_frame_art.z_index = 30
+	left_curtain_panel.z_index = 10
+	right_curtain_panel.z_index = 11
+	stage_overlay_art.z_index = 2
+	stage_backdrop.z_index = -10
+	battle_float_layer.z_index = 45
+	result_banner.z_index = 50
+	monster_actor.z_index = 5
+	for hero_actor in hero_actor_nodes:
+		hero_actor.z_index = 5
+func _set_button_icon(button: Button, normal_texture: Texture2D, hovered_texture: Texture2D, hovered: bool) -> void:
+	button.icon = hovered_texture if hovered else normal_texture
+func _on_start_button_hover_entered() -> void:
+	_set_button_icon(start_battle_button, START_BUTTON_NORMAL_TEXTURE, START_BUTTON_HOVER_TEXTURE, true)
+func _on_start_button_hover_exited() -> void:
+	_set_button_icon(start_battle_button, START_BUTTON_NORMAL_TEXTURE, START_BUTTON_HOVER_TEXTURE, false)
+func _on_close_button_hover_entered() -> void:
+	_set_button_icon(close_button, CLOSE_BUTTON_NORMAL_TEXTURE, CLOSE_BUTTON_HOVER_TEXTURE, true)
+func _on_close_button_hover_exited() -> void:
+	_set_button_icon(close_button, CLOSE_BUTTON_NORMAL_TEXTURE, CLOSE_BUTTON_HOVER_TEXTURE, false)
+func _set_stage_phase(phase: StringName) -> void:
+	_stage_phase = phase
+	match phase:
+		STAGE_PHASE_PREPARATION:
+			left_curtain_panel.visible = false
+			right_curtain_panel.visible = true
+			monster_actor.visible = false
+			preparation_hint_label.visible = true
+			start_battle_button.visible = true
+			close_button.visible = true
+		STAGE_PHASE_MONSTER_REVEAL:
+			left_curtain_panel.visible = false
+			right_curtain_panel.visible = true
+			monster_actor.visible = false
+			preparation_hint_label.visible = false
+		STAGE_PHASE_BATTLE:
+			left_curtain_panel.visible = false
+			right_curtain_panel.visible = false
+			monster_actor.visible = true
+			preparation_hint_label.visible = false
+		STAGE_PHASE_RESULT:
+			left_curtain_panel.visible = false
+			right_curtain_panel.visible = false
+			monster_actor.visible = true
+			preparation_hint_label.visible = false
+func _play_battle_start_reveal() -> void:
+	_set_stage_phase(STAGE_PHASE_MONSTER_REVEAL)
+	await get_tree().create_timer(BATTLE_REVEAL_TIME).timeout
+	_set_stage_phase(STAGE_PHASE_BATTLE)
 func _play_report(report: Dictionary) -> void:
 	var previous_time: float = 0.0
 	var has_events: bool = false
@@ -210,7 +316,6 @@ func _play_report(report: Dictionary) -> void:
 		await get_tree().create_timer(0.25).timeout
 	if float(report.get("duration", 0.0)) > previous_time:
 		playback_time_label.text = "Time %.1fs" % float(report.get("duration", 0.0))
-
 func _render_final_report(report: Dictionary) -> void:
 	var result: String = String(report.get("result", ""))
 	if result == "win":
@@ -221,8 +326,8 @@ func _render_final_report(report: Dictionary) -> void:
 	playback_time_label.text = "Time %.1fs" % float(report.get("duration", 0.0))
 	result_label.text = ""
 	_refresh_battle_visual_state()
+	_set_stage_phase(STAGE_PHASE_RESULT)
 	await _play_result_banner(result)
-
 func _capture_initial_party_state(run_state: Node) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for definition in run_state.character_roster.characters:
@@ -244,7 +349,6 @@ func _capture_initial_party_state(run_state: Node) -> Array[Dictionary]:
 			"alive": bool(preview.get("alive", true)),
 		})
 	return result
-
 func _capture_initial_monster_state(run_state: Node) -> Dictionary:
 	var summary: Dictionary = run_state.get_next_monster_summary()
 	if summary.is_empty():
@@ -262,19 +366,16 @@ func _capture_initial_monster_state(run_state: Node) -> Dictionary:
 		"max_hp": float(summary.get("hp", 0.0)),
 		"alive": true,
 	}
-
 func _rebuild_name_lookup() -> void:
 	_name_to_party_index.clear()
 	for index in range(_display_party.size()):
 		_name_to_party_index[String(_display_party[index].get("name", ""))] = index
-
 func _cache_default_party_node_order() -> void:
 	_default_hero_actor_nodes = hero_actor_nodes.duplicate()
 	_default_hero_portrait_frames = hero_portrait_frames.duplicate()
 	_default_hero_portrait_sprites = hero_portrait_sprites.duplicate()
 	_default_hero_arena_name_labels = hero_arena_name_labels.duplicate()
 	_default_hero_arena_hp_labels = hero_arena_hp_labels.duplicate()
-
 func _restore_default_party_node_order() -> void:
 	hero_actor_nodes = _default_hero_actor_nodes.duplicate()
 	hero_portrait_frames = _default_hero_portrait_frames.duplicate()
@@ -282,12 +383,10 @@ func _restore_default_party_node_order() -> void:
 	hero_arena_name_labels = _default_hero_arena_name_labels.duplicate()
 	hero_arena_hp_labels = _default_hero_arena_hp_labels.duplicate()
 	_apply_party_layout(false)
-
 func _cache_party_slot_positions() -> void:
 	_party_slot_positions.clear()
 	for hero_actor in hero_actor_nodes:
 		_party_slot_positions.append(hero_actor.position)
-
 func _create_target_badges() -> void:
 	if not _hero_target_badges.is_empty():
 		return
@@ -306,7 +405,6 @@ func _create_target_badges() -> void:
 		badge.add_theme_color_override("font_outline_color", TARGET_BADGE_OUTLINE_COLOR)
 		hero_actor.add_child(badge)
 		_hero_target_badges.append(badge)
-
 func _refresh_target_badges() -> void:
 	for index in range(hero_actor_nodes.size()):
 		var badge: Label = hero_actor_nodes[index].get_node_or_null("TargetBadge") as Label
@@ -314,7 +412,6 @@ func _refresh_target_badges() -> void:
 			continue
 		badge.text = str(index + 1)
 		badge.visible = index < _display_party.size()
-
 func _apply_party_layout(animate: bool) -> void:
 	_stop_formation_animation()
 	if animate:
@@ -323,7 +420,7 @@ func _apply_party_layout(animate: bool) -> void:
 	for index in range(hero_actor_nodes.size()):
 		var hero_actor: Control = hero_actor_nodes[index]
 		var target_position: Vector2 = _party_slot_positions[index]
-		hero_actor.z_index = 0
+		hero_actor.z_index = 5
 		if animate:
 			var track: PropertyTweener = _formation_tween.tween_property(hero_actor, "position", target_position, FORMATION_SWAP_TIME)
 			track.set_trans(Tween.TRANS_CUBIC)
@@ -335,12 +432,10 @@ func _apply_party_layout(animate: bool) -> void:
 		_formation_tween.finished.connect(func() -> void:
 			_formation_tween = null
 		)
-
 func _stop_formation_animation() -> void:
 	if _formation_tween != null:
 		_formation_tween.kill()
 		_formation_tween = null
-
 func _swap_party_slots(first_index: int, second_index: int, animate: bool = true) -> void:
 	if first_index == second_index:
 		return
@@ -369,7 +464,6 @@ func _swap_party_slots(first_index: int, second_index: int, animate: bool = true
 	_rebuild_name_lookup()
 	_apply_party_layout(animate)
 	_refresh_battle_visual_state()
-
 func _rotate_party_target_order_visual() -> void:
 	if _display_party.size() <= 1:
 		return
@@ -394,7 +488,6 @@ func _rotate_party_target_order_visual() -> void:
 	_rebuild_name_lookup()
 	_apply_party_layout(true)
 	_refresh_battle_visual_state()
-
 func _refresh_battle_visual_state() -> void:
 	for index in range(hero_actor_nodes.size()):
 		if index >= _display_party.size():
@@ -417,7 +510,6 @@ func _refresh_battle_visual_state() -> void:
 	monster_portrait_sprite.texture = _monster_texture_for(_display_monster)
 	monster_actor.modulate = NORMAL_TINT if bool(_display_monster.get("alive", false)) else DOWN_TINT
 	_refresh_target_badges()
-
 func _apply_final_display_state(report: Dictionary) -> void:
 	if report.has("characters"):
 		var report_by_id: Dictionary = {}
@@ -440,7 +532,6 @@ func _apply_final_display_state(report: Dictionary) -> void:
 	_display_monster["current_hp"] = maxf(0.0, float(report.get("monster_hp", _display_monster.get("current_hp", 0.0))))
 	_display_monster["max_hp"] = float(report.get("monster_max_hp", _display_monster.get("max_hp", 0.0)))
 	_display_monster["alive"] = float(_display_monster.get("current_hp", 0.0)) > 0.0
-
 func _append_recent_log_line(line: String) -> void:
 	_recent_lines.append(line)
 	while _recent_lines.size() > MAX_VISIBLE_LOG_LINES:
@@ -453,13 +544,11 @@ func _append_recent_log_line(line: String) -> void:
 	battle_log.bbcode_enabled = true
 	battle_log.clear()
 	battle_log.append_text("\n".join(rendered_lines))
-
 func _extract_log_time(line: String) -> float:
 	var close_index: int = line.find("s]")
 	if not line.begins_with("[") or close_index <= 1:
 		return 0.0
 	return float(line.substr(1, close_index - 1))
-
 func _process_battle_event(line: String) -> void:
 	var content: String = _strip_log_timestamp(line)
 	if content.is_empty():
@@ -483,13 +572,11 @@ func _process_battle_event(line: String) -> void:
 	else:
 		_process_notice_event(content)
 	_refresh_battle_visual_state()
-
 func _strip_log_timestamp(line: String) -> String:
 	var close_index: int = line.find("] ")
 	if close_index == -1:
 		return line.strip_edges()
 	return line.substr(close_index + 2).strip_edges()
-
 func _process_damage_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" deals ", false, 1)
 	if first_split.size() != 2:
@@ -512,7 +599,6 @@ func _process_damage_event(content: String) -> void:
 		DAMAGE_OUTLINE_COLOR,
 		DAMAGE_FLOAT_OUTLINE_SIZE
 	)
-
 func _process_heal_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" restores ", false, 1)
 	if first_split.size() != 2:
@@ -527,7 +613,6 @@ func _process_heal_event(content: String) -> void:
 	_spawn_floating_text(_resolve_target_node(source_name), "+%.1f" % amount, HEAL_COLOR)
 	if _is_monster_name(source_name):
 		_spawn_notice_text("%s skill" % source_name)
-
 func _process_critical_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" lands a critical hit for ", false, 1)
 	if first_split.size() != 2:
@@ -536,7 +621,6 @@ func _process_critical_event(content: String) -> void:
 	var amount: float = float(String(first_split[1]).trim_suffix("."))
 	await _play_attack_animation(source_name)
 	_spawn_floating_text(_resolve_actor_node(source_name), "CRIT %.1f" % amount, NOTICE_COLOR)
-
 func _process_retaliate_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" retaliates for ", false, 1)
 	if first_split.size() != 2:
@@ -555,7 +639,6 @@ func _process_retaliate_event(content: String) -> void:
 		DAMAGE_OUTLINE_COLOR,
 		DAMAGE_FLOAT_OUTLINE_SIZE
 	)
-
 func _process_execute_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" executes ", false, 1)
 	if first_split.size() != 2:
@@ -566,12 +649,10 @@ func _process_execute_event(content: String) -> void:
 	await _play_attack_animation(source_name)
 	_set_target_hp(target_name, 0.0, false)
 	_spawn_floating_text(_resolve_target_node(target_name), "EXEC", NOTICE_COLOR)
-
 func _process_defeat_event(content: String) -> void:
 	var target_name: String = content.trim_suffix(" is defeated.")
 	_set_target_hp(target_name, 0.0, false)
 	_spawn_floating_text(_resolve_target_node(target_name), "DOWN", DAMAGE_COLOR)
-
 func _process_revive_event(content: String) -> void:
 	var first_split: PackedStringArray = content.split(" revives with ", false, 1)
 	if first_split.size() != 2:
@@ -580,31 +661,32 @@ func _process_revive_event(content: String) -> void:
 	var hp_amount: float = float(String(first_split[1]).trim_suffix(" HP."))
 	_set_target_hp(target_name, hp_amount, true)
 	_spawn_floating_text(_resolve_target_node(target_name), "REVIVE %.1f" % hp_amount, HEAL_COLOR)
-
 func _process_notice_event(content: String) -> void:
 	if content.contains("shifts target order"):
 		_rotate_party_target_order_visual()
 	var skill_notice: String = _monster_skill_notice(content)
 	if skill_notice != "":
 		_spawn_notice_text(skill_notice)
-
-func _on_hero_actor_gui_input(event: InputEvent, hero_actor: Control) -> void:
+func _on_hero_portrait_frame_gui_input(event: InputEvent, hero_portrait_frame: Control) -> void:
 	if not _is_preparing or _is_playing:
 		return
-	var actor_index: int = hero_actor_nodes.find(hero_actor)
+	var actor_index: int = hero_portrait_frames.find(hero_portrait_frame)
 	if actor_index == -1 or actor_index >= _display_party.size():
 		return
 	if event is InputEventMouseButton:
 		var mouse_button: InputEventMouseButton = event
 		if mouse_button.button_index != MOUSE_BUTTON_LEFT:
 			return
+		var hit_rect: Rect2 = _hero_drag_hit_rect(actor_index)
+		if not hit_rect.has_point(mouse_button.global_position):
+			return
+		var hero_actor: Control = hero_actor_nodes[actor_index]
 		if mouse_button.pressed:
 			_begin_party_drag(hero_actor, mouse_button.global_position)
 			get_viewport().set_input_as_handled()
 		elif _dragged_actor == hero_actor:
 			_finish_party_drag(mouse_button.global_position)
 			get_viewport().set_input_as_handled()
-
 func _input(event: InputEvent) -> void:
 	if _dragged_actor == null:
 		return
@@ -617,25 +699,22 @@ func _input(event: InputEvent) -> void:
 		if mouse_button.button_index == MOUSE_BUTTON_LEFT and not mouse_button.pressed:
 			_finish_party_drag(mouse_button.global_position)
 			get_viewport().set_input_as_handled()
-
 func _begin_party_drag(hero_actor: Control, pointer_global_position: Vector2) -> void:
 	_stop_formation_animation()
 	_dragged_actor = hero_actor
 	_drag_pointer_offset = hero_actor.global_position - pointer_global_position
-	hero_actor.z_index = 20
-
+	hero_actor.z_index = 60
 func _finish_party_drag(pointer_global_position: Vector2) -> void:
 	if _dragged_actor == null:
 		return
 	var source_index: int = hero_actor_nodes.find(_dragged_actor)
 	var target_index: int = _find_party_drop_target(pointer_global_position, _dragged_actor)
-	_dragged_actor.z_index = 0
+	_dragged_actor.z_index = 5
 	_dragged_actor = null
 	if source_index != -1 and target_index != -1 and source_index != target_index:
 		_swap_party_slots(source_index, target_index)
 	else:
 		_apply_party_layout(true)
-
 func _find_party_drop_target(pointer_global_position: Vector2, dragged_actor: Control) -> int:
 	var best_index := -1
 	var best_distance := INF
@@ -643,7 +722,7 @@ func _find_party_drop_target(pointer_global_position: Vector2, dragged_actor: Co
 		var hero_actor: Control = hero_actor_nodes[index]
 		if hero_actor == dragged_actor:
 			continue
-		var rect: Rect2 = hero_actor.get_global_rect()
+		var rect: Rect2 = _hero_drag_hit_rect(index, true)
 		if rect.has_point(pointer_global_position):
 			return index
 		var distance: float = rect.get_center().distance_to(pointer_global_position)
@@ -653,7 +732,16 @@ func _find_party_drop_target(pointer_global_position: Vector2, dragged_actor: Co
 	if best_distance <= 220.0:
 		return best_index
 	return -1
-
+func _hero_drag_hit_rect(index: int, for_drop_target: bool = false) -> Rect2:
+	if index < 0 or index >= hero_portrait_frames.size():
+		return Rect2()
+	var rect: Rect2 = hero_portrait_frames[index].get_global_rect()
+	var inset_x: float = HERO_DROP_HIT_INSET_X if for_drop_target else HERO_DRAG_HIT_INSET_X
+	var inset_y: float = HERO_DROP_HIT_INSET_Y if for_drop_target else HERO_DRAG_HIT_INSET_Y
+	rect = rect.grow_individual(-inset_x, -inset_y, -inset_x, -inset_y)
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return hero_portrait_frames[index].get_global_rect()
+	return rect
 func _monster_skill_notice(content: String) -> String:
 	var monster_name: String = String(_display_monster.get("name", ""))
 	if monster_name == "" or not content.begins_with(monster_name + " "):
@@ -669,37 +757,34 @@ func _monster_skill_notice(content: String) -> String:
 	if content.contains("target order"):
 		return "%s skill" % monster_name
 	return "%s skill" % monster_name
-
 func _apply_damage_to_target(target_name: String, amount: float) -> void:
 	if _is_monster_name(target_name):
-		var current_hp: float = maxf(0.0, float(_display_monster.get("current_hp", 0.0)) - amount)
-		_display_monster["current_hp"] = current_hp
-		_display_monster["alive"] = current_hp > 0.0
+		var monster_current_hp: float = maxf(0.0, float(_display_monster.get("current_hp", 0.0)) - amount)
+		_display_monster["current_hp"] = monster_current_hp
+		_display_monster["alive"] = monster_current_hp > 0.0
 		return
 	var index: int = int(_name_to_party_index.get(target_name, -1))
 	if index < 0 or index >= _display_party.size():
 		return
 	var actor: Dictionary = _display_party[index]
-	var current_hp: float = maxf(0.0, float(actor.get("current_hp", 0.0)) - amount)
-	actor["current_hp"] = current_hp
-	actor["alive"] = current_hp > 0.0
+	var actor_current_hp: float = maxf(0.0, float(actor.get("current_hp", 0.0)) - amount)
+	actor["current_hp"] = actor_current_hp
+	actor["alive"] = actor_current_hp > 0.0
 	_display_party[index] = actor
-
 func _apply_heal_to_target(target_name: String, amount: float) -> void:
 	if _is_monster_name(target_name):
-		var current_hp: float = minf(float(_display_monster.get("max_hp", 0.0)), float(_display_monster.get("current_hp", 0.0)) + amount)
-		_display_monster["current_hp"] = current_hp
-		_display_monster["alive"] = current_hp > 0.0
+		var monster_current_hp: float = minf(float(_display_monster.get("max_hp", 0.0)), float(_display_monster.get("current_hp", 0.0)) + amount)
+		_display_monster["current_hp"] = monster_current_hp
+		_display_monster["alive"] = monster_current_hp > 0.0
 		return
 	var index: int = int(_name_to_party_index.get(target_name, -1))
 	if index < 0 or index >= _display_party.size():
 		return
 	var actor: Dictionary = _display_party[index]
-	var current_hp: float = minf(float(actor.get("max_hp", 0.0)), float(actor.get("current_hp", 0.0)) + amount)
-	actor["current_hp"] = current_hp
-	actor["alive"] = current_hp > 0.0
+	var actor_current_hp: float = minf(float(actor.get("max_hp", 0.0)), float(actor.get("current_hp", 0.0)) + amount)
+	actor["current_hp"] = actor_current_hp
+	actor["alive"] = actor_current_hp > 0.0
 	_display_party[index] = actor
-
 func _set_target_hp(target_name: String, hp_value: float, alive: bool) -> void:
 	if _is_monster_name(target_name):
 		_display_monster["current_hp"] = hp_value
@@ -712,19 +797,15 @@ func _set_target_hp(target_name: String, hp_value: float, alive: bool) -> void:
 	actor["current_hp"] = hp_value
 	actor["alive"] = alive
 	_display_party[index] = actor
-
 func _is_monster_name(target_name: String) -> bool:
 	return target_name == String(_display_monster.get("name", ""))
-
 func _is_party_name(actor_name: String) -> bool:
 	return int(_name_to_party_index.get(actor_name, -1)) >= 0
-
 func _play_attack_sfx_for_source(source_name: String) -> void:
 	if _is_monster_name(source_name):
 		_ui_sfx().play_monster_attack()
 	elif _is_party_name(source_name):
 		_ui_sfx().play_role_attack()
-
 func _resolve_actor_node(actor_name: String) -> Control:
 	if _is_monster_name(actor_name):
 		return monster_actor
@@ -732,7 +813,6 @@ func _resolve_actor_node(actor_name: String) -> Control:
 	if index < 0 or index >= hero_actor_nodes.size():
 		return null
 	return hero_actor_nodes[index]
-
 func _resolve_actor_visual_node(actor_name: String) -> Control:
 	if _is_monster_name(actor_name):
 		return monster_portrait_frame
@@ -740,13 +820,10 @@ func _resolve_actor_visual_node(actor_name: String) -> Control:
 	if index < 0 or index >= hero_portrait_frames.size():
 		return null
 	return hero_portrait_frames[index]
-
 func _resolve_actor_jump_node(actor_name: String) -> Control:
 	return _resolve_actor_visual_node(actor_name)
-
 func _resolve_target_node(target_name: String) -> Control:
 	return _resolve_actor_node(target_name)
-
 func _cache_actor_base_positions() -> void:
 	for hero_frame in hero_portrait_frames:
 		hero_frame.pivot_offset = hero_frame.size * 0.5
@@ -755,7 +832,6 @@ func _cache_actor_base_positions() -> void:
 	monster_portrait_frame.pivot_offset = monster_portrait_frame.size * 0.5
 	_actor_base_positions[monster_portrait_frame] = monster_portrait_frame.position
 	_actor_base_scales[monster_portrait_frame] = monster_portrait_frame.scale
-
 func _monster_texture_for(monster_data: Dictionary) -> Texture2D:
 	var monster_id: StringName = monster_data.get("id", &"")
 	match monster_id:
@@ -773,7 +849,6 @@ func _monster_texture_for(monster_data: Dictionary) -> Texture2D:
 			return MONSTER_TEXTURE_MUSHROOM
 		_:
 			return null
-
 func _play_attack_animation(actor_name: String) -> void:
 	var visual_node: Control = _resolve_actor_visual_node(actor_name)
 	if visual_node == null:
@@ -790,7 +865,6 @@ func _play_attack_animation(actor_name: String) -> void:
 		"base_scale": base_scale,
 	}
 	await get_tree().create_timer(ATTACK_ANIMATION_TIME).timeout
-
 func _process(delta: float) -> void:
 	if _active_attack_animations.is_empty():
 		return
@@ -819,7 +893,6 @@ func _process(delta: float) -> void:
 			_active_attack_animations[actor_name] = animation
 	for actor_name in finished_names:
 		_active_attack_animations.erase(actor_name)
-
 func _reset_all_attack_animations() -> void:
 	for actor_name_variant in _active_attack_animations.keys():
 		var actor_name: String = String(actor_name_variant)
@@ -830,7 +903,6 @@ func _reset_all_attack_animations() -> void:
 		node.position = animation.get("base_position", node.position)
 		node.scale = animation.get("base_scale", node.scale)
 	_active_attack_animations.clear()
-
 func _spawn_floating_text(
 	target_node: Control,
 	text: String,
@@ -865,7 +937,6 @@ func _spawn_floating_text(
 	tween.tween_property(label, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(label, "modulate:a", 0.0, FLOAT_TEXT_TIME).from(1.0)
 	tween.chain().tween_callback(label.queue_free)
-
 func _spawn_notice_text(text: String) -> void:
 	var label := Label.new()
 	label.text = text
@@ -883,7 +954,6 @@ func _spawn_notice_text(text: String) -> void:
 	tween.tween_property(label, "position", label.position + Vector2(0.0, -20.0), FLOAT_TEXT_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(label, "modulate:a", 0.0, FLOAT_TEXT_TIME).from(1.0)
 	tween.chain().tween_callback(label.queue_free)
-
 func _play_result_banner(result: String) -> void:
 	var banner_texture: Texture2D = null
 	match result:
@@ -902,68 +972,52 @@ func _play_result_banner(result: String) -> void:
 	_result_banner_tween.tween_property(
 		result_banner,
 		"position:y",
-		RESULT_BANNER_TOP_MARGIN + RESULT_BANNER_OVERSHOOT,
+		_result_banner_target_position.y + RESULT_BANNER_OVERSHOOT,
 		RESULT_BANNER_DROP_TIME
 	).from(result_banner.position.y).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_result_banner_tween.tween_property(
 		result_banner,
 		"position:y",
-		RESULT_BANNER_TOP_MARGIN,
+		_result_banner_target_position.y,
 		RESULT_BANNER_SETTLE_TIME
 	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await _result_banner_tween.finished
 	_result_banner_tween = null
-
 func _reset_result_banner() -> void:
 	if _result_banner_tween != null:
 		_result_banner_tween.kill()
 		_result_banner_tween = null
 	result_banner.texture = null
 	result_banner.visible = false
-	result_banner.position = Vector2.ZERO
-	result_banner.size = Vector2.ZERO
+	result_banner.position = _result_banner_target_position
+	result_banner.size = _result_banner_target_size
 	result_banner.scale = Vector2.ONE
 	result_banner.modulate = Color.WHITE
-
 func _layout_result_banner(start_above_screen: bool) -> void:
-	var banner_texture: Texture2D = result_banner.texture
-	if banner_texture == null:
-		return
-	var available_size: Vector2 = battle_float_layer.size
-	if available_size.x <= 0.0 or available_size.y <= 0.0:
-		available_size = size
-	if available_size.x <= 0.0 or available_size.y <= 0.0:
-		return
-	var texture_size: Vector2 = Vector2(banner_texture.get_width(), banner_texture.get_height())
-	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
-		return
-	var scale_factor: float = minf(
-		available_size.x * RESULT_BANNER_MAX_WIDTH_RATIO / texture_size.x,
-		available_size.y * RESULT_BANNER_MAX_HEIGHT_RATIO / texture_size.y
-	)
-	result_banner.size = texture_size * scale_factor
-	result_banner.position.x = (available_size.x - result_banner.size.x) * 0.5
-	result_banner.position.y = RESULT_BANNER_TOP_MARGIN
+	result_banner.size = _result_banner_target_size
+	result_banner.position = _result_banner_target_position
 	if start_above_screen:
 		result_banner.position.y = -result_banner.size.y - RESULT_BANNER_START_OFFSET
-
+func _cache_result_banner_target_rect() -> void:
+	_result_banner_target_position = result_banner.position
+	_result_banner_target_size = result_banner.size
 func _normalize_popup_layout() -> void:
 	if not visible:
 		return
 	popup_centered(POPUP_SIZE)
+	_configure_stage_controls()
 	_cache_actor_base_positions()
 	if result_banner.visible:
 		_layout_result_banner(false)
-
 func _on_close_pressed() -> void:
 	if _is_playing:
 		return
 	_ui_sfx().play_button()
 	hide()
-
 func _on_popup_hidden() -> void:
 	_is_playing = false
 	_reset_preparation_state()
+	_set_stage_phase(STAGE_PHASE_PREPARATION)
 	_reset_all_attack_animations()
 	_reset_result_banner()
 	_restore_default_party_node_order()

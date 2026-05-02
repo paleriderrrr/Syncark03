@@ -21,6 +21,12 @@ func _run() -> void:
 	_assert(lab.get_node_or_null("Margin/RootVBox/ExpectedPanel/ExpectedMargin/ExpectedVBox/ExpectedScroll/CompareGrid") != null, "Compare grid should exist")
 	if lab.has_method("get_catalog_entry_count"):
 		_assert(int(lab.call("get_catalog_entry_count")) == 54, "Food effect lab should expose all 54 foods in the catalog")
+	if lab.has_method("_on_catalog_entry_clicked") and lab.has_method("_on_board_cell_clicked") and lab.has_method("_on_battle_preview_pressed"):
+		lab.call("_on_catalog_entry_clicked", {"definition_id": &"pudding_cup"})
+		lab.call("_on_board_cell_clicked", Vector2i.ZERO)
+		lab.call("_on_battle_preview_pressed")
+		var battle_summary: RichTextLabel = lab.get_node("Margin/RootVBox/TopHBox/RightPanel/RightMargin/RightVBox/BattleSummary")
+		_assert(battle_summary.text.contains("Monster:"), "Previewing pudding_cup should complete a battle preview instead of crashing")
 	lab.queue_free()
 	_finish()
 

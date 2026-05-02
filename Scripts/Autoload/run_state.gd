@@ -615,8 +615,8 @@ func _roll_food_offer(slot_index: int, used_food_ids: Dictionary = {}) -> Dictio
 	if candidates.is_empty():
 		candidates = food_catalog.foods
 	var definition: FoodDefinition = candidates[_rng.randi_range(0, candidates.size() - 1)]
-	var range: Vector2i = market_config.quantity_ranges.get(String(rarity), Vector2i.ONE)
-	var quantity: int = _rng.randi_range(range.x, range.y)
+	var quantity_range: Vector2i = market_config.quantity_ranges.get(String(rarity), Vector2i.ONE)
+	var quantity: int = _rng.randi_range(quantity_range.x, quantity_range.y)
 	if rarity == &"epic":
 		quantity = 1
 	var discount: float = _roll_discount()
@@ -1085,6 +1085,7 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 		state["placed_expansions"].append({
 			"instance_id": placed_expansion["instance_id"],
 			"label": placed_expansion["label"],
+			"shape_cells": _clone_cells(placed_expansion.get("shape_cells", [])),
 			"rotation": int(selected_item["rotation"]),
 			"anchor": anchor,
 			"cells": placed_cells,
@@ -1099,6 +1100,7 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 		state["placed_expansions"].append({
 			"instance_id": pending["instance_id"],
 			"label": pending["label"],
+			"shape_cells": _clone_cells(pending.get("shape_cells", [])),
 			"rotation": int(selected_item["rotation"]),
 			"anchor": anchor,
 			"cells": placed_cells,
@@ -1158,8 +1160,8 @@ func remove_item_at_cell(cell: Vector2i) -> bool:
 			state["pending_expansions"].append({
 				"instance_id": item["instance_id"],
 				"label": item["label"],
-				"shape_cells": ShapeUtils.rotate_cells(_derive_shape_from_placed_cells(item["cells"], item["anchor"]), 0),
-				"rotation": 0,
+				"shape_cells": _clone_cells(item.get("shape_cells", _derive_shape_from_placed_cells(item["cells"], item["anchor"]))),
+				"rotation": int(item.get("rotation", 0)),
 				"target_character_id": selected_character_id,
 			})
 			state["placed_expansions"].remove_at(index)
@@ -1210,7 +1212,7 @@ func move_placed_expansion(from_cell: Vector2i, to_anchor: Vector2i) -> bool:
 			continue
 		if _has_food_on_cells(selected_character_id, item["cells"]):
 			return false
-		var shape_cells: Array[Vector2i] = _derive_shape_from_placed_cells(item["cells"], item["anchor"])
+		var shape_cells: Array[Vector2i] = _clone_cells(item.get("shape_cells", _derive_shape_from_placed_cells(item["cells"], item["anchor"])))
 		var rotated_cells: Array[Vector2i] = ShapeUtils.rotate_cells(shape_cells, int(item.get("rotation", 0)))
 		var placed_cells: Array[Vector2i] = ShapeUtils.translate_cells(rotated_cells, to_anchor)
 		if not ShapeUtils.within_bounds(placed_cells, GRID_WIDTH, GRID_HEIGHT):

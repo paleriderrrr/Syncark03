@@ -15,4 +15,3 @@ class_name FoodDefinition
 @export var heal_per_second: float = 0.0
 @export var execute_threshold_percent: float = 0.0
 @export_multiline var passive_text: String = ""
-

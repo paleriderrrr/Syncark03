@@ -226,7 +226,7 @@ rarity = &"common"
 gold_value = 3
 shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1), Vector2i(0, 2)])
 attack_bonus = 3.0
-passive_text = "相邻8格每有一个[主食]，额外+1层[肉类]羁绊。"
+passive_text = "For each staple item in the 8 surrounding cells, gain +1 meat bond value."
 
 [sub_resource type="Resource" id="Food_lamb_rib"]
 script = ExtResource("2_definition")
@@ -343,7 +343,7 @@ category = &"drink"
 rarity = &"rare"
 gold_value = 4
 shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)])
-passive_text = "相邻4格每有一个空格，获得1金币。"
+passive_text = "For each orthogonally adjacent empty active cell, gain +1 bonus gold after battle."
 
 [sub_resource type="Resource" id="Food_frozen_mint"]
 script = ExtResource("2_definition")
