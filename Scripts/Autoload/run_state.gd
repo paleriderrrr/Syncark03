@@ -1,4 +1,4 @@
-extends Node
+﻿extends Node
 
 signal state_changed
 signal selected_character_changed(character_id: StringName)
@@ -367,11 +367,11 @@ func get_current_node_type() -> StringName:
 func get_node_display_name(node_type: StringName) -> String:
 	match node_type:
 		NODE_MARKET:
-			return "市场"
+			return "甯傚満"
 		NODE_BATTLE:
-			return "战斗"
+			return "鎴樻枟"
 		NODE_REST:
-			return "休整"
+			return "浼戞暣"
 		NODE_BOSS_BATTLE:
 			return "Boss战"
 		_:
@@ -381,7 +381,7 @@ func get_route_label() -> String:
 	if stage_flow_config == null or stage_flow_config.route_nodes.is_empty():
 		return "路线不可用"
 	var current_label: String = get_node_display_name(get_current_node_type())
-	return "节点 %d / %d：%s" % [current_route_index + 1, stage_flow_config.route_nodes.size(), current_label]
+	return "鑺傜偣 %d / %d锛?s" % [current_route_index + 1, stage_flow_config.route_nodes.size(), current_label]
 
 func get_character_display_names() -> Dictionary:
 	var result: Dictionary = {}
@@ -828,6 +828,25 @@ func begin_board_food_action(from_cell: Vector2i) -> bool:
 		return true
 	return false
 
+func begin_board_expansion_action(from_cell: Vector2i) -> bool:
+	var state: Dictionary = get_selected_character_state()
+	var key: String = "%d:%d" % [from_cell.x, from_cell.y]
+	for item_variant in state.get("placed_expansions", []):
+		var item: Dictionary = item_variant
+		if not ShapeUtils.cells_to_lookup(item.get("cells", [])).has(key):
+			continue
+		selected_item = {
+			"source": &"board_expansion",
+			"instance_id": item.get("instance_id", &""),
+			"rotation": int(item.get("rotation", 0)),
+			"origin_anchor": item.get("anchor", Vector2i.ZERO),
+			"drag_session": true,
+		}
+		selected_item_changed.emit()
+		state_changed.emit()
+		return true
+	return false
+
 func store_placed_food(from_cell: Vector2i) -> bool:
 	return remove_item_at_cell(from_cell)
 
@@ -923,6 +942,14 @@ func get_selected_item_cells() -> Array[Vector2i]:
 		if placed_definition == null:
 			return []
 		return ShapeUtils.rotate_cells(placed_definition.shape_cells, int(selected_item["rotation"]))
+	if source == &"board_expansion":
+		var placed_expansion: Dictionary = _find_placed_expansion(selected_character_id, selected_item.get("instance_id", &""))
+		if placed_expansion.is_empty():
+			return []
+		var shape_cells: Array[Vector2i] = _clone_cells(placed_expansion.get("shape_cells", []))
+		if shape_cells.is_empty():
+			return []
+		return ShapeUtils.rotate_cells(shape_cells, int(selected_item["rotation"]))
 	if source == &"market_expansion":
 		var offer_expansion: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
 		if offer_expansion.is_empty():
@@ -979,6 +1006,14 @@ func _find_placed_food(character_id: StringName, instance_id: StringName) -> Dic
 			return item
 	return {}
 
+func _find_placed_expansion(character_id: StringName, instance_id: StringName) -> Dictionary:
+	var state: Dictionary = get_character_state(character_id)
+	for item_variant in state.get("placed_expansions", []):
+		var item: Dictionary = item_variant
+		if item.get("instance_id", &"") == instance_id:
+			return item
+	return {}
+
 func can_place_selected_item(anchor: Vector2i) -> bool:
 	if selected_item.is_empty():
 		return false
@@ -1009,6 +1044,16 @@ func can_place_selected_item(anchor: Vector2i) -> bool:
 					var other_cell: Vector2i = other_cell_variant
 					occupied_by_others.append(other_cell)
 			return not ShapeUtils.overlaps(occupied_by_others, placed_cells)
+		&"board_expansion":
+			var moving_expansion: Dictionary = _find_placed_expansion(selected_character_id, selected_item.get("instance_id", &""))
+			if moving_expansion.is_empty():
+				return false
+			var active_without_self: Array[Vector2i] = _clone_cells(state["active_cells"])
+			for owned_cell in moving_expansion.get("cells", []):
+				_remove_active_cell(active_without_self, owned_cell)
+			if ShapeUtils.overlaps(active_without_self, placed_cells):
+				return false
+			return ShapeUtils.shares_edge(placed_cells, active_without_self)
 		&"pending_expansion", &"expansion", &"market_expansion":
 			if selected_item.get("target_character_id", selected_character_id) != selected_character_id:
 				return false
@@ -1069,6 +1114,24 @@ func try_place_selected_item(anchor: Vector2i) -> bool:
 			placed_variant["anchor"] = anchor
 			placed_variant["cells"] = placed_cells
 			state["placed_foods"][index] = placed_variant
+			_reconcile_character_health_after_board_change(selected_character_id, health_before_change)
+			state_changed.emit()
+			clear_selection()
+			return true
+		return false
+	elif selected_item["source"] == &"board_expansion":
+		var moving_expansion: Dictionary = _find_placed_expansion(selected_character_id, selected_item.get("instance_id", &""))
+		if moving_expansion.is_empty():
+			return false
+		for index in range(state["placed_expansions"].size()):
+			var placed_variant: Dictionary = state["placed_expansions"][index]
+			if placed_variant.get("instance_id", &"") != moving_expansion.get("instance_id", &""):
+				continue
+			placed_variant["rotation"] = int(selected_item["rotation"])
+			placed_variant["anchor"] = anchor
+			placed_variant["cells"] = placed_cells
+			state["placed_expansions"][index] = placed_variant
+			_rebuild_active_cells(state)
 			_reconcile_character_health_after_board_change(selected_character_id, health_before_change)
 			state_changed.emit()
 			clear_selection()
@@ -1212,7 +1275,9 @@ func move_placed_expansion(from_cell: Vector2i, to_anchor: Vector2i) -> bool:
 			continue
 		if _has_food_on_cells(selected_character_id, item["cells"]):
 			return false
-		var shape_cells: Array[Vector2i] = _clone_cells(item.get("shape_cells", _derive_shape_from_placed_cells(item["cells"], item["anchor"])))
+		var shape_cells: Array[Vector2i] = _clone_cells(item.get("shape_cells", []))
+		if shape_cells.is_empty():
+			return false
 		var rotated_cells: Array[Vector2i] = ShapeUtils.rotate_cells(shape_cells, int(item.get("rotation", 0)))
 		var placed_cells: Array[Vector2i] = ShapeUtils.translate_cells(rotated_cells, to_anchor)
 		if not ShapeUtils.within_bounds(placed_cells, GRID_WIDTH, GRID_HEIGHT):
@@ -1255,23 +1320,28 @@ func _has_food_on_cells(character_id: StringName, cells: Array[Vector2i]) -> boo
 
 func get_selected_item_summary() -> String:
 	if selected_item.is_empty():
-		return "未选择物品"
+		return "鏈€夋嫨鐗╁搧"
 	if selected_item["source"] == &"inventory":
 		var item: Dictionary = _find_inventory_item(selected_item["instance_id"])
 		if item.is_empty():
-			return "未选择物品"
+			return "鏈€夋嫨鐗╁搧"
 		var definition: FoodDefinition = get_food_definition(item["definition_id"])
-		return "放置食物: %s" % definition.display_name
+		return "鏀剧疆椋熺墿: %s" % definition.display_name
 	if selected_item["source"] == &"market_expansion":
 		var market_expansion: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
 		if market_expansion.is_empty():
+			return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
+		return "閺€鍓х枂妤楊厾娲呴幏鎾崇潔: %s" % str(market_expansion.get("label", ""))
+	if selected_item["source"] == &"board_expansion":
+		var board_expansion: Dictionary = _find_placed_expansion(selected_character_id, selected_item.get("instance_id", &""))
+		if board_expansion.is_empty():
 			return "鏈€夋嫨鐗╁搧"
-		return "鏀剧疆楗洅鎷撳睍: %s" % String(market_expansion.get("label", ""))
+		return "鏀剧疆楗洅鎷撳睍: %s" % board_expansion.get("label", "")
 	var expansion_owner_id: StringName = selected_item.get("target_character_id", selected_character_id)
 	var expansion: Dictionary = _find_pending_expansion(expansion_owner_id, selected_item["instance_id"])
 	if expansion.is_empty():
-		return "未选择物品"
-	return "放置饭盒拓展: %s" % expansion["label"]
+		return "鏈€夋嫨鐗╁搧"
+	return "鏀剧疆楗洅鎷撳睍: %s" % expansion["label"]
 
 func get_inventory_display_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
@@ -1286,39 +1356,44 @@ func get_inventory_display_entries() -> Array[Dictionary]:
 
 func get_selected_item_summary_safe() -> String:
 	if selected_item.is_empty():
-		return "鏈€夋嫨鐗╁搧"
+		return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
 	match selected_item.get("source", &""):
 		&"inventory":
 			var inventory_item: Dictionary = _find_inventory_item(selected_item.get("instance_id", &""))
 			if inventory_item.is_empty():
-				return "鏈€夋嫨鐗╁搧"
+				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
 			var inventory_definition: FoodDefinition = get_food_definition(inventory_item.get("definition_id", &""))
-			return "鏀剧疆椋熺墿: %s" % (inventory_definition.display_name if inventory_definition != null else "")
+			return "閺€鍓х枂妞嬬喓澧? %s" % (inventory_definition.display_name if inventory_definition != null else "")
 		&"market_offer":
 			var market_offer: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
 			if market_offer.is_empty():
-				return "鏈€夋嫨鐗╁搧"
+				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
 			var market_definition: FoodDefinition = get_food_definition(market_offer.get("definition_id", &""))
-			return "鏀剧疆椋熺墿: %s" % (market_definition.display_name if market_definition != null else "")
+			return "閺€鍓х枂妞嬬喓澧? %s" % (market_definition.display_name if market_definition != null else "")
 		&"board_food":
 			var placed_food: Dictionary = _find_placed_food(selected_character_id, selected_item.get("instance_id", &""))
 			if placed_food.is_empty():
-				return "鏈€夋嫨鐗╁搧"
+				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
 			var placed_definition: FoodDefinition = get_food_definition(placed_food.get("definition_id", &""))
-			return "鏀剧疆椋熺墿: %s" % (placed_definition.display_name if placed_definition != null else "")
+			return "閺€鍓х枂妞嬬喓澧? %s" % (placed_definition.display_name if placed_definition != null else "")
+		&"board_expansion":
+			var placed_expansion: Dictionary = _find_placed_expansion(selected_character_id, selected_item.get("instance_id", &""))
+			if placed_expansion.is_empty():
+				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
+			return "閺€鍓х枂妞嬬喓澧? %s" % str(placed_expansion.get("label", ""))
 		&"pending_expansion", &"expansion":
 			var pending_owner_id: StringName = selected_item.get("target_character_id", selected_character_id)
 			var pending_expansion: Dictionary = _find_pending_expansion(pending_owner_id, selected_item.get("instance_id", &""))
 			if pending_expansion.is_empty():
-				return "鏈€夋嫨鐗╁搧"
-			return "鏀剧疆楗洅鎷撳睍: %s" % String(pending_expansion.get("label", ""))
+				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
+			return "閺€鍓х枂妤楊厾娲呴幏鎾崇潔: %s" % str(pending_expansion.get("label", ""))
 		&"market_expansion":
 			var offer_expansion: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
 			if offer_expansion.is_empty():
-				return "鏈€夋嫨鐗╁搧"
-			return "鏀剧疆楗洅鎷撳睍: %s" % String(offer_expansion.get("label", ""))
+				return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
+			return "閺€鍓х枂妤楊厾娲呴幏鎾崇潔: %s" % str(offer_expansion.get("label", ""))
 		_:
-			return "鏈€夋嫨鐗╁搧"
+			return "閺堫亪鈧瀚ㄩ悧鈺佹惂"
 
 func get_grouped_inventory_entries() -> Array[Dictionary]:
 	var grouped: Dictionary = {}
@@ -1354,7 +1429,7 @@ func get_grouped_inventory_entries() -> Array[Dictionary]:
 				"group_key": pending["instance_id"],
 				"instance_id": pending["instance_id"],
 				"definition_id": &"",
-				"display_name": "%s 拓展 %s" % [get_character_display_names().get(character_id, String(character_id)), pending["label"]],
+				"display_name": "%s 鎷撳睍 %s" % [get_character_display_names().get(character_id, String(character_id)), pending["label"]],
 				"count": 1,
 				"category": &"expansion",
 				"rarity": &"rare",
@@ -1370,7 +1445,7 @@ func get_pending_expansion_entries(character_id: StringName) -> Array[Dictionary
 	for item in get_character_state(character_id).get("pending_expansions", []):
 		entries.append({
 			"instance_id": item["instance_id"],
-			"label": "拓展 %s" % item["label"],
+			"label": "鎷撳睍 %s" % item["label"],
 		})
 	return entries
 
@@ -1381,13 +1456,13 @@ func get_market_display_entries() -> Array[Dictionary]:
 			var definition: FoodDefinition = get_food_definition(offer["definition_id"])
 			entries.append({
 				"offer_id": offer["offer_id"],
-				"label": "%s x%d [%s] - %d金" % [definition.display_name, offer["quantity"], offer["rarity"], offer["price"]],
+				"label": "%s x%d [%s] - %d金币" % [definition.display_name, offer["quantity"], offer["rarity"], offer["price"]],
 			})
 		else:
 			var names: Dictionary = get_character_display_names()
 			entries.append({
 				"offer_id": offer["offer_id"],
-				"label": "%s 给 %s - %d金" % [offer["label"], names.get(offer["target_character_id"], String(offer["target_character_id"])), offer["price"]],
+				"label": "%s 售给%s - %d金币" % [offer["label"], names.get(offer["target_character_id"], String(offer["target_character_id"])), offer["price"]],
 			})
 	return entries
 
@@ -1418,7 +1493,7 @@ func get_market_package_entries() -> Array[Dictionary]:
 				"group_key": offer["offer_id"],
 				"offer_id": offer["offer_id"],
 				"kind": &"expansion",
-				"display_name": "拓展 %s" % offer["label"],
+				"display_name": "鎷撳睍 %s" % offer["label"],
 				"count": 1,
 				"category": &"expansion",
 				"rarity": &"rare",
@@ -1489,13 +1564,13 @@ func get_action_button_text() -> String:
 		return "重新开始"
 	match get_current_node_type():
 		NODE_MARKET:
-			return "离开市场"
+			return "绂诲紑甯傚満"
 		NODE_REST:
-			return "结束休整"
+			return "缁撴潫浼戞暣"
 		NODE_BATTLE, NODE_BOSS_BATTLE:
 			return "开始战斗"
 		_:
-			return "继续"
+			return "缁х画"
 
 func get_action_button_visual_key() -> StringName:
 	if run_finished:

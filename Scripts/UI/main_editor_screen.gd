@@ -651,8 +651,16 @@ func _on_board_drop_requested(anchor_cell: Vector2i, drag_data: Dictionary) -> v
 			if run_state.try_place_selected_item(anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)):
 				_ui_sfx().play_place()
 		&"board_expansion":
-			if run_state.move_placed_expansion(drag_data.get("from_cell", Vector2i.ZERO), anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)):
+			if run_state.selected_item.is_empty() or run_state.selected_item.get("source", &"") != &"board_expansion" or run_state.selected_item.get("instance_id", &"") != drag_data.get("instance_id", &""):
+				if not run_state.begin_board_expansion_action(drag_data.get("from_cell", Vector2i.ZERO)):
+					run_state.clear_selection()
+					_ui_sfx().play_purchase_denied()
+					_refresh()
+					return
+			if run_state.try_place_selected_item(anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)):
 				_ui_sfx().play_place()
+			else:
+				run_state.clear_selection()
 		&"board_base":
 			var adjusted_anchor: Vector2i = anchor_cell - drag_data.get("grab_offset", Vector2i.ZERO)
 			if run_state.move_base_board(adjusted_anchor):

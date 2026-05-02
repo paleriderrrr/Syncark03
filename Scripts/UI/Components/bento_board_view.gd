@@ -347,6 +347,8 @@ func _build_drag_payload(cell: Vector2i) -> Dictionary:
 			}
 	for item in _character_state.get("placed_expansions", []):
 		if ShapeUtils.cells_to_lookup(item.get("cells", [])).has("%d:%d" % [cell.x, cell.y]):
+			if not _run_state().begin_board_expansion_action(cell):
+				return {}
 			return {
 				"source": &"board_expansion",
 				"instance_id": item["instance_id"],
@@ -422,6 +424,8 @@ func _payload_uses_selected_item(payload: Dictionary, run_state: Node) -> bool:
 				and [&"pending_expansion", &"expansion"].has(run_state.selected_item.get("source", &""))
 			)
 		&"board_food":
+			return run_state.selected_item.get("instance_id", &"") == payload.get("instance_id", &"")
+		&"board_expansion":
 			return run_state.selected_item.get("instance_id", &"") == payload.get("instance_id", &"")
 		_:
 			return false

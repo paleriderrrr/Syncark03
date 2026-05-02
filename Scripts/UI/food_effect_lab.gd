@@ -242,7 +242,7 @@ func _build_actual_summary_text(actor: Dictionary, synergy: Dictionary) -> Strin
 	for entry_variant in synergy.get("entries", []):
 		var entry: Dictionary = entry_variant
 		lines.append("%s: %d type(s)  [%s]" % [
-			String(entry.get("category_name", "")),
+			str(entry.get("category_name", "")),
 			int(entry.get("count", 0)),
 			"ON" if bool(entry.get("active", false)) else "OFF",
 		])
@@ -253,7 +253,7 @@ func _build_actual_summary_text(actor: Dictionary, synergy: Dictionary) -> Strin
 		lines.append("None")
 	else:
 		for key_variant in flags.keys():
-			lines.append("%s: %s" % [String(key_variant), String(flags[key_variant])])
+			lines.append("%s: %s" % [str(key_variant), str(flags[key_variant])])
 	return "\n".join(lines)
 
 func _refresh_compare_grid() -> void:

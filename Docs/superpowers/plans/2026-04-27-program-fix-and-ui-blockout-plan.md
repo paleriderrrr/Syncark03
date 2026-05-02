@@ -195,6 +195,27 @@ If local headless runtime remains limited, explicitly list the in-editor validat
 
 Record Completed, In Progress, Next, Blockers, Files Touched, and Notes according to `Docs/05_ai_dev_rules.md`.
 
+### Task 9: Add title-to-editor loading interstitial
+
+**Files:**
+- Create: `E:\GODOT\MyProject\Syncark03\Scenes\loading_screen.tscn`
+- Create: `E:\GODOT\MyProject\Syncark03\Scripts\UI\loading_screen.gd`
+- Create: `E:\GODOT\MyProject\Syncark03\Scripts\Tests\loading_screen_runner.gd`
+- Modify: `E:\GODOT\MyProject\Syncark03\Scripts\UI\title_screen.gd`
+- Modify: `E:\GODOT\MyProject\Syncark03\Docs\07_progress_log.md`
+
+- [ ] **Step 1: Build the loading scene around the prepared frame sequence**
+
+Use the `Art/Loading/frame_00001.png` through `frame_00008.png` assets as the running knight animation and keep the stage visually minimal so the art reads cleanly during the slow handoff.
+
+- [ ] **Step 2: Route title-screen entry into the loading scene**
+
+After the title transition finishes, enter the loading scene first, then let it complete the main-editor scene load before switching scenes.
+
+- [ ] **Step 3: Keep the loading scene reusable for future handoffs**
+
+Make the loading animation scene self-contained so other slow scene transitions can reuse the same structure later without duplicating animation logic.
+
 ## Exit Criteria
 
 - `pudding_cup` no longer crashes the food-effect lab.
@@ -205,3 +226,4 @@ Record Completed, In Progress, Next, Blockers, Files Touched, and Notes accordin
 - Adjacent synergy visualization reflects real gameplay adjacency rules.
 - Battle popup has a working stage blockout: left curtain reveals heroes for formation, right curtain reveals monster on battle start, and result information uses a stage-style announcement board.
 - Final art remains optional for this pass; blockout dimensions and named UI surfaces are ready for later texture replacement.
+- Title-to-main-editor handoff now has a dedicated loading interstitial built from the `Art/Loading` frame sequence.

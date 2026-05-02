@@ -7,6 +7,7 @@ const START_GLOW_IDLE_ALPHA := 0.42
 const START_GLOW_PULSE_ALPHA := 0.78
 const START_BUTTON_IDLE_ALPHA := 1.0
 const START_BUTTON_PULSE_ALPHA := 0.96
+const LOADING_SCENE_PATH := "res://Scenes/loading_screen.tscn"
 const MAIN_EDITOR_SCENE_PATH := "res://Scenes/main_editor_screen.tscn"
 const CONTINUE_BUTTON_TEXT := "\u7EE7\u7EED\u5192\u9669"
 
@@ -103,7 +104,7 @@ func _play_start_transition() -> void:
 		)
 	await tween.finished
 	_run_state().start_new_run()
-	get_tree().change_scene_to_file(MAIN_EDITOR_SCENE_PATH)
+	get_tree().change_scene_to_file(LOADING_SCENE_PATH)
 
 func _refresh_continue_button() -> void:
 	var has_save: bool = _run_state().has_saved_run()
@@ -234,7 +235,7 @@ func _on_continue_pressed() -> void:
 	continue_button.disabled = true
 	settings_button.disabled = true
 	quit_button.disabled = true
-	get_tree().change_scene_to_file(MAIN_EDITOR_SCENE_PATH)
+	get_tree().change_scene_to_file(LOADING_SCENE_PATH)
 
 func _on_quit_pressed() -> void:
 	if _transition_started:

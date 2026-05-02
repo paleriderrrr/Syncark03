@@ -8,7 +8,7 @@
 - Last Updated: 2026-04-27 19:20
 
 ## Active Risks
-- Risk: Formal art assets for the battle-stage popup, backpack/detail panels, lunchbox polish, and loading animation are still pending.
+- Risk: Formal art assets for the battle-stage popup, backpack/detail panels, and lunchbox polish are still pending.
 - Impact: Final visual replacement cannot be completed in this pass.
 - Mitigation: Prioritize program fixes and UI blockouts with stable positions, sizes, states, and named replacement surfaces so later art integration is direct.
 
@@ -847,3 +847,11 @@
 - Blockers: `E:\GODOT\Godot_v4.6.1-stable_win64_console.exe --headless --path E:\GODOT\MyProject\Syncark03 --quit-after 1` currently crashes with native signal 11 before any GDScript runner can execute. The same native crash blocks `food_effect_lab_runner.gd`, `food_effect_runner.gd`, `item_strip_runner.gd`, and `editor_dragdrop_runner.gd`.
 - Files Touched: Data/Foods/food_catalog.tres, Scripts/Autoload/run_state.gd, Scripts/Core/combat_engine.gd, Scripts/Tools/food_effect_lab_state.gd, Scripts/UI/Components/bento_board_view.gd, Scripts/UI/Components/item_strip.gd, Scripts/UI/battle_popup.gd, Scripts/UI/main_editor_screen.gd, Scripts/Tests/battle_playback_runner.gd, Scripts/Tests/editor_dragdrop_runner.gd, Scripts/Tests/food_effect_lab_runner.gd, Scripts/Tests/food_effect_runner.gd, Scripts/Tests/item_strip_runner.gd, Docs/07_progress_log.md
 - Notes: The adjacency visualization uses `CombatEngine.preview_adjacency_synergy` rather than a visual-only rule path. The battle-stage blockout is intentionally made of named replacement surfaces so later final art can swap colors/textures without changing gameplay state flow.
+
+### 2026-05-02
+- Completed: Added a dedicated loading interstitial for the title-to-main-editor handoff, using the prepared `Art/Loading` frame sequence for the running knight animation and routing title-screen Start/Continue through it before the main editor scene appears.
+- In Progress: Manual visual check of the loading art placement and animation cadence in the live project.
+- Next: Open the title screen, start a new run, and use Continue from a saved run to confirm the loading scene appears while `main_editor_screen` is loading.
+- Blockers: No known compile blocker remains for the loading interstitial pass.
+- Files Touched: Scenes/loading_screen.tscn, Scripts/UI/loading_screen.gd, Scripts/Tests/loading_screen_runner.gd, Scripts/UI/title_screen.gd, Docs/superpowers/plans/2026-04-27-program-fix-and-ui-blockout-plan.md, Docs/07_progress_log.md
+- Notes: The new loading scene is self-contained so the same handoff pattern can be reused for other slow scene changes later without duplicating the frame animation logic.
