@@ -43,8 +43,6 @@ const HERO_DRAG_HIT_INSET_X := 24.0
 const HERO_DRAG_HIT_INSET_Y := 20.0
 const HERO_DROP_HIT_INSET_X := 18.0
 const HERO_DROP_HIT_INSET_Y := 18.0
-const TARGET_BADGE_COLOR := Color(1.0, 0.93, 0.58)
-const TARGET_BADGE_OUTLINE_COLOR := Color(0.24, 0.11, 0.05, 0.95)
 const BATTLE_REVEAL_TIME := 0.25
 const PREPARATION_CURTAIN_OPEN_TIME := 1.2
 const PREPARATION_HINT_FADE_TIME := 0.28
@@ -97,7 +95,6 @@ var _active_attack_animations: Dictionary = {}
 var _result_banner_tween: Tween
 var _formation_tween: Tween
 var _stage_reveal_tween: Tween
-var _hero_target_badges: Array[Label] = []
 var _default_hero_actor_nodes: Array[Control] = []
 var _default_hero_portrait_frames: Array[Control] = []
 var _default_hero_portrait_sprites: Array[TextureRect] = []
@@ -140,7 +137,6 @@ func _ready() -> void:
 	_cache_party_slot_positions()
 	_cache_result_banner_target_rect()
 	_cache_curtain_closed_rects()
-	_create_target_badges()
 	_reset_preparation_state()
 	_apply_stage_art()
 	_configure_stage_visibility()
@@ -485,31 +481,6 @@ func _cache_party_slot_positions() -> void:
 	_party_slot_positions.clear()
 	for hero_actor in hero_actor_nodes:
 		_party_slot_positions.append(hero_actor.position)
-func _create_target_badges() -> void:
-	if not _hero_target_badges.is_empty():
-		return
-	for hero_actor in hero_actor_nodes:
-		var badge := Label.new()
-		badge.name = "TargetBadge"
-		badge.text = "1"
-		badge.position = Vector2(126.0, -18.0)
-		badge.size = Vector2(56.0, 32.0)
-		badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		badge.add_theme_font_override("font", FLOAT_FONT)
-		badge.add_theme_font_size_override("font_size", 24)
-		badge.add_theme_color_override("font_color", TARGET_BADGE_COLOR)
-		badge.add_theme_constant_override("outline_size", 5)
-		badge.add_theme_color_override("font_outline_color", TARGET_BADGE_OUTLINE_COLOR)
-		hero_actor.add_child(badge)
-		_hero_target_badges.append(badge)
-func _refresh_target_badges() -> void:
-	for index in range(hero_actor_nodes.size()):
-		var badge: Label = hero_actor_nodes[index].get_node_or_null("TargetBadge") as Label
-		if badge == null:
-			continue
-		badge.text = str(index + 1)
-		badge.visible = index < _display_party.size()
 func _apply_party_layout(animate: bool) -> void:
 	_stop_formation_animation()
 	if animate:
@@ -607,7 +578,6 @@ func _refresh_battle_visual_state() -> void:
 	]
 	monster_portrait_sprite.texture = _monster_texture_for(_display_monster)
 	monster_actor.modulate = NORMAL_TINT if bool(_display_monster.get("alive", false)) else DOWN_TINT
-	_refresh_target_badges()
 func _apply_final_display_state(report: Dictionary) -> void:
 	if report.has("characters"):
 		var report_by_id: Dictionary = {}
