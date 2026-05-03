@@ -46,6 +46,12 @@ const HERO_DROP_HIT_INSET_Y := 18.0
 const TARGET_BADGE_COLOR := Color(1.0, 0.93, 0.58)
 const TARGET_BADGE_OUTLINE_COLOR := Color(0.24, 0.11, 0.05, 0.95)
 const BATTLE_REVEAL_TIME := 0.25
+const PREPARATION_CURTAIN_OPEN_TIME := 1.2
+const PREPARATION_HINT_FADE_TIME := 0.28
+const HERO_REVEAL_TIME := 0.36
+const HERO_REVEAL_STAGGER := 0.08
+const MONSTER_CURTAIN_OPEN_TIME := 1.0
+const MONSTER_REVEAL_FADE_TIME := 0.3
 const STAGE_PHASE_PREPARATION: StringName = &"preparation"
 const STAGE_PHASE_MONSTER_REVEAL: StringName = &"monster_reveal"
 const STAGE_PHASE_BATTLE: StringName = &"battle"
@@ -90,6 +96,7 @@ var _actor_base_scales: Dictionary = {}
 var _active_attack_animations: Dictionary = {}
 var _result_banner_tween: Tween
 var _formation_tween: Tween
+var _stage_reveal_tween: Tween
 var _hero_target_badges: Array[Label] = []
 var _default_hero_actor_nodes: Array[Control] = []
 var _default_hero_portrait_frames: Array[Control] = []
@@ -101,6 +108,8 @@ var _dragged_actor: Control
 var _drag_pointer_offset := Vector2.ZERO
 var _result_banner_target_position := Vector2.ZERO
 var _result_banner_target_size := Vector2.ZERO
+var _left_curtain_closed_scale := Vector2.ONE
+var _right_curtain_closed_scale := Vector2.ONE
 var _stage_phase: StringName = STAGE_PHASE_PREPARATION
 func get_stage_phase() -> StringName:
 	return _stage_phase
@@ -130,6 +139,7 @@ func _ready() -> void:
 	_cache_actor_base_positions()
 	_cache_party_slot_positions()
 	_cache_result_banner_target_rect()
+	_cache_curtain_closed_rects()
 	_create_target_badges()
 	_reset_preparation_state()
 	_apply_stage_art()
@@ -153,7 +163,7 @@ func open_battle() -> void:
 	popup_centered(POPUP_SIZE)
 	await get_tree().process_frame
 	_normalize_popup_layout()
-	_set_stage_phase(STAGE_PHASE_PREPARATION)
+	await _play_preparation_reveal()
 func _on_start_battle_pressed() -> void:
 	if _is_playing or not _is_preparing:
 		return
@@ -212,6 +222,13 @@ func _current_party_order() -> Array[StringName]:
 	return order
 func _apply_timeline_panel_visibility() -> void:
 	timeline_panel.visible = show_timeline_panel
+
+func _cache_curtain_closed_rects() -> void:
+	left_curtain_panel.pivot_offset = Vector2(0.0, left_curtain_panel.size.y * 0.5)
+	right_curtain_panel.pivot_offset = Vector2(right_curtain_panel.size.x, right_curtain_panel.size.y * 0.5)
+	_left_curtain_closed_scale = left_curtain_panel.scale
+	_right_curtain_closed_scale = right_curtain_panel.scale
+
 func _apply_stage_art() -> void:
 	stage_backdrop.texture = STAGE_BACKGROUND_TEXTURE
 	stage_overlay_art.texture = STAGE_OVERLAY_TEXTURE
@@ -258,6 +275,72 @@ func _configure_stage_visibility() -> void:
 	monster_actor.z_index = 5
 	for hero_actor in hero_actor_nodes:
 		hero_actor.z_index = 5
+
+func _stop_stage_reveal_animation() -> void:
+	if _stage_reveal_tween != null:
+		_stage_reveal_tween.kill()
+		_stage_reveal_tween = null
+
+func _set_actor_alpha(actor: CanvasItem, alpha: float) -> void:
+	var color: Color = actor.modulate
+	color.a = alpha
+	actor.modulate = color
+
+func _set_party_actor_alpha(alpha: float) -> void:
+	for hero_actor in hero_actor_nodes:
+		_set_actor_alpha(hero_actor, alpha)
+
+func _restore_party_actor_alpha() -> void:
+	_refresh_battle_visual_state()
+
+func _set_preparation_hint_alpha(alpha: float) -> void:
+	var color: Color = preparation_hint_label.modulate
+	color.a = alpha
+	preparation_hint_label.modulate = color
+
+func _set_monster_actor_alpha(alpha: float) -> void:
+	_set_actor_alpha(monster_actor, alpha)
+
+func _set_left_curtain_ratio(ratio: float) -> void:
+	left_curtain_panel.scale = Vector2(lerpf(_left_curtain_closed_scale.x, 0.0, ratio), _left_curtain_closed_scale.y)
+
+func _set_right_curtain_ratio(ratio: float) -> void:
+	right_curtain_panel.scale = Vector2(lerpf(_right_curtain_closed_scale.x, 0.0, ratio), _right_curtain_closed_scale.y)
+
+func _reset_curtains_to_closed() -> void:
+	left_curtain_panel.scale = _left_curtain_closed_scale
+	right_curtain_panel.scale = _right_curtain_closed_scale
+
+func _play_preparation_reveal() -> void:
+	_stop_stage_reveal_animation()
+	_reset_curtains_to_closed()
+	_cache_curtain_closed_rects()
+	left_curtain_panel.visible = true
+	right_curtain_panel.visible = true
+	monster_actor.visible = false
+	start_battle_button.visible = false
+	start_battle_button.disabled = true
+	close_button.visible = true
+	close_button.disabled = true
+	preparation_hint_label.visible = true
+	_set_preparation_hint_alpha(0.0)
+	_set_party_actor_alpha(0.0)
+	_stage_reveal_tween = create_tween()
+	_stage_reveal_tween.set_parallel(true)
+	_stage_reveal_tween.tween_method(_set_left_curtain_ratio, 0.0, 1.0, PREPARATION_CURTAIN_OPEN_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_stage_reveal_tween.tween_property(preparation_hint_label, "modulate:a", 1.0, PREPARATION_HINT_FADE_TIME).from(0.0).set_delay(0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	for index in range(hero_actor_nodes.size()):
+		var hero_actor: Control = hero_actor_nodes[index]
+		_stage_reveal_tween.tween_property(hero_actor, "modulate:a", 1.0, HERO_REVEAL_TIME).from(0.0).set_delay(0.12 + HERO_REVEAL_STAGGER * index).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	await _stage_reveal_tween.finished
+	_stage_reveal_tween = null
+	_set_left_curtain_ratio(1.0)
+	_restore_party_actor_alpha()
+	_set_stage_phase(STAGE_PHASE_PREPARATION)
+	await get_tree().process_frame
+	start_battle_button.disabled = false
+	close_button.disabled = false
+
 func _set_button_icon(button: Button, normal_texture: Texture2D, hovered_texture: Texture2D, hovered: bool) -> void:
 	button.icon = hovered_texture if hovered else normal_texture
 func _on_start_button_hover_entered() -> void:
@@ -281,7 +364,7 @@ func _set_stage_phase(phase: StringName) -> void:
 		STAGE_PHASE_MONSTER_REVEAL:
 			left_curtain_panel.visible = false
 			right_curtain_panel.visible = true
-			monster_actor.visible = false
+			monster_actor.visible = true
 			preparation_hint_label.visible = false
 		STAGE_PHASE_BATTLE:
 			left_curtain_panel.visible = false
@@ -293,9 +376,24 @@ func _set_stage_phase(phase: StringName) -> void:
 			right_curtain_panel.visible = false
 			monster_actor.visible = true
 			preparation_hint_label.visible = false
+
 func _play_battle_start_reveal() -> void:
 	_set_stage_phase(STAGE_PHASE_MONSTER_REVEAL)
-	await get_tree().create_timer(BATTLE_REVEAL_TIME).timeout
+	_stop_stage_reveal_animation()
+	_reset_curtains_to_closed()
+	_cache_curtain_closed_rects()
+	right_curtain_panel.visible = true
+	monster_actor.visible = true
+	_set_monster_actor_alpha(0.0)
+	_stage_reveal_tween = create_tween()
+	_stage_reveal_tween.set_parallel(true)
+	_stage_reveal_tween.tween_method(_set_right_curtain_ratio, 0.0, 1.0, MONSTER_CURTAIN_OPEN_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_stage_reveal_tween.tween_property(monster_actor, "modulate:a", 1.0, MONSTER_REVEAL_FADE_TIME).from(0.0).set_delay(0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	await _stage_reveal_tween.finished
+	_stage_reveal_tween = null
+	_set_right_curtain_ratio(1.0)
+	_refresh_battle_visual_state()
+	await get_tree().process_frame
 	_set_stage_phase(STAGE_PHASE_BATTLE)
 func _play_report(report: Dictionary) -> void:
 	var previous_time: float = 0.0
@@ -1006,16 +1104,24 @@ func _normalize_popup_layout() -> void:
 		return
 	popup_centered(POPUP_SIZE)
 	_configure_stage_controls()
+	_cache_curtain_closed_rects()
 	_cache_actor_base_positions()
 	if result_banner.visible:
 		_layout_result_banner(false)
+
 func _on_close_pressed() -> void:
 	if _is_playing:
 		return
 	_ui_sfx().play_button()
 	hide()
+
 func _on_popup_hidden() -> void:
 	_is_playing = false
+	_stop_stage_reveal_animation()
+	_reset_curtains_to_closed()
+	_restore_party_actor_alpha()
+	_set_monster_actor_alpha(1.0)
+	_set_preparation_hint_alpha(1.0)
 	_reset_preparation_state()
 	_set_stage_phase(STAGE_PHASE_PREPARATION)
 	_reset_all_attack_animations()
