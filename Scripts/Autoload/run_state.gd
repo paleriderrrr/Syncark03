@@ -381,7 +381,7 @@ func get_route_label() -> String:
 	if stage_flow_config == null or stage_flow_config.route_nodes.is_empty():
 		return "路线不可用"
 	var current_label: String = get_node_display_name(get_current_node_type())
-	return "鑺傜偣 %d / %d锛?s" % [current_route_index + 1, stage_flow_config.route_nodes.size(), current_label]
+	return "节点 %d / %d：%s" % [current_route_index + 1, stage_flow_config.route_nodes.size(), current_label]
 
 func get_character_display_names() -> Dictionary:
 	var result: Dictionary = {}
