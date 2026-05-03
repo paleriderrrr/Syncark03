@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ck2lqq3tvkopk"
-path="res://.godot/imported/猎人纸片.png-3bd74baad5ea6da134caaf5fae12c489.ctex"
+uid="uid://cgy4s55u1ipym"
+path="res://.godot/imported/PaperSaber.png-472d5f64492ebaf1552058a0b2a44ac8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/PaperCharacters/猎人纸片.png"
-dest_files=["res://.godot/imported/猎人纸片.png-3bd74baad5ea6da134caaf5fae12c489.ctex"]
+source_file="res://Art/PaperCharacters/PaperSaber.png"
+dest_files=["res://.godot/imported/PaperSaber.png-472d5f64492ebaf1552058a0b2a44ac8.ctex"]
 
 [params]
 
