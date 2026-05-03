@@ -1,6 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://b0xy3qkbqvxom"]
-
-[ext_resource type="Script" path="res://Scripts/UI/loading_screen.gd" id="9_l4h3f"]
+[gd_scene format=3 uid="uid://b0xy3qkbqvxom"]
 
 [ext_resource type="Texture2D" uid="uid://gbqu6aauv7fv" path="res://Art/Loading/frame_00001.png" id="1_m2hk5"]
 [ext_resource type="Texture2D" uid="uid://cplhgxtpuh6lc" path="res://Art/Loading/frame_00002.png" id="2_1opfs"]
@@ -10,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://c30acmn3gxsd4" path="res://Art/Loading/frame_00006.png" id="6_x8yqx"]
 [ext_resource type="Texture2D" uid="uid://mebxtxrw46wi" path="res://Art/Loading/frame_00007.png" id="7_qbyj8"]
 [ext_resource type="Texture2D" uid="uid://mxqnexg1mx48" path="res://Art/Loading/frame_00008.png" id="8_5emdp"]
+[ext_resource type="Script" uid="uid://jm2q7etasljm" path="res://Scripts/UI/loading_screen.gd" id="9_l4h3f"]
 
 [sub_resource type="Animation" id="Animation_umxys"]
 length = 0.001
@@ -64,6 +63,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.08627451, 0.08235294, 0.07843138, 1)
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=1098527544]
@@ -71,6 +72,12 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 737.0
+offset_top = 308.0
+offset_right = 737.0
+offset_bottom = 308.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Knight" type="TextureRect" parent="CenterContainer" unique_id=1993251010]
 custom_minimum_size = Vector2(320, 440)
@@ -80,5 +87,5 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1332626128]
-autoplay = "run"
 libraries/ = SubResource("AnimationLibrary_b2msm")
+autoplay = &"run"
