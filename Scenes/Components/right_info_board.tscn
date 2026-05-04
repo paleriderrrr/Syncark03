@@ -167,10 +167,10 @@ stretch_mode = 6
 [node name="BackMonsterNameLabel" type="Label" parent="BoardScale/BackFace" unique_id=1014]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 49.0
-offset_top = 30.0
-offset_right = 421.0
-offset_bottom = 76.0
+offset_left = 33.0
+offset_top = 22.0
+offset_right = 405.0
+offset_bottom = 68.0
 theme_override_colors/font_color = Color(0.231373, 0.145098, 0.0862745, 1)
 theme_override_fonts/font = ExtResource("7_font")
 theme_override_font_sizes/font_size = 24
@@ -180,10 +180,10 @@ autowrap_mode = 3
 [node name="BackWantedPosterRect" type="TextureRect" parent="BoardScale/BackFace" unique_id=1015]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 48.0
-offset_top = 72.0
-offset_right = 206.0
-offset_bottom = 249.0
+offset_left = 11.0
+offset_top = 55.0
+offset_right = 188.0
+offset_bottom = 252.0
 texture = ExtResource("6_default_poster")
 expand_mode = 1
 stretch_mode = 5
@@ -191,26 +191,26 @@ stretch_mode = 5
 [node name="BackStatsLabel" type="Label" parent="BoardScale/BackFace" unique_id=1016]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 289.0
-offset_top = 102.0
-offset_right = 484.0
-offset_bottom = 227.0
+offset_left = 34.0
+offset_top = 261.0
+offset_right = 229.0
+offset_bottom = 334.0
 theme_override_colors/font_color = Color(0.309804, 0.196078, 0.117647, 1)
 theme_override_fonts/font = ExtResource("7_font")
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 20
 text = "-"
 autowrap_mode = 3
 
 [node name="BackSkillLabel" type="Label" parent="BoardScale/BackFace" unique_id=1017]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 52.0
-offset_top = 261.0
-offset_right = 427.0
-offset_bottom = 333.0
+offset_left = 236.0
+offset_top = 96.0
+offset_right = 418.0
+offset_bottom = 339.0
 theme_override_colors/font_color = Color(0.25098, 0.156863, 0.0941176, 1)
 theme_override_fonts/font = ExtResource("7_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 20
 text = "-"
 autowrap_mode = 3
 
