@@ -158,6 +158,7 @@ func _ready() -> void:
 	add_child(item_tooltip_overlay)
 	synergy_tooltip_overlay = SYNERGY_TOOLTIP_OVERLAY_SCENE.instantiate() as ImmediateSynergyTooltipOverlay
 	synergy_tooltip_overlay.name = "SynergyTooltipOverlay"
+	synergy_tooltip_overlay.use_fixed_slot = false
 	add_child(synergy_tooltip_overlay)
 	item_tooltip_anchor.visible = false
 	gold_label.add_theme_color_override("font_color", Color.WHITE)
@@ -806,9 +807,22 @@ func _position_item_tooltip_overlay() -> void:
 func _on_synergy_hover_started(entry: Dictionary, global_rect: Rect2) -> void:
 	item_tooltip_overlay.hide_tooltip()
 	synergy_tooltip_overlay.show_entry(entry, global_rect)
+	_position_synergy_tooltip_overlay()
 
 func _on_synergy_hover_ended() -> void:
 	synergy_tooltip_overlay.hide_tooltip()
+
+func _hide_tooltip_overlays() -> void:
+	if item_tooltip_overlay != null:
+		item_tooltip_overlay.hide_tooltip()
+	if synergy_tooltip_overlay != null:
+		synergy_tooltip_overlay.hide_tooltip()
+
+func _position_synergy_tooltip_overlay() -> void:
+	if synergy_tooltip_overlay == null or item_tooltip_anchor == null:
+		return
+	var anchor_rect: Rect2 = item_tooltip_anchor.get_global_rect()
+	synergy_tooltip_overlay.place_at_global_point(Vector2(anchor_rect.get_center().x, anchor_rect.position.y))
 
 func _on_inventory_strip_drop_requested(drag_data: Dictionary) -> void:
 	item_tooltip_overlay.hide_tooltip()

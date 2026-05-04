@@ -1,51 +1,88 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://bacqsl3605wws"]
 
-[ext_resource type="Script" path="res://Scripts/UI/Components/immediate_synergy_tooltip_overlay.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://mb845xfsn8kc" path="res://Scripts/UI/Components/immediate_synergy_tooltip_overlay.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://csp51gylmds8u" path="res://Art/UI/NewUI/food_info_popup_bg (3).png" id="2_background"]
 
-[node name="ImmediateSynergyTooltipOverlay" type="PanelContainer"]
-visible = false
-custom_minimum_size = Vector2(260, 0)
+[node name="ImmediateSynergyTooltipOverlay" type="Control" unique_id=121172543]
+custom_minimum_size = Vector2(520, 240)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 520.0
+offset_bottom = 240.0
 mouse_filter = 2
 script = ExtResource("1_script")
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Background" type="NinePatchRect" parent="." unique_id=255896201]
+layout_mode = 0
+offset_right = 708.0
+offset_bottom = 156.0
+texture = ExtResource("2_background")
+patch_margin_left = 36
+patch_margin_top = 36
+patch_margin_right = 36
+patch_margin_bottom = 36
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=442599291]
+layout_mode = 0
+offset_right = 520.0
+offset_bottom = 240.0
+mouse_filter = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="Control" parent="Margin" unique_id=1556818287]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
 mouse_filter = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margin"]
-layout_mode = 2
-theme_override_constants/separation = 6
-mouse_filter = 2
-
-[node name="SynergyTooltipCategoryLabel" type="Label" parent="Margin/VBox"]
+[node name="SynergyTooltipNameLabel" type="Label" parent="Margin/VBox" unique_id=464820967]
 unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
+layout_mode = 0
+offset_right = 109.0
+offset_bottom = 29.0
+theme_override_font_sizes/font_size = 24
+text = "羁绊名称"
 
-[node name="SynergyTooltipNameLabel" type="Label" parent="Margin/VBox"]
+[node name="SynergyTooltipCategoryLabel" type="Label" parent="Margin/VBox" unique_id=1298116913]
 unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
+layout_mode = 0
+offset_top = 45.0
+offset_right = 198.0
+offset_bottom = 69.0
+theme_override_font_sizes/font_size = 20
+text = "类别："
 
-[node name="SynergyTooltipCountLabel" type="Label" parent="Margin/VBox"]
+[node name="SynergyTooltipCountLabel" type="Label" parent="Margin/VBox" unique_id=2100800224]
 unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
+layout_mode = 0
+offset_left = 317.0
+offset_top = 45.0
+offset_right = 424.0
+offset_bottom = 69.0
+theme_override_font_sizes/font_size = 20
+text = "当前计数：x0"
 
-[node name="SynergyTooltipActivationLabel" type="Label" parent="Margin/VBox"]
+[node name="SynergyTooltipActivationLabel" type="Label" parent="Margin/VBox" unique_id=636440508]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 0)
-layout_mode = 2
-mouse_filter = 2
+custom_minimum_size = Vector2(320, 34)
+layout_mode = 0
+offset_left = 317.0
+offset_right = 637.0
+offset_bottom = 34.0
+theme_override_font_sizes/font_size = 20
+text = "激活条件：3个不同种同类食物"
 autowrap_mode = 2
 
-[node name="SynergyTooltipEffectLabel" type="Label" parent="Margin/VBox"]
+[node name="SynergyTooltipEffectLabel" type="Label" parent="Margin/VBox" unique_id=659247687]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 0)
-layout_mode = 2
-mouse_filter = 2
+custom_minimum_size = Vector2(320, 104)
+layout_mode = 0
+offset_top = 87.0
+offset_right = 356.0
+offset_bottom = 210.0
+theme_override_font_sizes/font_size = 20
+text = "效果描述："
 autowrap_mode = 2
