@@ -29,8 +29,8 @@ class TooltipShapePreview:
 	func _draw() -> void:
 		for cell in cells:
 			var rect := Rect2(Vector2(cell.x, cell.y) * cell_size, Vector2.ONE * cell_size)
-			draw_rect(rect, Color(0.92, 0.76, 0.34, 0.95))
-			draw_rect(rect.grow(-1.0), Color(1.0, 0.93, 0.66, 0.95), false, 2.0)
+			draw_rect(rect, Color(0.81, 0.67, 0.35, 0.92))
+			draw_rect(rect.grow(-1.0), Color(0.49, 0.31, 0.12, 0.98), false, 2.0)
 
 static func build_tooltip_panel(entry: Dictionary) -> PanelContainer:
 	var panel := PanelContainer.new()
@@ -45,11 +45,16 @@ static func build_tooltip_panel(entry: Dictionary) -> PanelContainer:
 	vbox.add_theme_constant_override("separation", 6)
 	margin.add_child(vbox)
 	vbox.add_child(_build_tooltip_label(String(entry.get("tooltip_name", entry.get("display_name", ""))), false))
-	vbox.add_child(_build_tooltip_label("\u57fa\u7840\u52a0\u6210: %s" % String(entry.get("tooltip_base_bonus", "\u65e0\u57fa\u7840\u52a0\u6210")), true))
-	vbox.add_child(_build_tooltip_label("\u7279\u6b8a\u6548\u679c: %s" % String(entry.get("tooltip_special_effect", "\u65e0")), true))
+	vbox.add_child(_build_tooltip_label("\u6570\u91cf: %s" % String(entry.get("tooltip_quantity", "1")), false))
+	vbox.add_child(_build_tooltip_label("\u54c1\u8d28: %s" % String(entry.get("tooltip_rarity", "")), false))
+	vbox.add_child(_build_tooltip_label("\u7c7b\u578b: %s" % String(entry.get("tooltip_category", "")), false))
+	vbox.add_child(_build_tooltip_label("\u4ef7\u683c: %s" % String(entry.get("tooltip_price", "")), false))
+	vbox.add_child(_build_tooltip_label("\u57fa\u7840\u6548\u679c: %s" % String(entry.get("tooltip_base_bonus", "\u65e0\u57fa\u7840\u52a0\u6210")), true))
+	vbox.add_child(_build_tooltip_label("\u6548\u679c\u63cf\u8ff0: %s" % String(entry.get("tooltip_special_effect", "\u65e0")), true))
 	var shape_cells: Array[Vector2i] = _get_tooltip_shape_cells(entry)
 	if not shape_cells.is_empty():
-		vbox.add_child(_build_tooltip_label("\u5f62\u72b6", false))
+		vbox.add_child(_build_tooltip_label("\u5360\u683c: %s" % String(entry.get("tooltip_shape_summary", "")), false))
+		vbox.add_child(_build_tooltip_label("\u5360\u683c\u5f62\u72b6", false))
 		var shape_preview := TooltipShapePreview.new()
 		shape_preview.set_cells(shape_cells)
 		vbox.add_child(shape_preview)
@@ -58,15 +63,26 @@ static func build_tooltip_panel(entry: Dictionary) -> PanelContainer:
 static func apply_to_labels(
 	entry: Dictionary,
 	title_label: Label,
+	quantity_value_label: Label,
+	rarity_value_label: Label,
+	category_value_label: Label,
+	price_value_label: Label,
+	shape_summary_label: Label,
 	base_bonus_label: Label,
 	special_effect_label: Label,
 	shape_title_label: Label,
 	shape_preview: TooltipShapePreview
 ) -> void:
 	title_label.text = String(entry.get("tooltip_name", entry.get("display_name", "")))
-	base_bonus_label.text = "\u57fa\u7840\u52a0\u6210: %s" % String(entry.get("tooltip_base_bonus", "\u65e0\u57fa\u7840\u52a0\u6210"))
-	special_effect_label.text = "\u7279\u6b8a\u6548\u679c: %s" % String(entry.get("tooltip_special_effect", "\u65e0"))
+	quantity_value_label.text = String(entry.get("tooltip_quantity", "1"))
+	rarity_value_label.text = String(entry.get("tooltip_rarity", ""))
+	category_value_label.text = String(entry.get("tooltip_category", ""))
+	price_value_label.text = String(entry.get("tooltip_price", ""))
+	shape_summary_label.text = "\u5360\u683c\uff1a%s" % String(entry.get("tooltip_shape_summary", ""))
+	base_bonus_label.text = String(entry.get("tooltip_base_bonus", "\u65e0\u57fa\u7840\u52a0\u6210"))
+	special_effect_label.text = String(entry.get("tooltip_special_effect", "\u65e0"))
 	var shape_cells: Array[Vector2i] = _get_tooltip_shape_cells(entry)
+	shape_summary_label.visible = not shape_cells.is_empty()
 	shape_title_label.visible = not shape_cells.is_empty()
 	shape_preview.visible = not shape_cells.is_empty()
 	shape_preview.set_cells(shape_cells)

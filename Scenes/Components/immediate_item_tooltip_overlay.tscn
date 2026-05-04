@@ -1,52 +1,168 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://dj7j55rwex1pa"]
 
-[ext_resource type="Script" path="res://Scripts/UI/Components/immediate_item_tooltip_overlay.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cdfcwwe6m4ilh" path="res://Scripts/UI/Components/immediate_item_tooltip_overlay.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cvge1h70k17ks" path="res://Art/UI/NewUI/food_info_popup_bg.png" id="2_background"]
 
-[node name="ImmediateItemTooltipOverlay" type="PanelContainer"]
-visible = false
-custom_minimum_size = Vector2(240, 0)
+[node name="ImmediateItemTooltipOverlay" type="Control" unique_id=834434502]
+custom_minimum_size = Vector2(520, 240)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 520.0
+offset_bottom = 240.0
 mouse_filter = 2
 script = ExtResource("1_script")
 
-[node name="Margin" type="MarginContainer" parent="."]
-layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
+[node name="Background" type="NinePatchRect" parent="." unique_id=1082662203]
+layout_mode = 0
+offset_right = 708.0
+offset_bottom = 156.0
+texture = ExtResource("2_background")
+patch_margin_left = 36
+patch_margin_top = 36
+patch_margin_right = 36
+patch_margin_bottom = 36
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="Margin" type="Control" parent="." unique_id=353362686]
+anchors_preset = 0
+offset_right = 520.0
+offset_bottom = 240.0
 mouse_filter = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margin"]
+[node name="RootHBox" type="HBoxContainer" parent="Margin" unique_id=390263303]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 14.0
+offset_right = 694.0
+offset_bottom = 241.0
+mouse_filter = 2
+theme_override_constants/separation = 24
+
+[node name="LeftColumn" type="Control" parent="Margin/RootHBox" unique_id=1726562866]
 layout_mode = 2
-theme_override_constants/separation = 6
+size_flags_horizontal = 3
 mouse_filter = 2
 
-[node name="ItemTooltipTitleLabel" type="Label" parent="Margin/VBox"]
+[node name="ItemTooltipTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn" unique_id=521055837]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 328.0
+offset_bottom = 29.0
+theme_override_font_sizes/font_size = 24
+text = "食物名称"
+
+[node name="InfoGrid" type="GridContainer" parent="Margin/RootHBox/LeftColumn" unique_id=1704690332]
+layout_mode = 0
+offset_top = 29.0
+offset_right = 99.0
+offset_bottom = 117.0
+mouse_filter = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="QuantityTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=2119793777]
+layout_mode = 2
+text = "数量"
+
+[node name="ItemTooltipQuantityValueLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=1827426456]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
+text = "1"
 
-[node name="ItemTooltipBaseBonusLabel" type="Label" parent="Margin/VBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 0)
+[node name="RarityTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=1625542883]
 layout_mode = 2
-mouse_filter = 2
+text = "品质"
+
+[node name="ItemTooltipRarityValueLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=445564779]
+unique_name_in_owner = true
+layout_mode = 2
+text = "普通"
+
+[node name="CategoryTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=1997322187]
+layout_mode = 2
+text = "类型"
+
+[node name="ItemTooltipCategoryValueLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=625210764]
+unique_name_in_owner = true
+layout_mode = 2
+text = "蔬果"
+
+[node name="PriceTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=308133816]
+layout_mode = 2
+text = "价格"
+
+[node name="ItemTooltipPriceValueLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=86667411]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0 G"
+
+[node name="BaseBonusTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn" unique_id=89668514]
+layout_mode = 0
+offset_left = 127.0
+offset_right = 303.0
+offset_bottom = 19.0
+text = "基础效果"
+
+[node name="ItemTooltipBaseBonusLabel" type="Label" parent="Margin/RootHBox/LeftColumn" unique_id=443787651]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 28)
+layout_mode = 0
+offset_left = 127.0
+offset_top = 27.0
+offset_right = 347.0
+offset_bottom = 55.0
+text = "无基础加成"
 autowrap_mode = 2
 
-[node name="ItemTooltipSpecialEffectLabel" type="Label" parent="Margin/VBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 0)
+[node name="RightColumn" type="Control" parent="Margin/RootHBox" unique_id=1556465399]
 layout_mode = 2
+size_flags_horizontal = 3
 mouse_filter = 2
+
+[node name="ItemTooltipShapeSummaryLabel" type="Label" parent="Margin/RootHBox/RightColumn" unique_id=1222959517]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 110.0
+offset_right = 439.0
+offset_bottom = 19.0
+text = "占格：1格"
+
+[node name="ItemTooltipShapeTitleLabel" type="Label" parent="Margin/RootHBox/RightColumn" unique_id=878952418]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 110.0
+offset_top = 27.0
+offset_right = 439.0
+offset_bottom = 46.0
+text = "占格形状"
+
+[node name="ItemTooltipShapeHost" type="VBoxContainer" parent="Margin/RootHBox/RightColumn" unique_id=1268725445]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 54)
+layout_mode = 0
+offset_left = 139.0
+offset_top = 55.0
+offset_right = 468.0
+offset_bottom = 109.0
+mouse_filter = 2
+
+[node name="EffectTitleLabel" type="Label" parent="Margin/RootHBox/RightColumn" unique_id=894841411]
+layout_mode = 0
+offset_left = -225.0
+offset_top = 50.0
+offset_right = 104.0
+offset_bottom = 69.0
+text = "效果描述"
+
+[node name="ItemTooltipSpecialEffectLabel" type="Label" parent="Margin/RootHBox/RightColumn" unique_id=866286657]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 84)
+layout_mode = 0
+offset_left = -225.0
+offset_top = 77.0
+offset_right = 139.0
+offset_bottom = 161.0
+text = "无"
 autowrap_mode = 2
-
-[node name="ItemTooltipShapeTitleLabel" type="Label" parent="Margin/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-text = "形状"
-
-[node name="ItemTooltipShapeHost" type="VBoxContainer" parent="Margin/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2

@@ -32,6 +32,14 @@ const TEXT_BONUS_HPS := "\u6bcf\u79d2\u56de\u590d %s"
 const TEXT_BONUS_EXECUTE := "\u65a9\u6740\u7ebf %s%%"
 const TEXT_BONUS_NONE := "\u65e0\u57fa\u7840\u52a0\u6210"
 const TEXT_BONUS_SEPARATOR := "\uff0c"
+const FOOD_RARITY_DISPLAY_NAMES := {
+	&"common": "\u666e\u901a",
+	&"rare": "\u7a00\u6709",
+	&"epic": "\u53f2\u8bd7",
+}
+const TEXT_TOOLTIP_NONE := "\u65e0"
+const TEXT_TOOLTIP_PRICE := "%d G"
+const TEXT_TOOLTIP_SHAPE_SUMMARY := "\u5171%d\u683c\uff08%dx%d\uff09"
 const GUIDE_TEXTURES: Array[Texture2D] = [
 	preload("res://Art/UI/tutor1.png"),
 	preload("res://Art/UI/tutor2.png"),
@@ -94,6 +102,7 @@ const BATTLE_MODAL_BLOCKER_FADE_TIME := 0.18
 @onready var synergy_panel: Control = %SynergyPanel
 @onready var battle_modal_blocker: ColorRect = %BattleModalBlocker
 @onready var battle_popup: BattlePopup = %BattlePopup
+@onready var item_tooltip_anchor: Control = %ItemTooltipAnchor
 
 @onready var tab_buttons: Dictionary = {
 	&"warrior": %WarriorTabButton,
@@ -138,10 +147,12 @@ func _ready() -> void:
 	_bgm_player().play_non_battle()
 	item_tooltip_overlay = ITEM_TOOLTIP_OVERLAY_SCENE.instantiate() as ImmediateItemTooltipOverlay
 	item_tooltip_overlay.name = "ItemTooltipOverlay"
+	item_tooltip_overlay.use_fixed_slot = false
 	add_child(item_tooltip_overlay)
 	synergy_tooltip_overlay = SYNERGY_TOOLTIP_OVERLAY_SCENE.instantiate() as ImmediateSynergyTooltipOverlay
 	synergy_tooltip_overlay.name = "SynergyTooltipOverlay"
 	add_child(synergy_tooltip_overlay)
+	item_tooltip_anchor.visible = false
 	gold_label.add_theme_color_override("font_color", Color.WHITE)
 	selected_item_label.add_theme_color_override("font_color", Color.WHITE)
 	market_refresh_button.add_theme_color_override("font_color", Color.WHITE)
@@ -414,8 +425,13 @@ func _apply_food_tooltip(entry: Dictionary, definition: FoodDefinition) -> void:
 	if definition == null:
 		return
 	entry["tooltip_name"] = definition.display_name
+	entry["tooltip_quantity"] = "x%d" % int(entry.get("count", 1))
+	entry["tooltip_rarity"] = String(FOOD_RARITY_DISPLAY_NAMES.get(definition.rarity, String(definition.rarity)))
+	entry["tooltip_category"] = _build_food_category_text(definition)
+	entry["tooltip_price"] = TEXT_TOOLTIP_PRICE % _resolve_tooltip_price(entry, definition)
+	entry["tooltip_shape_summary"] = _build_shape_summary(definition.shape_cells)
 	entry["tooltip_base_bonus"] = _build_food_bonus_text(definition)
-	entry["tooltip_special_effect"] = definition.passive_text.strip_edges()
+	entry["tooltip_special_effect"] = definition.passive_text.strip_edges() if not definition.passive_text.strip_edges().is_empty() else TEXT_TOOLTIP_NONE
 	entry["tooltip_shape_cells"] = definition.shape_cells.duplicate()
 
 func _apply_expansion_tooltip(entry: Dictionary) -> void:
@@ -461,6 +477,33 @@ func _build_food_bonus_text(definition: FoodDefinition) -> String:
 	if parts.is_empty():
 		return TEXT_BONUS_NONE
 	return TEXT_BONUS_SEPARATOR.join(parts)
+
+func _build_food_category_text(definition: FoodDefinition) -> String:
+	var run_state: Node = _run_state()
+	var categories: PackedStringArray = []
+	for category_id in run_state.get_food_categories(definition):
+		var category_name: String = String(run_state.CATEGORY_DISPLAY_NAMES.get(category_id, String(category_id)))
+		if not categories.has(category_name):
+			categories.append(category_name)
+	return "/".join(categories)
+
+func _resolve_tooltip_price(entry: Dictionary, definition: FoodDefinition) -> int:
+	if entry.has("display_price"):
+		return int(entry.get("display_price", 0))
+	if entry.has("unit_price"):
+		return int(entry.get("unit_price", 0))
+	return definition.gold_value
+
+func _build_shape_summary(shape_cells: Array) -> String:
+	if shape_cells.is_empty():
+		return TEXT_TOOLTIP_NONE
+	var normalized_cells: Array[Vector2i] = ShapeUtils.normalize_cells(shape_cells)
+	var max_x: int = 0
+	var max_y: int = 0
+	for cell in normalized_cells:
+		max_x = max(max_x, cell.x)
+		max_y = max(max_y, cell.y)
+	return TEXT_TOOLTIP_SHAPE_SUMMARY % [normalized_cells.size(), max_x + 1, max_y + 1]
 func _format_signed_value(value: float, decimals: int = 1) -> String:
 	var abs_value: float = absf(value)
 	var text := ""
@@ -682,6 +725,7 @@ func _on_board_hover_food_changed(item: Dictionary, global_rect: Rect2) -> void:
 	}
 	_apply_food_tooltip(entry, definition)
 	item_tooltip_overlay.show_entry(entry, global_rect)
+	_position_item_tooltip_overlay()
 
 func _on_board_hover_food_cleared() -> void:
 	board_view.clear_synergy_highlights()
@@ -690,9 +734,16 @@ func _on_board_hover_food_cleared() -> void:
 func _on_strip_item_hover_started(entry: Dictionary, global_rect: Rect2) -> void:
 	synergy_tooltip_overlay.hide_tooltip()
 	item_tooltip_overlay.show_entry(entry, global_rect)
+	_position_item_tooltip_overlay()
 
 func _on_strip_item_hover_ended() -> void:
 	item_tooltip_overlay.hide_tooltip()
+
+func _position_item_tooltip_overlay() -> void:
+	if item_tooltip_overlay == null or item_tooltip_anchor == null:
+		return
+	var anchor_rect: Rect2 = item_tooltip_anchor.get_global_rect()
+	item_tooltip_overlay.place_at_global_point(Vector2(anchor_rect.get_center().x, anchor_rect.position.y))
 
 func _on_synergy_hover_started(entry: Dictionary, global_rect: Rect2) -> void:
 	item_tooltip_overlay.hide_tooltip()
