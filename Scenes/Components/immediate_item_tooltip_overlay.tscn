@@ -52,67 +52,101 @@ offset_bottom = 29.0
 theme_override_font_sizes/font_size = 24
 text = "食物名称"
 
-[node name="InfoGrid" type="GridContainer" parent="Margin/RootHBox/LeftColumn" unique_id=1704690332]
-layout_mode = 0
+[node name="InfoGrid" type="Control" parent="Margin/RootHBox/LeftColumn" unique_id=291385845]
+anchors_preset = 0
 offset_top = 29.0
 offset_right = 99.0
 offset_bottom = 117.0
 mouse_filter = 2
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 4
-columns = 2
 
 [node name="QuantityTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=2119793777]
-layout_mode = 2
+layout_mode = 0
+offset_right = 25.0
+offset_bottom = 19.0
+theme_override_font_sizes/font_size = 20
 text = "数量"
 
 [node name="ItemTooltipQuantityValueLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=1827426456]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
+offset_left = 41.0
+offset_right = 66.0
+offset_bottom = 19.0
+theme_override_font_sizes/font_size = 20
 text = "1"
 
 [node name="RarityTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=1625542883]
-layout_mode = 2
+layout_mode = 0
+offset_top = 33.0
+offset_right = 31.0
+offset_bottom = 57.0
+theme_override_font_sizes/font_size = 20
 text = "品质"
 
 [node name="ItemTooltipRarityValueLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=445564779]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
+offset_left = 41.0
+offset_top = 33.0
+offset_right = 72.0
+offset_bottom = 57.0
+theme_override_font_sizes/font_size = 20
 text = "普通"
 
 [node name="CategoryTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=1997322187]
-layout_mode = 2
+layout_mode = 0
+offset_top = 66.0
+offset_right = 31.0
+offset_bottom = 90.0
+theme_override_font_sizes/font_size = 20
 text = "类型"
 
 [node name="ItemTooltipCategoryValueLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=625210764]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
+offset_left = 41.0
+offset_top = 66.0
+offset_right = 72.0
+offset_bottom = 90.0
+theme_override_font_sizes/font_size = 20
 text = "蔬果"
 
 [node name="PriceTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=308133816]
-layout_mode = 2
+layout_mode = 0
+offset_left = 609.0
+offset_top = 82.0
+offset_right = 634.0
+offset_bottom = 101.0
+theme_override_font_sizes/font_size = 20
 text = "价格"
 
 [node name="ItemTooltipPriceValueLabel" type="Label" parent="Margin/RootHBox/LeftColumn/InfoGrid" unique_id=86667411]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
+offset_left = 650.0
+offset_top = 82.0
+offset_right = 675.0
+offset_bottom = 101.0
+theme_override_font_sizes/font_size = 20
 text = "0 G"
 
 [node name="BaseBonusTitleLabel" type="Label" parent="Margin/RootHBox/LeftColumn" unique_id=89668514]
 layout_mode = 0
-offset_left = 127.0
-offset_right = 303.0
+offset_left = 151.0
+offset_right = 327.0
 offset_bottom = 19.0
+theme_override_font_sizes/font_size = 20
 text = "基础效果"
 
 [node name="ItemTooltipBaseBonusLabel" type="Label" parent="Margin/RootHBox/LeftColumn" unique_id=443787651]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 28)
 layout_mode = 0
-offset_left = 127.0
-offset_top = 27.0
-offset_right = 347.0
-offset_bottom = 55.0
+offset_left = 151.0
+offset_top = 25.0
+offset_right = 371.0
+offset_bottom = 53.0
+theme_override_font_sizes/font_size = 20
 text = "无基础加成"
 autowrap_mode = 2
 
@@ -124,45 +158,49 @@ mouse_filter = 2
 [node name="ItemTooltipShapeSummaryLabel" type="Label" parent="Margin/RootHBox/RightColumn" unique_id=1222959517]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 110.0
-offset_right = 439.0
+offset_left = 187.0
+offset_right = 332.0
 offset_bottom = 19.0
+theme_override_font_sizes/font_size = 20
 text = "占格：1格"
 
 [node name="ItemTooltipShapeTitleLabel" type="Label" parent="Margin/RootHBox/RightColumn" unique_id=878952418]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 110.0
+offset_left = 187.0
 offset_top = 27.0
-offset_right = 439.0
+offset_right = 236.0
 offset_bottom = 46.0
+theme_override_font_sizes/font_size = 20
 text = "占格形状"
 
 [node name="ItemTooltipShapeHost" type="VBoxContainer" parent="Margin/RootHBox/RightColumn" unique_id=1268725445]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 54)
 layout_mode = 0
-offset_left = 139.0
+offset_left = 187.0
 offset_top = 55.0
-offset_right = 468.0
+offset_right = 334.0
 offset_bottom = 109.0
 mouse_filter = 2
 
 [node name="EffectTitleLabel" type="Label" parent="Margin/RootHBox/RightColumn" unique_id=894841411]
 layout_mode = 0
-offset_left = -225.0
-offset_top = 50.0
-offset_right = 104.0
-offset_bottom = 69.0
+offset_left = -201.0
+offset_top = 51.0
+offset_right = -139.0
+offset_bottom = 75.0
+theme_override_font_sizes/font_size = 20
 text = "效果描述"
 
 [node name="ItemTooltipSpecialEffectLabel" type="Label" parent="Margin/RootHBox/RightColumn" unique_id=866286657]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 84)
 layout_mode = 0
-offset_left = -225.0
+offset_left = -201.0
 offset_top = 77.0
-offset_right = 139.0
+offset_right = 185.0
 offset_bottom = 161.0
+theme_override_font_sizes/font_size = 20
 text = "无"
 autowrap_mode = 2

@@ -22,7 +22,31 @@ func _run() -> void:
 	_assert(editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/WarriorTabButton") != null, "Warrior role tab should exist")
 	_assert(editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/warriorPreviewBoard") == null, "Legacy warrior preview board should be removed")
 	var warrior_tab: Button = editor.get_node("LeftPanel/LeftCenter/LeftVBox/WarriorTabButton")
+	var hunter_tab: Button = editor.get_node("LeftPanel/LeftCenter/LeftVBox/HunterTabButton")
+	var mage_tab: Button = editor.get_node("LeftPanel/LeftCenter/LeftVBox/MageTabButton")
 	_assert(warrior_tab.icon != null, "Role tab should render an icon-based tag")
+	_assert(warrior_tab.position.x < 25.487244, "Role tabs should start partially tucked off-screen")
+	_assert(hunter_tab.position.x < 25.487244, "Hunter role tab should start partially tucked off-screen")
+	_assert(mage_tab.position.x < 25.487244, "Mage role tab should start partially tucked off-screen")
+	var hunter_closed_x: float = hunter_tab.position.x
+	editor.call("_on_role_tab_hover_started", &"hunter")
+	await create_timer(0.25).timeout
+	_assert(hunter_tab.position.x > hunter_closed_x, "Hovering a role tab should slide the full card into view")
+	editor.call("_on_role_tab_hover_ended", &"hunter")
+	await create_timer(0.25).timeout
+	_assert(is_equal_approx(hunter_tab.position.x, hunter_closed_x), "Unhovered non-selected role tabs should slide back out")
+	var mage_closed_x: float = mage_tab.position.x
+	editor.call("_on_role_tab_pressed", &"mage")
+	await create_timer(0.25).timeout
+	_assert(run_state.selected_character_id == &"mage", "Clicking a role tab should still select that character")
+	_assert(mage_tab.position.x > mage_closed_x, "Clicking a role tab should keep it expanded as the selected card")
+	editor.call("_on_role_tab_hover_started", &"mage")
+	await create_timer(0.25).timeout
+	editor.call("_on_role_tab_hover_ended", &"mage")
+	await create_timer(0.25).timeout
+	_assert(mage_tab.position.x > mage_closed_x, "Selected role tabs should remain expanded after the mouse leaves")
+	run_state.select_character(&"warrior")
+	await process_frame
 	var warrior_stats_label: Label = editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/WarriorTabButton/WarriorTabStatsLabel")
 	var hunter_stats_label: Label = editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/HunterTabButton/HunterTabStatsLabel")
 	var mage_stats_label: Label = editor.get_node_or_null("LeftPanel/LeftCenter/LeftVBox/MageTabButton/MageTabStatsLabel")

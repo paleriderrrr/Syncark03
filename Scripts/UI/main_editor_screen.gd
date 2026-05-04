@@ -65,6 +65,8 @@ const TEXT_RISK_DANGEROUS := "\u9669\u8c61\u73af\u751f"
 const TEXT_RISK_FATAL := "\u4e5d\u6b7b\u4e00\u751f"
 const TEXT_ROLE_TAB_STATS_PLACEHOLDER := "HP 0/0\nATK 0\nINT 0.0s"
 const TEXT_ROLE_TAB_STATS := "HP %d/%d\nATK %s\nINT %ss"
+const ROLE_TAB_PEEK_WIDTH := 196.0
+const ROLE_TAB_SLIDE_TIME := 0.18
 const BATTLE_MODAL_BLOCKER_ALPHA := 0.56
 const BATTLE_MODAL_BLOCKER_FADE_TIME := 0.18
 
@@ -126,6 +128,11 @@ var _market_panel_is_open: bool = false
 var _market_panel_tween: Tween
 var _intro_tween: Tween
 var _intro_animating: bool = false
+var _role_tab_open_positions: Dictionary = {}
+var _role_tab_closed_positions: Dictionary = {}
+var _role_tab_tweens: Dictionary = {}
+var _hovered_role_id: StringName = &""
+var _pinned_role_id: StringName = &""
 var _last_node_type: StringName = &""
 var _active_synergy_ids: Dictionary = {}
 var _guide_page_index: int = 0
@@ -196,6 +203,7 @@ func _ready() -> void:
 	restore_button.pressed.connect(_on_restore_pressed)
 	action_button.pressed.connect(_on_action_pressed)
 	guide_backdrop.gui_input.connect(_on_guide_backdrop_gui_input)
+	_setup_role_tab_interaction()
 	tab_buttons[&"warrior"].pressed.connect(func() -> void: _on_role_tab_pressed(&"warrior"))
 	tab_buttons[&"hunter"].pressed.connect(func() -> void: _on_role_tab_pressed(&"hunter"))
 	tab_buttons[&"mage"].pressed.connect(func() -> void: _on_role_tab_pressed(&"mage"))
@@ -343,10 +351,59 @@ func _refresh_selected_role(character_id: StringName) -> void:
 		int(health.get("max_hp", 0)),
 	]
 	for role_id in tab_buttons.keys():
-		tab_buttons[role_id].disabled = role_id == character_id
 		tab_buttons[role_id].text = ""
 
+	_refresh_role_tab_visual_state()
 	_refresh_role_tab_stats()
+
+func _setup_role_tab_interaction() -> void:
+	for role_id in tab_buttons.keys():
+		var button: Button = tab_buttons.get(role_id) as Button
+		if button == null:
+			continue
+		_role_tab_open_positions[role_id] = button.position
+		_role_tab_closed_positions[role_id] = Vector2(
+			minf(button.position.x, -button.size.x + ROLE_TAB_PEEK_WIDTH),
+			button.position.y
+		)
+		button.mouse_entered.connect(_on_role_tab_hover_started.bind(role_id))
+		button.mouse_exited.connect(_on_role_tab_hover_ended.bind(role_id))
+	_refresh_role_tab_visual_state(true)
+
+func _refresh_role_tab_visual_state(immediate: bool = false) -> void:
+	for role_id in tab_buttons.keys():
+		var button: Button = tab_buttons.get(role_id) as Button
+		if button == null:
+			continue
+		var should_open: bool = role_id == _pinned_role_id or role_id == _hovered_role_id
+		_set_role_tab_open_state(role_id, should_open, immediate)
+		button.z_index = 2 if role_id == _pinned_role_id else (1 if role_id == _hovered_role_id else 0)
+
+func _set_role_tab_open_state(role_id: StringName, should_open: bool, immediate: bool) -> void:
+	var button: Button = tab_buttons.get(role_id) as Button
+	if button == null:
+		return
+	var target_position: Vector2 = _role_tab_open_positions.get(role_id, button.position) if should_open else _role_tab_closed_positions.get(role_id, button.position)
+	if immediate:
+		button.position = target_position
+		return
+	if button.position.is_equal_approx(target_position):
+		return
+	var existing_tween: Tween = _role_tab_tweens.get(role_id) as Tween
+	if is_instance_valid(existing_tween):
+		existing_tween.kill()
+	var tween: Tween = create_tween()
+	_role_tab_tweens[role_id] = tween
+	tween.tween_property(button, "position", target_position, ROLE_TAB_SLIDE_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+func _on_role_tab_hover_started(role_id: StringName) -> void:
+	_hovered_role_id = role_id
+	_refresh_role_tab_visual_state()
+
+func _on_role_tab_hover_ended(role_id: StringName) -> void:
+	if _hovered_role_id == role_id:
+		_hovered_role_id = &""
+	_refresh_role_tab_visual_state()
 
 func _refresh_role_tab_stats() -> void:
 	var run_state: Node = _run_state()
@@ -616,6 +673,7 @@ func _refresh_synergy_panel() -> void:
 	_active_synergy_ids = new_active_ids
 	synergy_panel.set_summary(summary, role_name)
 func _on_selected_character_changed(character_id: StringName) -> void:
+	_pinned_role_id = character_id
 	_refresh_selected_role(character_id)
 	_refresh()
 
@@ -936,6 +994,8 @@ func _on_role_tab_pressed(character_id: StringName) -> void:
 	_ui_sfx().play_button()
 	item_tooltip_overlay.hide_tooltip()
 	synergy_tooltip_overlay.hide_tooltip()
+	_pinned_role_id = character_id
+	_refresh_role_tab_visual_state()
 	_run_state().select_character(character_id)
 
 func _unhandled_input(event: InputEvent) -> void:
