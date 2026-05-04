@@ -49,7 +49,7 @@ const TEXT_BOUNTY_EMPTY := "\u8d4f\u91d1\uff1a-"
 const TEXT_STAGE_EMPTY := "\u9636\u6bb5\uff1a-"
 const TEXT_BOUNTY := "\u8d4f\u91d1\uff1a%d\u91d1"
 const TEXT_STAGE := "\u9636\u6bb5\uff1a%d / %d"
-const TEXT_MONSTER_STATS := "\u751f\u547d %d  \u653b\u51fb %.1f  \u95f4\u9694 %.1f\u79d2"
+const TEXT_MONSTER_STATS := "\u751f\u547d %d\n\u653b\u51fb %.1f\n\u95f4\u9694 %.1f\u79d2"
 const TEXT_ROUTE := "\u8282\u70b9 %d / %d\uff1a%s"
 const TEXT_CURRENT_NODE := "\u5f53\u524d\u8282\u70b9\uff1a%s"
 const TEXT_RISK := "\u5371\u9669\u5ea6\uff1a%s"
@@ -71,9 +71,6 @@ const BATTLE_MODAL_BLOCKER_ALPHA := 0.56
 const BATTLE_MODAL_BLOCKER_FADE_TIME := 0.18
 
 @onready var gold_label: Label = %GoldLabel
-@onready var route_label: Label = %RouteLabel
-@onready var node_label: Label = %NodeLabel
-@onready var risk_label: Label = %RiskLabel
 @onready var selected_role_label: Label = %SelectedRoleLabel
 @onready var selected_item_label: Label = %SelectedItemLabel
 @onready var top_market_panel: Control = $TopMarketPanel
@@ -81,6 +78,7 @@ const BATTLE_MODAL_BLOCKER_FADE_TIME := 0.18
 @onready var center_panel: Control = $CenterPanel
 @onready var right_panel: Control = $RightPanel
 @onready var bottom_inventory_panel: Control = $BottomInventoryPanel
+@onready var right_info_board: RightInfoBoard = %RightInfoBoard
 @onready var board_view: BentoBoardView = %BentoBoardView
 @onready var top_market_strip: ItemStrip = %TopMarketStrip
 @onready var market_refresh_button: Button = %MarketRefreshButton
@@ -94,13 +92,6 @@ const BATTLE_MODAL_BLOCKER_FADE_TIME := 0.18
 @onready var guide_overlay: Control = %GuideOverlay
 @onready var guide_backdrop: ColorRect = %GuideBackdrop
 @onready var guide_image: TextureRect = %GuideImage
-@onready var wanted_poster_rect: TextureRect = %WantedPosterRect
-@onready var next_monster_name_label: Label = %NextMonsterNameLabel
-@onready var next_monster_bounty_label: Label = %NextMonsterBountyLabel
-@onready var next_monster_stage_label: Label = %NextMonsterStageLabel
-@onready var next_monster_stats_label: Label = %NextMonsterStatsLabel
-@onready var next_monster_skill_label: Label = %NextMonsterSkillLabel
-@onready var monster_tooltip_panel: PanelContainer = %MonsterTooltipPanel
 @onready var synergy_panel: Control = %SynergyPanel
 @onready var battle_modal_blocker: ColorRect = %BattleModalBlocker
 @onready var battle_popup: BattlePopup = %BattlePopup
@@ -134,6 +125,7 @@ var _role_tab_tweens: Dictionary = {}
 var _hovered_role_id: StringName = &""
 var _pinned_role_id: StringName = &""
 var _last_node_type: StringName = &""
+var _last_right_info_monster_id: StringName = &""
 var _active_synergy_ids: Dictionary = {}
 var _guide_page_index: int = 0
 var _guide_marks_tutorial_complete: bool = false
@@ -211,9 +203,6 @@ func _ready() -> void:
 	board_view.set_food_textures(_food_textures)
 	board_view.set_food_board_textures(_food_board_textures)
 	board_view.set_lunchbox_textures(_base_lunchbox_textures, _expansion_lunchbox_textures)
-	wanted_poster_rect.mouse_entered.connect(_on_monster_hover_entered)
-	wanted_poster_rect.mouse_exited.connect(_on_monster_hover_exited)
-	monster_tooltip_panel.visible = false
 	guide_overlay.visible = false
 	item_tooltip_overlay.hide_tooltip()
 	synergy_tooltip_overlay.hide_tooltip()
@@ -230,9 +219,6 @@ func _refresh() -> void:
 	_role_names = run_state.get_character_display_names()
 	_update_market_panel_state(run_state.get_current_node_type() == run_state.NODE_MARKET)
 	gold_label.text = TEXT_GOLD % run_state.current_gold
-	route_label.text = _build_route_label(run_state)
-	node_label.text = TEXT_CURRENT_NODE % _display_name_for_node(current_node_type)
-	risk_label.text = TEXT_RISK % _estimate_risk_label()
 	selected_item_label.text = run_state.get_selected_item_summary_safe()
 	action_button.text = ""
 	_refresh_action_button_visual()
@@ -602,34 +588,39 @@ func _refresh_board() -> void:
 func _refresh_next_monster_panel() -> void:
 	var summary: Dictionary = _run_state().get_next_monster_summary()
 	if summary.is_empty():
-		wanted_poster_rect.texture = DEFAULT_WANTED_POSTER_TEXTURE
-		next_monster_name_label.text = TEXT_UNKNOWN
-		next_monster_bounty_label.text = TEXT_BOUNTY_EMPTY
-		next_monster_stage_label.text = TEXT_STAGE_EMPTY
-		next_monster_stats_label.text = "-"
-		next_monster_skill_label.text = "-"
-		monster_tooltip_panel.visible = false
+		_last_right_info_monster_id = &""
+		right_info_board.show_front_immediate()
+		right_info_board.apply_summary({
+			"stage_name": TEXT_STAGE_EMPTY,
+			"monster_name": TEXT_UNKNOWN,
+			"risk_text": TEXT_RISK % TEXT_RISK_UNKNOWN,
+			"bounty_text": TEXT_BOUNTY_EMPTY,
+			"stats_text": "-",
+			"skill_text": "-",
+		}, DEFAULT_WANTED_POSTER_TEXTURE)
 		return
-	next_monster_name_label.text = "%s / %s" % [String(summary.get("display_name", "")), String(summary.get("category_name", ""))]
-	next_monster_bounty_label.text = TEXT_BOUNTY % _get_next_battle_reward()
-	next_monster_stage_label.text = TEXT_STAGE % [_run_state().current_route_index + 1, _get_total_stage_count()]
-	next_monster_stats_label.text = TEXT_MONSTER_STATS % [
-		int(summary.get("hp", 0)),
-		float(summary.get("attack", 0.0)),
-		float(summary.get("attack_interval", 0.0)),
-	]
-	next_monster_skill_label.text = String(summary.get("skill_summary", ""))
-	wanted_poster_rect.texture = WANTED_POSTER_TEXTURES.get(summary.get("id", &""), DEFAULT_WANTED_POSTER_TEXTURE) as Texture2D
-	monster_tooltip_panel.visible = false
-func _build_route_label(run_state: Node) -> String:
-	var total_nodes: int = 0
-	if run_state.stage_flow_config != null:
-		total_nodes = run_state.stage_flow_config.route_nodes.size()
-	return TEXT_ROUTE % [
-		int(run_state.current_route_index) + 1,
-		total_nodes,
-		_display_name_for_node(run_state.get_current_node_type()),
-	]
+	var monster_id: StringName = summary.get("id", &"") as StringName
+	if monster_id != _last_right_info_monster_id:
+		right_info_board.show_front_immediate()
+		_last_right_info_monster_id = monster_id
+	right_info_board.apply_summary(_build_right_info_board_summary(summary), _resolve_wanted_poster_texture(monster_id))
+
+func _build_right_info_board_summary(summary: Dictionary) -> Dictionary:
+	return {
+		"stage_name": TEXT_STAGE % [_run_state().current_route_index + 1, _get_total_stage_count()],
+		"monster_name": String(summary.get("display_name", TEXT_UNKNOWN)),
+		"risk_text": TEXT_RISK % _estimate_risk_label(),
+		"bounty_text": TEXT_BOUNTY % _get_next_battle_reward(),
+		"stats_text": TEXT_MONSTER_STATS % [
+			int(summary.get("hp", 0)),
+			float(summary.get("attack", 0.0)),
+			float(summary.get("attack_interval", 0.0)),
+		],
+		"skill_text": String(summary.get("skill_summary", "-")),
+	}
+
+func _resolve_wanted_poster_texture(monster_id: StringName) -> Texture2D:
+	return WANTED_POSTER_TEXTURES.get(monster_id, DEFAULT_WANTED_POSTER_TEXTURE) as Texture2D
 func _get_total_stage_count() -> int:
 	var run_state: Node = _run_state()
 	if run_state.stage_flow_config == null:
@@ -928,14 +919,6 @@ func _on_battle_requested() -> void:
 
 func _on_battle_popup_hidden() -> void:
 	_hide_battle_modal_blocker()
-
-func _on_monster_hover_entered() -> void:
-	if next_monster_stats_label.text == "-" and next_monster_skill_label.text == "-":
-		return
-	monster_tooltip_panel.visible = true
-
-func _on_monster_hover_exited() -> void:
-	monster_tooltip_panel.visible = false
 
 func _estimate_risk_label() -> String:
 	var total_power: float = 0.0

@@ -1,0 +1,240 @@
+[gd_scene format=3 uid="uid://uv0kfk8ap0i6"]
+
+[ext_resource type="Script" uid="uid://doe8bdasml6at" path="res://Scripts/UI/Components/right_info_board.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://fe3n2lftqe2g" path="res://Art/UI/NewRightInfo/right_info_front.png" id="2_front_bg"]
+[ext_resource type="Texture2D" uid="uid://bxhfxe3o5f844" path="res://Art/UI/NewRightInfo/right_info_back.png" id="3_back_bg"]
+[ext_resource type="Texture2D" uid="uid://pl61fy1morpx" path="res://Art/UI/NewRightInfo/more_info_button_normal.png" id="4_button_normal"]
+[ext_resource type="Texture2D" uid="uid://28t8tgtrd615" path="res://Art/UI/NewRightInfo/more_info_button_light.png" id="5_button_hover"]
+[ext_resource type="Texture2D" uid="uid://se3u2duh8jvu" path="res://Art/UI/NewUI/ui1_2_wanted_poster.png" id="6_default_poster"]
+[ext_resource type="FontFile" uid="uid://bgm3gwcogagmy" path="res://Art/Fonts/handwriting.ttf" id="7_font"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
+
+[node name="RightInfoBoard" type="Control" unique_id=309937843]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(314, 360)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 314.0
+offset_bottom = 360.0
+mouse_filter = 1
+script = ExtResource("1_script")
+default_poster_texture = ExtResource("6_default_poster")
+more_info_button_normal_texture = ExtResource("4_button_normal")
+more_info_button_hover_texture = ExtResource("5_button_hover")
+
+[node name="BoardScale" type="Control" parent="." unique_id=1001]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FrontFace" type="Control" parent="BoardScale" unique_id=1002]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FrontBackground" type="TextureRect" parent="BoardScale/FrontFace" unique_id=1003]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_front_bg")
+expand_mode = 1
+
+[node name="FrontStageNameLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1004]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 34.0
+offset_top = 29.0
+offset_right = 175.0
+offset_bottom = 74.0
+theme_override_colors/font_color = Color(0.309804, 0.196078, 0.117647, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 24
+text = "STAGE"
+
+[node name="FrontWantedPosterRect" type="TextureRect" parent="BoardScale/FrontFace" unique_id=1005]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 23.0
+offset_top = 90.0
+offset_right = 162.0
+offset_bottom = 265.0
+texture = ExtResource("6_default_poster")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="FrontMonsterNameLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1006]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 167.0
+offset_top = 97.0
+offset_right = 283.0
+offset_bottom = 150.0
+theme_override_colors/font_color = Color(0.231373, 0.145098, 0.0862745, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 23
+text = "-"
+autowrap_mode = 3
+
+[node name="FrontRiskLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1007]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 167.0
+offset_top = 154.0
+offset_right = 286.0
+offset_bottom = 200.0
+theme_override_colors/font_color = Color(0.380392, 0.192157, 0.101961, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 20
+text = "-"
+autowrap_mode = 3
+
+[node name="FrontBountyLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1008]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 167.0
+offset_top = 213.0
+offset_right = 286.0
+offset_bottom = 255.0
+theme_override_colors/font_color = Color(0.278431, 0.160784, 0.101961, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 20
+text = "-"
+autowrap_mode = 3
+
+[node name="MoreInfoButton" type="Button" parent="BoardScale/FrontFace" unique_id=1009]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 26.0
+offset_top = 271.0
+offset_right = 159.0
+offset_bottom = 330.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_button")
+flat = true
+
+[node name="MoreInfoButtonArt" type="TextureRect" parent="BoardScale/FrontFace/MoreInfoButton" unique_id=1010]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_button_normal")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BackFace" type="Control" parent="BoardScale" unique_id=1012]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BackBackground" type="TextureRect" parent="BoardScale/BackFace" unique_id=1013]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_back_bg")
+expand_mode = 1
+
+[node name="BackMonsterNameLabel" type="Label" parent="BoardScale/BackFace" unique_id=1014]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 32.0
+offset_top = 30.0
+offset_right = 282.0
+offset_bottom = 76.0
+theme_override_colors/font_color = Color(0.231373, 0.145098, 0.0862745, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 24
+text = "-"
+autowrap_mode = 3
+
+[node name="BackWantedPosterRect" type="TextureRect" parent="BoardScale/BackFace" unique_id=1015]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 30.0
+offset_top = 83.0
+offset_right = 132.0
+offset_bottom = 215.0
+texture = ExtResource("6_default_poster")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackStatsLabel" type="Label" parent="BoardScale/BackFace" unique_id=1016]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 149.0
+offset_top = 95.0
+offset_right = 281.0
+offset_bottom = 191.0
+theme_override_colors/font_color = Color(0.309804, 0.196078, 0.117647, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 17
+text = "-"
+autowrap_mode = 3
+
+[node name="BackSkillLabel" type="Label" parent="BoardScale/BackFace" unique_id=1017]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 33.0
+offset_top = 219.0
+offset_right = 282.0
+offset_bottom = 317.0
+theme_override_colors/font_color = Color(0.25098, 0.156863, 0.0941176, 1)
+theme_override_fonts/font = ExtResource("7_font")
+theme_override_font_sizes/font_size = 16
+text = "-"
+autowrap_mode = 3
+
+[node name="BackButton" type="Button" parent="BoardScale/BackFace" unique_id=1018]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 208.0
+offset_top = 309.0
+offset_right = 286.0
+offset_bottom = 350.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_button")
+flat = true
+
+[node name="BackButtonArt" type="TextureRect" parent="BoardScale/BackFace/BackButton" unique_id=1019]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_button_normal")
+expand_mode = 1
+stretch_mode = 5

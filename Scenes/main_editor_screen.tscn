@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bxop82ps7gvtv" path="res://Art/UI/NewUI/金币.png" id="4_3wget"]
 [ext_resource type="Texture2D" uid="uid://c15ge3pvw4wc5" path="res://Art/UI/NewUI/ui2_2_badge_small_dark.png" id="4_fwcvo"]
 [ext_resource type="PackedScene" uid="uid://0sdemtp02gb7" path="res://Scenes/Components/item_strip.tscn" id="4_strip"]
+[ext_resource type="PackedScene" uid="uid://uv0kfk8ap0i6" path="res://Scenes/Components/right_info_board.tscn" id="5_right_info"]
 [ext_resource type="PackedScene" uid="uid://ibxugq3e36wf" path="res://Scenes/Components/synergy_panel.tscn" id="5_synergy"]
 [ext_resource type="Texture2D" uid="uid://dr60km6grv5l7" path="res://Art/UI/Background.png" id="6_bg"]
 [ext_resource type="Script" uid="uid://bmulngcjm5nc" path="res://Scripts/UI/Components/inventory_drop_zone.gd" id="7_drop_zone"]
@@ -408,6 +409,7 @@ offset_bottom = 884.0
 
 [node name="RightBackground" type="TextureRect" parent="RightPanel" unique_id=1681799263]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -425,6 +427,7 @@ texture = ExtResource("13_3wget")
 stretch_mode = 2
 
 [node name="NextMonsterPanel" type="Control" parent="RightPanel" unique_id=1046346511]
+visible = false
 anchors_preset = 0
 offset_left = -240.0
 offset_top = 67.0
@@ -549,6 +552,13 @@ theme_override_font_sizes/font_size = 27
 text = "-"
 autowrap_mode = 3
 
+[node name="RightInfoBoard" parent="RightPanel" unique_id=2046346511 instance=ExtResource("5_right_info")]
+layout_mode = 0
+offset_left = -54.0
+offset_top = 48.0
+offset_right = 260.0
+offset_bottom = 408.0
+
 [node name="SynergyPanel" parent="RightPanel" unique_id=1134522113 instance=ExtResource("5_synergy")]
 unique_name_in_owner = true
 layout_mode = 0
@@ -558,6 +568,7 @@ offset_right = -234.0
 offset_bottom = 547.0
 
 [node name="StageInfoPanel" type="Control" parent="RightPanel" unique_id=201420001]
+visible = false
 anchors_preset = 0
 offset_left = 47.0
 offset_top = 407.0

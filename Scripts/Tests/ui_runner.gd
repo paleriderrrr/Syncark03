@@ -65,13 +65,20 @@ func _run() -> void:
 		_assert(mage_stats_label.text.contains("HP "), "Mage tab stats should show current and max HP")
 		_assert(mage_stats_label.text.contains("ATK "), "Mage tab stats should show attack")
 		_assert(mage_stats_label.text.contains("INT "), "Mage tab stats should show attack interval")
-	_assert(editor.get_node_or_null("RightPanel/NextMonsterPanel") != null, "Next monster panel should exist")
-	_assert(editor.get_node_or_null("RightPanel/MonsterTooltipPanel") != null, "Monster tooltip panel should exist")
+	_assert(editor.get_node_or_null("RightPanel/RightInfoBoard") != null, "Right info board should exist")
 	_assert(editor.get_node_or_null("RightPanel/SynergyPanel") != null, "Synergy panel should exist")
 	_assert(editor.get_node_or_null("RightPanel/ActionButton") != null, "Action button should exist inside the right panel")
 	_assert(editor.get_node_or_null("RightPanel/ActionButton/ActionButtonText") != null, "Action button should expose a dedicated text texture node")
-	_assert(editor.get_node_or_null("RightPanel/StageInfoPanel/StageInfoVBox/NodeLabel") != null, "Right panel should still display the current node label")
-	_assert(editor.get_node_or_null("RightPanel/StageInfoPanel/StageInfoVBox/RiskLabel") != null, "Right panel should still display the risk label")
+	_assert(editor.get_node_or_null("RightPanel/RightInfoBoard/BoardScale/FrontFace/FrontStageNameLabel") != null, "Right info board front face should expose a stage label")
+	_assert(editor.get_node_or_null("RightPanel/RightInfoBoard/BoardScale/FrontFace/FrontRiskLabel") != null, "Right info board front face should expose a risk label")
+	var right_info_board: Node = editor.get_node("RightPanel/RightInfoBoard")
+	_assert(bool(right_info_board.call("is_showing_front")), "Right info board should start on the front face")
+	right_info_board.call("flip_to_back")
+	await create_timer(0.35).timeout
+	_assert(not bool(right_info_board.call("is_showing_front")), "Right info board should flip to the back face")
+	right_info_board.call("flip_to_front")
+	await create_timer(0.35).timeout
+	_assert(bool(right_info_board.call("is_showing_front")), "Right info board should flip back to the front face")
 	var battle_popup: Node = editor.get_node_or_null("BattlePopup")
 	_assert(battle_popup != null and battle_popup.find_child("StartBattleButton", true, false) != null, "Battle popup should expose a Start Battle button")
 	var help_button: Button = editor.get_node_or_null("HelpButton")
@@ -194,7 +201,7 @@ func _run() -> void:
 		run_state.current_route_index = 0
 	var viewport_rect := Rect2(Vector2.ZERO, editor.get_viewport().get_visible_rect().size)
 	_assert(_rect_inside_viewport(editor.get_node("TopMarketPanel/GoldIcon").get_global_rect(), viewport_rect), "Gold icon should remain inside the viewport")
-	_assert(_rect_inside_viewport(editor.get_node("RightPanel/StageInfoPanel").get_global_rect(), viewport_rect), "Stage info panel should remain inside the viewport")
+	_assert(_rect_inside_viewport(editor.get_node("RightPanel/RightInfoBoard").get_global_rect(), viewport_rect), "Right info board should remain inside the viewport")
 	_assert(_rect_inside_viewport(editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip").get_global_rect(), viewport_rect), "Top market strip should remain inside the viewport")
 	_assert(_rect_inside_viewport(editor.get_node("BottomInventoryPanel/InventoryDropZone/InventoryStrip").get_global_rect(), viewport_rect), "Bottom inventory strip should remain inside the viewport")
 	run_state.current_gold = 999
