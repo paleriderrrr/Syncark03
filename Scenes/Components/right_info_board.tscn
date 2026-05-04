@@ -12,10 +12,10 @@
 
 [node name="RightInfoBoard" type="Control" unique_id=309937843]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(314, 360)
+custom_minimum_size = Vector2(468, 360)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 314.0
+offset_right = 468.0
 offset_bottom = 360.0
 mouse_filter = 1
 script = ExtResource("1_script")
@@ -52,13 +52,14 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_front_bg")
 expand_mode = 1
+stretch_mode = 6
 
 [node name="FrontStageNameLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1004]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 34.0
+offset_left = 50.0
 offset_top = 29.0
-offset_right = 175.0
+offset_right = 261.0
 offset_bottom = 74.0
 theme_override_colors/font_color = Color(0.309804, 0.196078, 0.117647, 1)
 theme_override_fonts/font = ExtResource("7_font")
@@ -68,21 +69,21 @@ text = "STAGE"
 [node name="FrontWantedPosterRect" type="TextureRect" parent="BoardScale/FrontFace" unique_id=1005]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 23.0
+offset_left = 34.0
 offset_top = 90.0
-offset_right = 162.0
-offset_bottom = 265.0
+offset_right = 244.0
+offset_bottom = 331.0
 texture = ExtResource("6_default_poster")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
 
 [node name="FrontMonsterNameLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1006]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 167.0
-offset_top = 97.0
-offset_right = 283.0
-offset_bottom = 150.0
+offset_left = 276.0
+offset_top = 62.0
+offset_right = 448.0
+offset_bottom = 115.0
 theme_override_colors/font_color = Color(0.231373, 0.145098, 0.0862745, 1)
 theme_override_fonts/font = ExtResource("7_font")
 theme_override_font_sizes/font_size = 23
@@ -92,10 +93,10 @@ autowrap_mode = 3
 [node name="FrontRiskLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1007]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 167.0
-offset_top = 154.0
-offset_right = 286.0
-offset_bottom = 200.0
+offset_left = 276.0
+offset_top = 119.0
+offset_right = 453.0
+offset_bottom = 165.0
 theme_override_colors/font_color = Color(0.380392, 0.192157, 0.101961, 1)
 theme_override_fonts/font = ExtResource("7_font")
 theme_override_font_sizes/font_size = 20
@@ -105,10 +106,10 @@ autowrap_mode = 3
 [node name="FrontBountyLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1008]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 167.0
-offset_top = 213.0
-offset_right = 286.0
-offset_bottom = 255.0
+offset_left = 276.0
+offset_top = 178.0
+offset_right = 453.0
+offset_bottom = 220.0
 theme_override_colors/font_color = Color(0.278431, 0.160784, 0.101961, 1)
 theme_override_fonts/font = ExtResource("7_font")
 theme_override_font_sizes/font_size = 20
@@ -118,10 +119,10 @@ autowrap_mode = 3
 [node name="MoreInfoButton" type="Button" parent="BoardScale/FrontFace" unique_id=1009]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 26.0
-offset_top = 271.0
-offset_right = 159.0
-offset_bottom = 330.0
+offset_left = 284.0
+offset_top = 247.0
+offset_right = 430.0
+offset_bottom = 331.0
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
@@ -140,7 +141,7 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("4_button_normal")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6
 
 [node name="BackFace" type="Control" parent="BoardScale" unique_id=1012]
 unique_name_in_owner = true
@@ -161,13 +162,14 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("3_back_bg")
 expand_mode = 1
+stretch_mode = 6
 
 [node name="BackMonsterNameLabel" type="Label" parent="BoardScale/BackFace" unique_id=1014]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 32.0
+offset_left = 49.0
 offset_top = 30.0
-offset_right = 282.0
+offset_right = 421.0
 offset_bottom = 76.0
 theme_override_colors/font_color = Color(0.231373, 0.145098, 0.0862745, 1)
 theme_override_fonts/font = ExtResource("7_font")
@@ -178,21 +180,21 @@ autowrap_mode = 3
 [node name="BackWantedPosterRect" type="TextureRect" parent="BoardScale/BackFace" unique_id=1015]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 30.0
-offset_top = 83.0
-offset_right = 132.0
-offset_bottom = 215.0
+offset_left = 48.0
+offset_top = 72.0
+offset_right = 206.0
+offset_bottom = 249.0
 texture = ExtResource("6_default_poster")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
 
 [node name="BackStatsLabel" type="Label" parent="BoardScale/BackFace" unique_id=1016]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 149.0
-offset_top = 95.0
-offset_right = 281.0
-offset_bottom = 191.0
+offset_left = 289.0
+offset_top = 102.0
+offset_right = 484.0
+offset_bottom = 227.0
 theme_override_colors/font_color = Color(0.309804, 0.196078, 0.117647, 1)
 theme_override_fonts/font = ExtResource("7_font")
 theme_override_font_sizes/font_size = 17
@@ -202,10 +204,10 @@ autowrap_mode = 3
 [node name="BackSkillLabel" type="Label" parent="BoardScale/BackFace" unique_id=1017]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 33.0
-offset_top = 219.0
-offset_right = 282.0
-offset_bottom = 317.0
+offset_left = 52.0
+offset_top = 261.0
+offset_right = 427.0
+offset_bottom = 333.0
 theme_override_colors/font_color = Color(0.25098, 0.156863, 0.0941176, 1)
 theme_override_fonts/font = ExtResource("7_font")
 theme_override_font_sizes/font_size = 16
@@ -215,10 +217,10 @@ autowrap_mode = 3
 [node name="BackButton" type="Button" parent="BoardScale/BackFace" unique_id=1018]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 208.0
-offset_top = 309.0
-offset_right = 286.0
-offset_bottom = 350.0
+offset_left = 324.0
+offset_top = 22.0
+offset_right = 452.0
+offset_bottom = 96.0
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
@@ -237,4 +239,4 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("4_button_normal")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6

@@ -554,9 +554,9 @@ autowrap_mode = 3
 
 [node name="RightInfoBoard" parent="RightPanel" unique_id=2046346511 instance=ExtResource("5_right_info")]
 layout_mode = 0
-offset_left = -54.0
+offset_left = -130.0
 offset_top = 48.0
-offset_right = 260.0
+offset_right = 338.0
 offset_bottom = 408.0
 
 [node name="SynergyPanel" parent="RightPanel" unique_id=1134522113 instance=ExtResource("5_synergy")]
