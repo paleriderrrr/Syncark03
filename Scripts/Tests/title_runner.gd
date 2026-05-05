@@ -9,10 +9,13 @@ func _run() -> void:
 	root.add_child(title)
 	await process_frame
 	var start_button: TextureButton = title.get_node("StartButton")
+	var continue_button: TextureButton = title.get_node("ContinueButton")
 	var settings_button: Button = title.get_node("SettingsButton")
 	var quit_button: Button = title.get_node("QuitButton")
 	if start_button.texture_normal == null:
 		failures.append("Start button texture missing")
+	if continue_button.texture_normal == null:
+		failures.append("Continue button texture missing")
 	if settings_button.icon == null:
 		failures.append("Settings button icon missing")
 	if quit_button.icon == null:

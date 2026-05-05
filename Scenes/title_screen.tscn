@@ -16,6 +16,8 @@
 [ext_resource type="Texture2D" uid="uid://bgorvo3jje18w" path="res://Art/UI/NewUI/UI1-3_slices/ui13_formal_exit_sign_button.png" id="13_ycay6"]
 [ext_resource type="Shader" uid="uid://b5xfan3u8nvwj" path="res://Shaders/title_edge_fog.gdshader" id="14_edge_fog_shader"]
 [ext_resource type="Texture2D" uid="uid://guasockb8x2q" path="res://Art/UI/UI_formal/开始白边.png" id="15_bsy20"]
+[ext_resource type="Texture2D" uid="uid://byx0wxrc3nr4l" path="res://Art/UI/UI_formal/continue_button_normal.png" id="16_continue_normal"]
+[ext_resource type="Texture2D" uid="uid://doueiof4m170d" path="res://Art/UI/UI_formal/continue_button_hover.png" id="17_continue_hover"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_center_fog"]
 shader = ExtResource("13_center_fog_shader")
@@ -258,6 +260,7 @@ mouse_filter = 2
 
 [node name="StartGlow" type="TextureRect" parent="." unique_id=1612850455]
 unique_name_in_owner = true
+visible = false
 modulate = Color(1, 1, 1, 0.42)
 material = SubResource("ShaderMaterial_start_glow")
 layout_mode = 0
@@ -295,22 +298,23 @@ flat = true
 [node name="StartButton" type="TextureButton" parent="." unique_id=316654087]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 573.0
-offset_top = 534.0
-offset_right = 1426.0
-offset_bottom = 868.0
+offset_left = 664.0
+offset_top = 525.0
+offset_right = 1517.0
+offset_bottom = 859.0
 texture_normal = ExtResource("11_start")
 texture_pressed = ExtResource("15_bsy20")
 texture_hover = ExtResource("15_bsy20")
 stretch_mode = 0
 
-[node name="ContinueButton" type="Button" parent="." unique_id=1902211184]
+[node name="ContinueButton" type="TextureButton" parent="." unique_id=1902211184]
 unique_name_in_owner = true
-visible = false
 layout_mode = 0
-offset_left = 813.0
-offset_top = 872.0
-offset_right = 1186.0
-offset_bottom = 943.0
-theme_override_font_sizes/font_size = 34
-text = "Continue"
+offset_left = 833.0
+offset_top = 727.0
+offset_right = 1686.0
+offset_bottom = 1061.0
+texture_normal = ExtResource("16_continue_normal")
+texture_pressed = ExtResource("17_continue_hover")
+texture_hover = ExtResource("17_continue_hover")
+stretch_mode = 0

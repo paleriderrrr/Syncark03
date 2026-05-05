@@ -9,8 +9,6 @@ const START_BUTTON_IDLE_ALPHA := 1.0
 const START_BUTTON_PULSE_ALPHA := 0.96
 const LOADING_SCENE_PATH := "res://Scenes/loading_screen.tscn"
 const MAIN_EDITOR_SCENE_PATH := "res://Scenes/main_editor_screen.tscn"
-const CONTINUE_BUTTON_TEXT := "\u7EE7\u7EED\u5192\u9669"
-
 @onready var cover_base_1: TextureRect = %CoverBase1
 @onready var cover_base_2: TextureRect = %CoverBase2
 @onready var cover_base_3: TextureRect = %CoverBase3
@@ -26,7 +24,7 @@ const CONTINUE_BUTTON_TEXT := "\u7EE7\u7EED\u5192\u9669"
 @onready var edge_fog: ColorRect = %EdgeFog
 @onready var start_glow: TextureRect = %StartGlow
 @onready var start_button: TextureButton = %StartButton
-@onready var continue_button: Button = %ContinueButton
+@onready var continue_button: TextureButton = %ContinueButton
 @onready var settings_button: Button = %SettingsButton
 @onready var quit_button: Button = %QuitButton
 
@@ -108,7 +106,6 @@ func _play_start_transition() -> void:
 
 func _refresh_continue_button() -> void:
 	var has_save: bool = _run_state().has_saved_run()
-	continue_button.text = CONTINUE_BUTTON_TEXT
 	continue_button.visible = has_save
 	continue_button.disabled = not has_save
 

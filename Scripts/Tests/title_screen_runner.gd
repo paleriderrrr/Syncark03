@@ -22,7 +22,7 @@ func _run() -> void:
 	var cover_glow_1: TextureRect = screen.get_node("CoverGlow1")
 	var center_fog: ColorRect = screen.get_node_or_null("CenterFog")
 	var edge_fog: ColorRect = screen.get_node_or_null("EdgeFog")
-	var continue_button: Button = screen.get_node_or_null("%ContinueButton")
+	var continue_button: TextureButton = screen.get_node_or_null("%ContinueButton")
 	_assert(center_fog != null, "Center fog should exist")
 	if center_fog != null:
 		_assert(center_fog.get_index() > main_backdrop.get_index(), "Center fog should render above the main backdrop")
@@ -49,6 +49,8 @@ func _run() -> void:
 			_assert(glow_intensity >= 7.0, "Start glow should be bright enough to read as a white outline highlight")
 	_assert(continue_button != null, "Continue button should exist on the title screen")
 	if continue_button != null:
+		_assert(continue_button.texture_normal != null, "Continue button normal texture should exist")
+		_assert(continue_button.texture_hover != null, "Continue button hover texture should exist")
 		_assert(not continue_button.visible, "Continue button should stay hidden when no save exists")
 
 	screen.queue_free()
@@ -61,7 +63,7 @@ func _run() -> void:
 	root.add_child(resumed_screen)
 	await process_frame
 	await process_frame
-	var resumed_continue_button: Button = resumed_screen.get_node_or_null("%ContinueButton")
+	var resumed_continue_button: TextureButton = resumed_screen.get_node_or_null("%ContinueButton")
 	_assert(resumed_continue_button != null, "Continue button should still exist after save creation")
 	if resumed_continue_button != null:
 		_assert(resumed_continue_button.visible, "Continue button should become visible when a save exists")
