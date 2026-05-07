@@ -253,7 +253,7 @@ func _build_actual_summary_text(actor: Dictionary, synergy: Dictionary) -> Strin
 		lines.append("None")
 	else:
 		for key_variant in flags.keys():
-			lines.append("%s: %s" % [String(key_variant), String(flags[key_variant])])
+			lines.append("%s: %s" % [str(key_variant), str(flags[key_variant])])
 	return "\n".join(lines)
 
 func _refresh_compare_grid() -> void:
