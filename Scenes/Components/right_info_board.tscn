@@ -44,35 +44,36 @@ grow_vertical = 2
 
 [node name="FrontBackground" type="TextureRect" parent="BoardScale/FrontFace" unique_id=1003]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_right = 1.1450001
+anchor_bottom = 1.342
+offset_right = 0.13995361
+offset_bottom = -0.11999512
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_front_bg")
 expand_mode = 1
-stretch_mode = 6
 
 [node name="FrontStageNameLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1004]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 50.0
-offset_top = 29.0
-offset_right = 261.0
-offset_bottom = 74.0
+offset_left = 46.0
+offset_top = 54.0
+offset_right = 257.0
+offset_bottom = 99.0
 theme_override_colors/font_color = Color(0.309804, 0.196078, 0.117647, 1)
 theme_override_fonts/font = ExtResource("7_font")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 30
 text = "STAGE"
 
 [node name="FrontWantedPosterRect" type="TextureRect" parent="BoardScale/FrontFace" unique_id=1005]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 34.0
-offset_top = 90.0
-offset_right = 244.0
-offset_bottom = 331.0
+offset_left = 15.0
+offset_top = 110.0
+offset_right = 305.0
+offset_bottom = 441.0
 texture = ExtResource("6_default_poster")
 expand_mode = 1
 stretch_mode = 5
@@ -80,49 +81,49 @@ stretch_mode = 5
 [node name="FrontMonsterNameLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1006]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 276.0
-offset_top = 62.0
-offset_right = 448.0
-offset_bottom = 115.0
+offset_left = 321.0
+offset_top = 71.0
+offset_right = 493.0
+offset_bottom = 124.0
 theme_override_colors/font_color = Color(0.231373, 0.145098, 0.0862745, 1)
 theme_override_fonts/font = ExtResource("7_font")
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 30
 text = "-"
 autowrap_mode = 3
 
 [node name="FrontRiskLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1007]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 276.0
-offset_top = 119.0
-offset_right = 453.0
-offset_bottom = 165.0
+offset_left = 314.0
+offset_top = 160.0
+offset_right = 491.0
+offset_bottom = 206.0
 theme_override_colors/font_color = Color(0.380392, 0.192157, 0.101961, 1)
 theme_override_fonts/font = ExtResource("7_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 26
 text = "-"
 autowrap_mode = 3
 
 [node name="FrontBountyLabel" type="Label" parent="BoardScale/FrontFace" unique_id=1008]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 276.0
-offset_top = 178.0
-offset_right = 453.0
-offset_bottom = 220.0
+offset_left = 314.0
+offset_top = 261.0
+offset_right = 491.0
+offset_bottom = 303.0
 theme_override_colors/font_color = Color(0.278431, 0.160784, 0.101961, 1)
 theme_override_fonts/font = ExtResource("7_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 26
 text = "-"
 autowrap_mode = 3
 
 [node name="MoreInfoButton" type="Button" parent="BoardScale/FrontFace" unique_id=1009]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 284.0
-offset_top = 247.0
-offset_right = 430.0
-offset_bottom = 331.0
+offset_left = 355.0
+offset_top = 346.0
+offset_right = 501.0
+offset_bottom = 430.0
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
@@ -136,6 +137,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -4.0
+offset_top = -2.0
+offset_right = -4.0
+offset_bottom = -2.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -146,9 +151,10 @@ stretch_mode = 6
 [node name="BackFace" type="Control" parent="BoardScale" unique_id=1012]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_right = 1.1450001
+anchor_bottom = 1.342
+offset_right = 0.13995361
+offset_bottom = -0.11999512
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -162,28 +168,27 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("3_back_bg")
 expand_mode = 1
-stretch_mode = 6
 
 [node name="BackMonsterNameLabel" type="Label" parent="BoardScale/BackFace" unique_id=1014]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 33.0
-offset_top = 22.0
-offset_right = 405.0
-offset_bottom = 68.0
+offset_left = 45.0
+offset_top = 34.0
+offset_right = 417.0
+offset_bottom = 80.0
 theme_override_colors/font_color = Color(0.231373, 0.145098, 0.0862745, 1)
 theme_override_fonts/font = ExtResource("7_font")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 36
 text = "-"
 autowrap_mode = 3
 
 [node name="BackWantedPosterRect" type="TextureRect" parent="BoardScale/BackFace" unique_id=1015]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 11.0
-offset_top = 55.0
-offset_right = 188.0
-offset_bottom = 252.0
+offset_left = 23.0
+offset_top = 79.0
+offset_right = 233.0
+offset_bottom = 339.0
 texture = ExtResource("6_default_poster")
 expand_mode = 1
 stretch_mode = 5
@@ -191,36 +196,36 @@ stretch_mode = 5
 [node name="BackStatsLabel" type="Label" parent="BoardScale/BackFace" unique_id=1016]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 34.0
-offset_top = 261.0
-offset_right = 229.0
-offset_bottom = 334.0
+offset_left = 45.0
+offset_top = 353.0
+offset_right = 240.0
+offset_bottom = 426.0
 theme_override_colors/font_color = Color(0.309804, 0.196078, 0.117647, 1)
 theme_override_fonts/font = ExtResource("7_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "-"
 autowrap_mode = 3
 
 [node name="BackSkillLabel" type="Label" parent="BoardScale/BackFace" unique_id=1017]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 236.0
-offset_top = 96.0
-offset_right = 418.0
-offset_bottom = 339.0
+offset_left = 290.0
+offset_top = 94.0
+offset_right = 472.0
+offset_bottom = 337.0
 theme_override_colors/font_color = Color(0.25098, 0.156863, 0.0941176, 1)
 theme_override_fonts/font = ExtResource("7_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 26
 text = "-"
 autowrap_mode = 3
 
 [node name="BackButton" type="Button" parent="BoardScale/BackFace" unique_id=1018]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 324.0
-offset_top = 22.0
-offset_right = 452.0
-offset_bottom = 96.0
+offset_left = 362.0
+offset_top = 366.0
+offset_right = 490.0
+offset_bottom = 440.0
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
