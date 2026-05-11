@@ -51,8 +51,24 @@ func _run() -> void:
 		lab.call("_on_battle_preview_pressed")
 		var battle_summary: RichTextLabel = lab.get_node("Margin/RootVBox/TopHBox/RightPanel/RightMargin/RightVBox/BattleSummary")
 		_assert(battle_summary.text.contains("怪物:"), "Previewing pudding_cup should complete a localized battle preview instead of crashing")
+		lab.call("_on_catalog_entry_clicked", {"definition_id": &"monster_tartare"})
+		var rotate_event := InputEventKey.new()
+		rotate_event.keycode = KEY_R
+		rotate_event.pressed = true
+		lab.call("_unhandled_input", rotate_event)
+		await process_frame
+		var catalog_strip: ItemStrip = lab.get_node("Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox/FoodCatalogStrip")
+		var rotated_payload: Dictionary = _find_catalog_drag_payload(catalog_strip, &"monster_tartare")
+		_assert(int(rotated_payload.get("rotation", 0)) == 1, "Food effect lab drag payload should reflect the selected rotation")
 	lab.queue_free()
 	_finish()
+
+func _find_catalog_drag_payload(catalog_strip: ItemStrip, definition_id: StringName) -> Dictionary:
+	for card_variant in catalog_strip.get("_cards"):
+		var card: ItemIconCard = card_variant
+		if card.entry.get("definition_id", &"") == definition_id:
+			return card.drag_payload
+	return {}
 
 func _find_synergy_entry(summary: Dictionary, category_id: StringName) -> Dictionary:
 	for entry_variant in summary.get("entries", []):

@@ -242,7 +242,8 @@ func _refresh() -> void:
 	_refresh_action_button_visual()
 	market_refresh_button.disabled = current_node_type != run_state.NODE_MARKET
 	market_refresh_button.text = TEXT_MARKET_REFRESH % run_state.get_current_refresh_cost()
-	restore_button.disabled = current_node_type != run_state.NODE_REST
+	restore_button.visible = current_node_type == run_state.NODE_REST
+	restore_button.disabled = current_node_type != run_state.NODE_REST or run_state.pre_battle_snapshot.is_empty()
 	_refresh_selected_role(run_state.selected_character_id)
 	_refresh_market_strip()
 	_refresh_inventory_strip()

@@ -21,12 +21,13 @@ func _run() -> void:
 func _validate_category_locked_candidates(run_state: Node) -> void:
 	for monster_variant in run_state.monster_roster.monsters:
 		var monster: MonsterDefinition = monster_variant
-		if monster.category == &"boss":
-			continue
 		var candidates: Array = run_state.get_battle_drop_candidates(monster)
 		_assert(not candidates.is_empty(), "%s should have battle drop candidates" % monster.display_name)
 		for definition_variant in candidates:
 			var definition: FoodDefinition = definition_variant
+			if monster.category == &"boss":
+				_assert(run_state.CATEGORY_ORDER.has(definition.category), "Boss drops should resolve to normal food categories")
+				continue
 			_assert(
 				definition.category == monster.category,
 				"%s should only expose %s drops, but included %s (%s)" % [
@@ -40,8 +41,6 @@ func _validate_category_locked_candidates(run_state: Node) -> void:
 func _validate_granted_items_match_monster_category(run_state: Node) -> void:
 	for monster_variant in run_state.monster_roster.monsters:
 		var monster: MonsterDefinition = monster_variant
-		if monster.category == &"boss":
-			continue
 		run_state.shared_inventory.clear()
 		run_state.grant_battle_drops(monster, 0)
 		_assert(not run_state.shared_inventory.is_empty(), "%s should grant at least one drop item" % monster.display_name)
@@ -50,6 +49,9 @@ func _validate_granted_items_match_monster_category(run_state: Node) -> void:
 			var definition: FoodDefinition = run_state.get_food_definition(item.get("definition_id", &"")) as FoodDefinition
 			_assert(definition != null, "Granted drop should resolve to a food definition")
 			if definition == null:
+				continue
+			if monster.category == &"boss":
+				_assert(run_state.CATEGORY_ORDER.has(definition.category), "Boss battle should grant normal food drops")
 				continue
 			_assert(
 				definition.category == monster.category,

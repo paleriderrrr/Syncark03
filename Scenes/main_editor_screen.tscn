@@ -659,13 +659,12 @@ stretch_mode = 5
 
 [node name="RestoreButton" type="Button" parent="RightPanel" unique_id=208933019]
 unique_name_in_owner = true
-visible = false
 layout_mode = 0
 offset_left = -311.0
 offset_top = 515.0
 offset_right = -180.0
 offset_bottom = 581.0
-text = "Restore"
+text = "恢复"
 icon = ExtResource("17_3wget")
 flat = true
 icon_alignment = 1

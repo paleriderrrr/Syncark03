@@ -11,6 +11,9 @@ func _run() -> void:
 	var strip: ItemStrip = scene.instantiate() as ItemStrip
 	root.add_child(strip)
 	await process_frame
+	strip.set_entries([], {})
+	await process_frame
+	_assert(strip.get_entry_count() == 0, "Empty item strips should report zero entries")
 
 	var entries: Array[Dictionary] = []
 	for index in range(11):
@@ -24,6 +27,7 @@ func _run() -> void:
 		})
 	strip.set_entries(entries, {})
 	await process_frame
+	_assert(strip.get_entry_count() == entries.size(), "Populating an empty item strip should report the new entry count")
 	strip.debug_set_viewport_size(Vector2(852, 208))
 	strip.debug_set_page_index(2)
 	await process_frame
@@ -51,6 +55,9 @@ func _run() -> void:
 	var preserved_first_rect: Rect2 = strip.get_entry_visible_rect(preserved_first_index)
 	_assert(preserved_first_index == 10, "The preserved third page should keep showing the deterministic tail entries")
 	_assert(preserved_first_rect.position.x >= viewport_rect.position.x, "The preserved page first card should remain fully visible")
+	strip.set_entries([], {})
+	await process_frame
+	_assert(strip.get_entry_count() == 0, "Clearing a populated item strip should report zero entries")
 
 	strip.queue_free()
 	if _failures.is_empty():

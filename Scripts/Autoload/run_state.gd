@@ -658,10 +658,14 @@ func buy_market_offer(index: int) -> bool:
 	current_gold -= price
 	current_market_offers.remove_at(index)
 	if offer["kind"] == &"food":
+		var offer_definition: FoodDefinition = get_food_definition(offer["definition_id"])
 		for _i in int(offer["quantity"]):
 			var instance: Dictionary = generate_item_instance(offer["definition_id"])
 			shared_inventory.append(instance)
-			_apply_food_purchase_side_effects(instance)
+			if offer_definition == null or offer_definition.id != &"travel_bento":
+				_apply_food_purchase_side_effects(instance)
+		if offer_definition != null and offer_definition.id == &"travel_bento":
+			_apply_food_purchase_side_effects_for_package(offer_definition)
 	else:
 		var expansion: Dictionary = {
 			"instance_id": _next_instance_id("expansion"),
@@ -690,11 +694,15 @@ func purchase_market_offer_package(offer_id: StringName) -> Array[Dictionary]:
 	current_gold -= price
 	current_market_offers.remove_at(index)
 	if offer["kind"] == &"food":
+		var offer_definition: FoodDefinition = get_food_definition(offer["definition_id"])
 		for _i in int(offer["quantity"]):
 			var instance: Dictionary = generate_item_instance(offer["definition_id"])
 			shared_inventory.append(instance)
 			gained_items.append(instance)
-			_apply_food_purchase_side_effects(instance)
+			if offer_definition == null or offer_definition.id != &"travel_bento":
+				_apply_food_purchase_side_effects(instance)
+		if offer_definition != null and offer_definition.id == &"travel_bento":
+			_apply_food_purchase_side_effects_for_package(offer_definition)
 	else:
 		var expansion: Dictionary = {
 			"instance_id": _next_instance_id("expansion"),
@@ -720,8 +728,7 @@ func _apply_food_purchase_side_effects(instance: Dictionary) -> void:
 	var definition: FoodDefinition = get_food_definition(instance["definition_id"])
 	match definition.id:
 		&"travel_bento":
-			free_food_purchase_count += 1
-			_generate_market_offers()
+			_apply_food_purchase_side_effects_for_package(definition)
 		&"curry_can":
 			current_gold += 3
 			spice_purchase_refund += 1
@@ -731,6 +738,14 @@ func _apply_food_purchase_side_effects(instance: Dictionary) -> void:
 		current_gold += spice_purchase_refund
 	if definition.id == &"cellar_vintage":
 		instance["reroll_bonus_count"] = 0
+
+func _apply_food_purchase_side_effects_for_package(definition: FoodDefinition) -> void:
+	match definition.id:
+		&"travel_bento":
+			free_food_purchase_count += 1
+			_generate_market_offers()
+		_:
+			pass
 
 func _increment_cellar_vintage_bonuses() -> void:
 	for item in shared_inventory:
@@ -1609,7 +1624,6 @@ func advance_to_next_node() -> void:
 func _request_battle_for_current_node() -> void:
 	match get_current_node_type():
 		NODE_BATTLE, NODE_BOSS_BATTLE:
-			prepare_battle()
 			battle_requested.emit()
 
 func _apply_route_arrival_state() -> void:
@@ -1631,10 +1645,12 @@ func _capture_snapshot() -> Dictionary:
 		var layouts: Array[Dictionary] = []
 		for placed in character_states[character_id]["placed_foods"]:
 			layouts.append({
+				"instance_id": placed["instance_id"],
 				"definition_id": placed["definition_id"],
 				"anchor": placed["anchor"],
 				"rotation": placed["rotation"],
 				"cells": _clone_cells(placed["cells"]),
+				"reroll_bonus_count": int(placed.get("reroll_bonus_count", 0)),
 			})
 		result["character_food_layouts"][character_id] = layouts
 	return result
@@ -1737,7 +1753,7 @@ func get_battle_drop_candidates(monster: MonsterDefinition) -> Array[FoodDefinit
 	if monster == null or food_catalog == null:
 		return candidates
 	for definition in food_catalog.foods:
-		if definition.category == monster.category:
+		if monster.category == &"boss" or definition.category == monster.category:
 			candidates.append(definition)
 	return candidates
 
@@ -1760,7 +1776,10 @@ func try_restore_snapshot() -> bool:
 		for layout in pre_battle_snapshot["character_food_layouts"][character_id]:
 			var found_index: int = -1
 			for index in inventory_pool.size():
-				if inventory_pool[index]["definition_id"] == layout["definition_id"]:
+				if layout.has("instance_id") and inventory_pool[index]["instance_id"] == layout["instance_id"]:
+					found_index = index
+					break
+				if not layout.has("instance_id") and inventory_pool[index]["definition_id"] == layout["definition_id"]:
 					found_index = index
 					break
 			if found_index == -1:

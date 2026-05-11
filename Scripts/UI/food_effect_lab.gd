@@ -171,11 +171,12 @@ func _refresh_catalog() -> void:
 	for entry_variant in _lab_state.get_food_entries(category_filter, search_edit.text):
 		var entry: Dictionary = entry_variant.duplicate(true)
 		var definition: FoodDefinition = _lab_state.get_food_definition(entry["definition_id"])
+		var entry_rotation: int = _selected_rotation if definition.id == _selected_food_id else 0
 		entry["drag_payload"] = {
 			"source": &"lab_catalog",
 			"definition_id": definition.id,
-			"shape_cells": ShapeUtils.rotate_cells(definition.shape_cells, 0),
-			"rotation": 0,
+			"shape_cells": ShapeUtils.rotate_cells(definition.shape_cells, entry_rotation),
+			"rotation": entry_rotation,
 		}
 		entries.append(entry)
 	food_catalog_strip.set_entries(entries, _food_textures)
@@ -426,6 +427,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _selected_food_id != &"":
 			_selected_rotation = (_selected_rotation + 1) % 4
 			_update_selected_food_info()
+			_refresh_catalog()
 			get_viewport().set_input_as_handled()
 
 func _format_number(value: float, decimals: int) -> String:

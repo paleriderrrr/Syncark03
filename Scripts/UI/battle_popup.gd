@@ -173,6 +173,7 @@ func _on_start_battle_pressed() -> void:
 	_bgm_player().play_battle()
 	await _play_battle_start_reveal()
 	var run_state: Node = _run_state()
+	run_state.prepare_battle()
 	var report: Dictionary = CombatEngine.simulate(run_state, _current_party_order())
 	_prepare_playback()
 	await _play_report(report)

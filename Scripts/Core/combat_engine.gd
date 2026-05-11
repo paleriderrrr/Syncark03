@@ -140,7 +140,7 @@ func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) 
 		float(monster_multipliers.get("attack", 1.0))
 	)
 	if monster.is_empty():
-		report["title"] = "鎴樻枟閰嶇疆缂哄け"
+		report["title"] = "战斗配置缺失"
 		return report
 	_apply_team_enemy_slow_to_monster(monster, team_effects)
 	report["monster_id"] = monster["id"]
@@ -193,10 +193,10 @@ func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) 
 		time += TICK
 
 	if report["result"] == "win":
-		report["title"] = "鎴樻枟鑳滃埄"
+		report["title"] = "战斗胜利"
 		report["bonus_gold"] = _calculate_bonus_gold(run_state, characters, report["duration"])
 	else:
-		report["title"] = "鎴樻枟澶辫触"
+		report["title"] = "战斗失败"
 		report["bonus_gold"] = 0
 	_cleanup_log(report, battle_log, characters, monster)
 	return report
@@ -249,6 +249,7 @@ func _build_characters(run_state: Object, party_order: Array[StringName] = []) -
 			"frozen_extra_slow_chance": float(evaluation["frozen_extra_slow_chance"]),
 			"forbidden_attack_reduction": float(evaluation["forbidden_attack_reduction"]),
 			"economy_gold_bonus": float(evaluation["economy_gold_bonus"]),
+			"extra_damage_hits": int(evaluation["extra_damage_hits"]),
 			"pudding_heal_amount": float(evaluation["pudding_heal_amount"]),
 			"pudding_heal_interval": float(evaluation["pudding_heal_interval"]),
 			"pudding_heal_until": float(evaluation["pudding_heal_until"]),
@@ -315,8 +316,9 @@ func _build_team_effects(characters: Array[Dictionary]) -> Dictionary:
 	for actor in characters:
 		var flags: Dictionary = actor["team_aura_flags"]
 		var opening_enemy_slow: float = float(actor["board_eval"].get("opening_enemy_attack_slow", 0.0))
-		effects["enemy_attack_slow"] += maxf(0.0, float(actor.get("enemy_attack_slow", 0.0)) - opening_enemy_slow)
-		effects["opening_enemy_attack_slow"] += opening_enemy_slow
+		if bool(actor.get("alive", true)) and _are_bento_effects_active(actor, 0.0):
+			effects["enemy_attack_slow"] += maxf(0.0, float(actor.get("enemy_attack_slow", 0.0)) - opening_enemy_slow)
+			effects["opening_enemy_attack_slow"] += opening_enemy_slow
 		effects["dessert_pulse_amount"] += float(flags.get("dessert_pulse_amount", 0.0))
 		if flags.get("dessert_multiplier_after_20", false):
 			effects["dessert_multiplier_after_20"] = true
@@ -391,6 +393,7 @@ func _evaluate_character_board(run_state: Object, definition: CharacterDefinitio
 		"frozen_extra_slow_chance": 0.0,
 		"forbidden_attack_reduction": 0.0,
 		"economy_gold_bonus": 0.0,
+		"extra_damage_hits": 0,
 		"pudding_heal_amount": 0.0,
 		"pudding_heal_interval": 0.0,
 		"pudding_heal_until": 0.0,
@@ -696,8 +699,7 @@ func _apply_food_post_passive(run_state: Object, food: FoodDefinition, item: Dic
 		&"godfather":
 			result["economy_gold_bonus"] += 1.0 * _count_adjacent_empty_cells_orthogonal(item, board_state)
 		&"soy_sauce":
-			var base_bonus: float = maxf(0.0, result["bonus_damage"] - float(food.bonus_damage))
-			result["bonus_damage"] = float(food.bonus_damage) + base_bonus + _count_adjacent_empty_cells_orthogonal(item, board_state)
+			result["extra_damage_hits"] = int(result.get("extra_damage_hits", 0)) + _count_adjacent_empty_cells_orthogonal(item, board_state)
 		_:
 			pass
 
@@ -849,6 +851,8 @@ func _apply_monster_opening_skill(monster: Dictionary, characters: Array[Diction
 func _apply_character_opening_effects(characters: Array[Dictionary], team_effects: Dictionary, _log: Array[String]) -> void:
 	for actor in characters:
 		if actor["board_eval"].get("monster_tartare", false):
+			if not _are_bento_effects_active(actor, 0.0):
+				continue
 			actor["current_hp"] = maxf(1.0, actor["current_hp"] - 40.0)
 			_log.append("[0.0s] %s loses 40 HP from Monster Tartare." % actor["name"])
 
@@ -866,18 +870,28 @@ func _process_timed_team_effects(time: float, characters: Array[Dictionary], tea
 			if _are_bento_effects_active(actor, time):
 				_heal_actor(actor, 10.0, _log, time, bool(team_effects["fairy_speed_on_heal"]))
 		team_effects["next_tree_heal"] += 15.0
-	if team_effects["caramel_mille"] and not team_effects["caramel_triggered"] and time >= 20.0:
+	if team_effects["caramel_mille"] and not team_effects["caramel_triggered"] and time >= 20.0 and _has_active_team_aura_source(characters, &"caramel_mille", time):
 		team_effects["caramel_triggered"] = true
 		for actor in characters:
-			if _are_bento_effects_active(actor, time):
+			if actor["alive"]:
 				actor["attack_speed_bonus"] += 60.0
 		_log.append("[20.0s] Caramel Mille grants the whole team +60% attack speed.")
-	if team_effects["power_coffee"] and not team_effects["power_coffee_triggered"] and time >= 15.0:
+	if team_effects["power_coffee"] and not team_effects["power_coffee_triggered"] and time >= 15.0 and _has_active_team_aura_source(characters, &"power_coffee", time):
 		team_effects["power_coffee_triggered"] = true
 		for actor in characters:
-			if _are_bento_effects_active(actor, time):
+			if actor["alive"]:
 				actor["attack_speed_bonus"] += 5.0
 		_log.append("[15.0s] Power Coffee grants the whole team +5% attack speed.")
+
+func _has_active_team_aura_source(characters: Array[Dictionary], flag: StringName, time: float) -> bool:
+	for actor in characters:
+		if not bool(actor.get("alive", true)):
+			continue
+		if not _are_bento_effects_active(actor, time):
+			continue
+		if bool(actor.get("team_aura_flags", {}).get(flag, false)):
+			return true
+	return false
 
 func _process_monster_timed_effects(time: float, monster: Dictionary, characters: Array[Dictionary], _log: Array[String]) -> void:
 	if not bool(monster.get("alive", true)):
@@ -993,6 +1007,8 @@ func _process_character_attacks(time: float, characters: Array[Dictionary], mons
 			_log.append("[%.1fs] %s deals %.1f damage to %s." % [time, actor["name"], damage, monster["name"]])
 		if monster["current_hp"] <= 0.0:
 			_handle_monster_death(monster, _log, time)
+		if bento_active and int(actor.get("extra_damage_hits", 0)) > 0:
+			_process_extra_damage_hits(time, actor, characters, monster, int(actor.get("extra_damage_hits", 0)), _log)
 		if bento_active and actor["board_eval"].get("baguette", false):
 			actor["dynamic_execute_bonus"] += 2.0
 		var temporary_speed: float = _temporary_speed(actor) if bento_active else 0.0
@@ -1021,8 +1037,6 @@ func _calculate_actor_attack(actor: Dictionary, time: float, monster: Dictionary
 		var monster_hp_ratio: float = float(monster.get("current_hp", 1.0)) / maxf(float(monster.get("max_hp", 1.0)), 1.0)
 		if actor["board_eval"].get("flame_sausage", false) and monster_hp_ratio < 0.5:
 			speed_bonus += 8.0
-		if actor["board_eval"].get("honey_drink", false) and bool(actor["board_eval"].get("active_category_bonds", {}).get(&"drink", false)):
-			extra_enemy_slow += 5.0
 		if actor["board_eval"].get("parma_ham", false):
 			pass
 		if actor["board_eval"].get("monster_tartare", false):
@@ -1069,7 +1083,34 @@ func _process_monster_attack(time: float, monster: Dictionary, characters: Array
 		if int(monster["attack_count"]) % 3 == 0:
 			target["disable_until"] = maxf(float(target.get("disable_until", 0.0)), time + 3.0)
 			target["action_disable_until"] = maxf(float(target.get("action_disable_until", 0.0)), time + 3.0)
+	var honey_slow: float = _honey_drink_slow_amount(characters, time)
+	if honey_slow > 0.0:
+		_add_monster_attack_speed_slow(monster, honey_slow)
 	monster["next_attack_time"] = time + _effective_interval(monster["base_interval"], -monster["attack_speed_slow"])
+
+func _process_extra_damage_hits(time: float, actor: Dictionary, characters: Array[Dictionary], monster: Dictionary, hit_count: int, _log: Array[String]) -> void:
+	for _hit_index in hit_count:
+		if not bool(monster.get("alive", true)) or float(monster.get("current_hp", 0.0)) <= 0.0:
+			return
+		var extra_damage: float = _apply_monster_incoming_damage_modifiers(monster, 1.0)
+		monster["current_hp"] -= extra_damage
+		_handle_monster_hit_by_character(monster, actor, characters, extra_damage, time, _log)
+		_log.append("[%.1fs] %s deals %.1f damage to %s." % [time, actor["name"], extra_damage, monster["name"]])
+		if monster["current_hp"] <= 0.0:
+			_handle_monster_death(monster, _log, time)
+			return
+
+func _honey_drink_slow_amount(characters: Array[Dictionary], time: float) -> float:
+	var total: float = 0.0
+	for actor in characters:
+		if not bool(actor.get("alive", true)):
+			continue
+		if not _are_bento_effects_active(actor, time):
+			continue
+		var board_eval: Dictionary = actor.get("board_eval", {})
+		if bool(board_eval.get("honey_drink", false)) and bool(board_eval.get("active_category_bonds", {}).get(&"drink", false)):
+			total += 5.0
+	return total
 
 func _apply_monster_incoming_damage_modifiers(monster: Dictionary, damage: float) -> float:
 	var final_damage: float = damage
@@ -1151,7 +1192,7 @@ func _apply_damage_to_actor(actor: Dictionary, amount: float, _log: Array[String
 	actor["current_hp"] -= final_amount
 	_log.append("[%.1fs] %s deals %.1f damage to %s." % [time, source_name, final_amount, actor["name"]])
 	if actor["current_hp"] <= 0.0:
-		if actor["revive_pct"] > 0.0 and not actor["revived"]:
+		if actor["revive_pct"] > 0.0 and not actor["revived"] and _are_bento_effects_active(actor, time):
 			actor["revived"] = true
 			actor["current_hp"] = actor["max_hp"] * actor["revive_pct"]
 			_log.append("[%.1fs] %s revives with %.1f HP." % [time, actor["name"], actor["current_hp"]])

@@ -245,7 +245,14 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"matcha", "anchor": Vector2i(2, 1)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 4)))
 			honey_actor = _preview_actor(run_state)
-			_assert(is_equal_approx(float(honey_engine._calculate_actor_attack(honey_actor, 0.0, {"current_hp": 100.0, "max_hp": 100.0})["extra_enemy_slow"]), 5.0), "honey_drink should slow once the drink bond is active")
+			_assert(is_equal_approx(float(honey_engine._calculate_actor_attack(honey_actor, 0.0, {"current_hp": 100.0, "max_hp": 100.0})["extra_enemy_slow"]), 0.0), "honey_drink should not slow on the hero attack")
+			var honey_characters: Array[Dictionary] = honey_engine._build_characters(run_state)
+			var honey_effects: Dictionary = honey_engine._build_team_effects(honey_characters)
+			var honey_monster: Dictionary = honey_engine._build_monster(run_state.get_monster_definition(&"water_giant"))
+			honey_monster["next_attack_time"] = 0.0
+			var honey_log: Array[String] = []
+			honey_engine._process_monster_attack(0.0, honey_monster, honey_characters, honey_effects, honey_log)
+			_assert(is_equal_approx(float(honey_monster.get("attack_speed_slow", 0.0)), 5.0), "honey_drink should slow after the enemy attacks while the drink bond is active")
 		&"godfather":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 5)))
 			_assert(float(_preview_actor(run_state)["economy_gold_bonus"]) > 0.0, "godfather should expose its adjacent-empty gold bonus")
@@ -342,6 +349,22 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_assert(not purchased_bento.is_empty(), "travel_bento should be purchasable through the market package path")
 			_assert(run_state.current_market_offers.size() == run_state.market_config.slot_count, "travel_bento purchase should leave a full refreshed market")
 			_assert(run_state.current_reroll_count == 2, "travel_bento free refresh should not reset the paid reroll count")
+			run_state.current_market_offers.clear()
+			run_state.current_market_offers.append({
+				"offer_id": &"travel_bento_bundle_offer",
+				"slot_index": 0,
+				"kind": &"food",
+				"definition_id": &"travel_bento",
+				"quantity": 3,
+				"rarity": &"rare",
+				"discount": 1.0,
+				"price": 1,
+			})
+			run_state.free_food_purchase_count = 0
+			run_state.current_gold = 30
+			var purchased_bento_bundle: Array[Dictionary] = run_state.purchase_market_offer_package(&"travel_bento_bundle_offer")
+			_assert(purchased_bento_bundle.size() == 3, "travel_bento bundled purchases should still grant all package copies")
+			_assert(run_state.free_food_purchase_count == 1, "travel_bento package side effects should trigger once per purchased package")
 		&"mixed_feast":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
@@ -373,7 +396,13 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 3.0, "wasabi should add three extra damage")
 		&"soy_sauce":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 4)))
-			_assert(float(_preview_actor(run_state)["bonus_damage"]) > 1.0, "soy_sauce should gain bonus damage from adjacent empty cells")
+			_assert(int(_preview_actor(run_state).get("extra_damage_hits", 0)) > 0, "soy_sauce should gain separate extra damage hits from adjacent empty cells")
+			var soy_engine: CombatEngine = CombatEngine.new()
+			var soy_characters: Array[Dictionary] = soy_engine._build_characters(run_state)
+			var soy_monster: Dictionary = soy_engine._build_monster(run_state.get_monster_definition(&"nc2_auto_cooker"))
+			soy_characters[0]["next_attack_time"] = 0.0
+			soy_engine._process_character_attacks(0.0, soy_characters, soy_monster, {}, [])
+			_assert(int(soy_monster.get("received_hit_count", 0)) > 1, "soy_sauce extra damage should count as separate attack hits")
 		&"cilantro":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 3)))
 			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 18.0, "cilantro should start at +9 bonus damage when not adjacent to food")
@@ -395,6 +424,13 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 		&"sage_ashes":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 3)))
 			_assert(float(_preview_actor(run_state)["revive_pct"]) == 0.3, "sage_ashes should grant 30% revive")
+			var sage_engine: CombatEngine = CombatEngine.new()
+			var sage_actor: Dictionary = _preview_actor(run_state)
+			sage_actor["disable_until"] = 5.0
+			sage_actor["current_hp"] = 1.0
+			var sage_log: Array[String] = []
+			sage_engine._apply_damage_to_actor(sage_actor, 99.0, sage_log, 0.0, "test")
+			_assert(not bool(sage_actor.get("alive", true)) and is_equal_approx(float(sage_actor.get("current_hp", 0.0)), 0.0), "sage_ashes should not revive while bento effects are disabled")
 		&"forbidden_herb":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 4)))
 			_assert(float(_preview_actor(run_state)["forbidden_attack_reduction"]) == 0.05, "forbidden_herb should reduce enemy attack by 5% on hit")
@@ -456,6 +492,16 @@ func _run_runtime_balance_fix_cases(run_state: Node) -> void:
 	_assert(is_equal_approx(float(soda_monster["next_attack_time"]), engine._effective_interval(float(soda_monster["base_interval"]), -25.0)), "soda opening slow should delay the monster's first attack")
 	engine._expire_monster_opening_slow(10.0, soda_monster)
 	_assert(is_equal_approx(float(soda_monster["attack_speed_slow"]), 0.0), "soda opening slow should expire after 10 seconds")
+	soda_characters[0]["disable_until"] = 3.0
+	var disabled_soda_effects: Dictionary = engine._build_team_effects(soda_characters)
+	_assert(is_equal_approx(float(disabled_soda_effects.get("opening_enemy_attack_slow", 0.0)), 0.0), "disabled bento effects should not contribute opening team slows")
+
+	_reset_board(run_state, [{"id": &"monster_tartare", "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 4)))
+	var disabled_tartare_characters: Array[Dictionary] = engine._build_characters(run_state)
+	disabled_tartare_characters[0]["disable_until"] = 3.0
+	var tartare_hp_before: float = float(disabled_tartare_characters[0].get("current_hp", 0.0))
+	engine._apply_character_opening_effects(disabled_tartare_characters, {}, log)
+	_assert(is_equal_approx(float(disabled_tartare_characters[0].get("current_hp", 0.0)), tartare_hp_before), "monster_tartare opening self-damage should not trigger while bento effects are disabled")
 
 	_reset_board(run_state, [{"id": &"cellar_vintage", "anchor": Vector2i(1, 1), "reroll_bonus_count": 3}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 5)))
 	var cellar_runtime_characters: Array[Dictionary] = engine._build_characters(run_state)
