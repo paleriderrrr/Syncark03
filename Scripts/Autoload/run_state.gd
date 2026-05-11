@@ -755,18 +755,22 @@ func select_inventory_item(instance_id: StringName) -> void:
 			return
 
 func pick_inventory_instance(group_key: StringName) -> Dictionary:
+	var selected_inventory_item: Dictionary = {}
 	for item in shared_inventory:
 		if item.get("definition_id", &"") == group_key:
-			selected_item = {
-				"source": &"inventory",
-				"instance_id": item["instance_id"],
-				"rotation": int(item.get("rotation", 0)),
-				"drag_session": false,
-			}
-			selected_item_changed.emit()
-			state_changed.emit()
-			return selected_item.duplicate(true)
-	return {}
+			if selected_inventory_item.is_empty() or int(item.get("reroll_bonus_count", 0)) > int(selected_inventory_item.get("reroll_bonus_count", 0)):
+				selected_inventory_item = item
+	if selected_inventory_item.is_empty():
+		return {}
+	selected_item = {
+		"source": &"inventory",
+		"instance_id": selected_inventory_item["instance_id"],
+		"rotation": int(selected_inventory_item.get("rotation", 0)),
+		"drag_session": false,
+	}
+	selected_item_changed.emit()
+	state_changed.emit()
+	return selected_item.duplicate(true)
 
 func begin_inventory_drag(group_key: StringName) -> Dictionary:
 	var action: Dictionary = pick_inventory_instance(group_key)
@@ -1531,26 +1535,20 @@ func get_next_monster_summary() -> Dictionary:
 	}
 
 func get_synergy_summary(character_id: StringName) -> Dictionary:
-	var category_definition_sets: Dictionary = {}
-	for category_id in CATEGORY_ORDER:
-		category_definition_sets[category_id] = {}
-	var state: Dictionary = get_character_state(character_id)
-	for item in state.get("placed_foods", []):
-		var definition: FoodDefinition = get_food_definition(item["definition_id"])
-		for category_id in get_food_categories(definition):
-			var definition_set: Dictionary = category_definition_sets.get(category_id, {})
-			definition_set[definition.id] = true
-			category_definition_sets[category_id] = definition_set
+	var actor: Dictionary = CombatEngine.preview_character_actor(self, character_id)
+	var board_eval: Dictionary = actor.get("board_eval", {}) if not actor.is_empty() else {}
+	var category_layers: Dictionary = board_eval.get("category_layers", {})
+	var active_bonds: Dictionary = board_eval.get("active_category_bonds", {})
 	var entries: Array[Dictionary] = []
 	for category_id in CATEGORY_ORDER:
-		var count: int = int(category_definition_sets.get(category_id, {}).size())
+		var count: int = int(category_layers.get(category_id, 0))
 		entries.append({
 			"category_id": category_id,
 			"category_name": CATEGORY_DISPLAY_NAMES.get(category_id, String(category_id)),
 			"synergy_name": CATEGORY_SYNERGY_NAMES.get(category_id, ""),
 			"effect_text": CATEGORY_SYNERGY_EFFECTS.get(category_id, ""),
 			"count": count,
-			"active": count >= 3,
+			"active": bool(active_bonds.get(category_id, false)),
 		})
 	return {
 		"character_id": character_id,
@@ -1687,6 +1685,7 @@ func _apply_battle_victory(report: Dictionary) -> void:
 	_apply_victory_character_recovery(report)
 	for character_id in character_states.keys():
 		character_states[character_id]["placed_foods"].clear()
+	pre_battle_snapshot.clear()
 	if current_route_index >= stage_flow_config.route_nodes.size() - 1:
 		run_finished = true
 	else:

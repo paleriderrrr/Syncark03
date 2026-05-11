@@ -531,8 +531,8 @@ func _remove_cell(cells: Array[Vector2i], target: Vector2i) -> void:
 
 func _position_to_cell(pointer_position: Vector2) -> Vector2i:
 	return Vector2i(
-		clampi(int(pointer_position.x / cell_pixel_size), 0, GRID_WIDTH - 1),
-		clampi(int(pointer_position.y / cell_pixel_size), 0, GRID_HEIGHT - 1)
+		floori(pointer_position.x / cell_pixel_size),
+		floori(pointer_position.y / cell_pixel_size)
 	)
 
 func _is_cell_in_bounds(cell: Vector2i) -> bool:

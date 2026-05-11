@@ -205,7 +205,7 @@ rarity = &"common"
 gold_value = 2
 shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1)])
 attack_bonus = 1.5
-passive_text = "售出时额外获得1金币。"
+passive_text = "放在饭盒中时获得1金币。"
 
 [sub_resource type="Resource" id="Food_chicken_steak"]
 script = ExtResource("2_definition")

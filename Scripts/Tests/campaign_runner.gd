@@ -31,6 +31,19 @@ func _run() -> void:
 	_assert(absf(float(run_state.get_character_state(&"warrior").get("hp_ratio", 0.0)) - 0.75) < 0.001, "Winning battles should restore 25% max HP to surviving characters")
 	var warrior_health: Dictionary = run_state.get_character_health_display(&"warrior")
 	_assert(int(warrior_health.get("current_hp", 0)) == 135, "Health display should reflect post-victory healing for surviving characters")
+	run_state.prepare_battle()
+	_assert(not run_state.pre_battle_snapshot.is_empty(), "Preparing battle should capture a restorable snapshot")
+	run_state.apply_battle_report({
+		"result": "win",
+		"bonus_gold": 0,
+		"log": PackedStringArray(),
+		"characters": [
+			{"id": &"warrior", "current_hp": 90.0, "max_hp": 180.0, "alive": true},
+			{"id": &"hunter", "current_hp": 45.0, "max_hp": 90.0, "alive": true},
+			{"id": &"mage", "current_hp": 35.0, "max_hp": 70.0, "alive": true},
+		],
+	})
+	_assert(run_state.pre_battle_snapshot.is_empty(), "Winning a battle should clear the pre-battle restore snapshot")
 	run_state.start_new_run()
 	await process_frame
 

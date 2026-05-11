@@ -151,6 +151,14 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	if drop_forward_target != null and drop_forward_target.has_method("handle_forwarded_drop"):
 		drop_forward_target.call("handle_forwarded_drop", data)
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAG_END:
+		var run_state: Node = get_node_or_null("/root/RunState")
+		if run_state != null and not run_state.selected_item.is_empty() and bool(run_state.selected_item.get("drag_session", false)):
+			run_state.selected_item["drag_session"] = false
+			run_state.selected_item_changed.emit()
+			run_state.state_changed.emit()
+
 func _ui_sfx() -> Node:
 	return get_node("/root/UiSfxPlayer")
 

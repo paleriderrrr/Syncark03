@@ -10,20 +10,20 @@ const GRID_WIDTH := 8
 const GRID_HEIGHT := 6
 const CATEGORY_ORDER: Array[StringName] = [&"fruit", &"dessert", &"meat", &"drink", &"staple", &"spice"]
 const CATEGORY_DISPLAY_NAMES := {
-	&"fruit": "Fruit",
-	&"dessert": "Dessert",
-	&"meat": "Meat",
-	&"drink": "Drink",
-	&"staple": "Staple",
-	&"spice": "Spice",
+	&"fruit": "蔬果",
+	&"dessert": "甜品",
+	&"meat": "肉类",
+	&"drink": "饮品",
+	&"staple": "主食",
+	&"spice": "香料",
 }
 const CATEGORY_SYNERGY_NAMES := {
-	&"fruit": "Retaliate",
-	&"dessert": "Recovery",
-	&"meat": "Bloodrage",
-	&"drink": "Freeze",
-	&"staple": "Execute",
-	&"spice": "Bonus Damage",
+	&"fruit": "反伤",
+	&"dessert": "恢复",
+	&"meat": "血怒",
+	&"drink": "冻结",
+	&"staple": "处决",
+	&"spice": "附伤",
 }
 
 var character_roster: CharacterRoster

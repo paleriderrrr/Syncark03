@@ -61,6 +61,17 @@ func _run() -> void:
 	_assert(count_label.text == "x7", "Inventory card should still show count badge")
 	_assert(not category_badge.visible, "Category badge should hide for non-food cards")
 
+	var run_state: Node = root.get_node_or_null("/root/RunState")
+	_assert(run_state != null, "RunState autoload should exist for drag cleanup")
+	if run_state != null:
+		run_state.selected_item = {
+			"source": &"inventory",
+			"instance_id": &"drag_cleanup",
+			"drag_session": true,
+		}
+		card._notification(Control.NOTIFICATION_DRAG_END)
+		_assert(not bool(run_state.selected_item.get("drag_session", false)), "Card drag end should clear stale selected-item drag session state")
+
 	card.queue_free()
 	if _failures.is_empty():
 		print("ITEM_ICON_CARD_TEST_PASS")

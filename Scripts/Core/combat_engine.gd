@@ -212,12 +212,14 @@ func _build_characters(run_state: Object, party_order: Array[StringName] = []) -
 		if definition == null:
 			continue
 		var board_state: Dictionary = run_state.get_character_state(definition.id)
+		var hp_ratio: float = clampf(float(board_state.get("hp_ratio", 1.0)), 0.0, 1.0)
 		var evaluation: Dictionary = _evaluate_character_board(run_state, definition, board_state)
 		var actor: Dictionary = {
 			"id": definition.id,
 			"name": definition.display_name,
 			"max_hp": float(definition.base_hp + evaluation["max_hp_bonus"]),
-			"current_hp": float(definition.base_hp + evaluation["max_hp_bonus"]) * clampf(float(board_state.get("hp_ratio", 1.0)), 0.0, 1.0),
+			"current_hp": float(definition.base_hp + evaluation["max_hp_bonus"]) * hp_ratio,
+			"_hp_ratio": hp_ratio,
 			"base_hp": float(definition.base_hp),
 			"base_attack": float(definition.base_attack),
 			"attack_bonus": float(evaluation["attack_bonus"]),
@@ -237,6 +239,7 @@ func _build_characters(run_state: Object, party_order: Array[StringName] = []) -
 			"revive_pct": float(evaluation["revive_pct"]),
 			"revived": false,
 			"disable_until": 0.0,
+			"action_disable_until": 0.0,
 			"next_attack_time": float(definition.attack_interval),
 			"temporary_speed_buffs": [],
 			"team_aura_flags": evaluation["team_aura_flags"],
@@ -263,6 +266,17 @@ func _build_characters(run_state: Object, party_order: Array[StringName] = []) -
 		if actor["current_hp"] > actor["max_hp"]:
 			actor["current_hp"] = actor["max_hp"]
 		result.append(actor)
+	var team_hp_bonus: float = 0.0
+	var team_attack_bonus: float = 0.0
+	for actor in result:
+		var flags: Dictionary = actor.get("team_aura_flags", {})
+		team_hp_bonus += float(flags.get("dragon_stove_hp_bonus", 0.0))
+		team_attack_bonus += float(flags.get("dragon_stove_attack_bonus", 0.0))
+	if team_hp_bonus > 0.0 or team_attack_bonus > 0.0:
+		for actor in result:
+			actor["max_hp"] = float(actor["max_hp"]) + team_hp_bonus
+			actor["current_hp"] = float(actor["max_hp"]) * float(actor.get("_hp_ratio", 1.0))
+			actor["attack_bonus"] = float(actor["attack_bonus"]) + team_attack_bonus
 	return result
 
 func _resolve_party_order(run_state: Object, requested_order: Array[StringName]) -> Array[StringName]:
@@ -348,6 +362,7 @@ func _build_monster(definition: MonsterDefinition, target_order: Array[StringNam
 		"skip_next_attack": false,
 		"next_heal_lock_tick": 5.0,
 		"target_order": resolved_target_order,
+		"target_rule": definition.target_rule,
 		"crumbs": 3 if definition.id == &"bread_knight" else 0,
 		"half_hp_burst_used": false,
 		"received_hit_count": 0,
@@ -380,6 +395,10 @@ func _evaluate_character_board(run_state: Object, definition: CharacterDefinitio
 		"pudding_heal_interval": 0.0,
 		"pudding_heal_until": 0.0,
 		"adjacent_categories": {},
+		"category_bonus_layers": {},
+		"applied_category_bonus_layers": {},
+		"category_layers": {},
+		"active_category_bonds": {},
 		"team_aura_flags": {},
 	}
 
@@ -412,6 +431,7 @@ func _evaluate_character_board(run_state: Object, definition: CharacterDefinitio
 		result["execute_threshold"] += food.execute_threshold_percent
 		_apply_food_passive(run_state, food, item, placed_foods, board_state, result, unique_categories)
 
+	_apply_category_bonus_layers_to_counts(result, category_distinct_count, category_cell_count)
 	for item_variant in placed_foods:
 		var item: Dictionary = item_variant
 		if disabled_foods.has(item["instance_id"]):
@@ -419,9 +439,13 @@ func _evaluate_character_board(run_state: Object, definition: CharacterDefinitio
 		var definition_post: FoodDefinition = run_state.get_food_definition(item["definition_id"])
 		_apply_food_post_passive(run_state, definition_post, item, placed_foods, board_state, result, category_distinct_count, unique_categories)
 
+	_apply_category_bonus_layers_to_counts(result, category_distinct_count, category_cell_count)
+	for category in category_distinct_count.keys():
+		result["category_layers"][category] = int(category_distinct_count[category])
 	var active_bonds: int = 0
 	for category in category_distinct_count.keys():
 		if int(category_distinct_count[category]) >= 3:
+			result["active_category_bonds"][category] = true
 			active_bonds += 1
 			var total_cells: int = int(category_cell_count[category])
 			match category:
@@ -464,6 +488,27 @@ func _compute_durian_disabled_items(placed_foods: Array) -> Dictionary:
 					disabled[item["instance_id"]] = true
 	return disabled
 
+func _add_category_bonus_layers(result: Dictionary, category: StringName, amount: int) -> void:
+	if amount <= 0:
+		return
+	var layers: Dictionary = result.get("category_bonus_layers", {})
+	layers[category] = int(layers.get(category, 0)) + amount
+	result["category_bonus_layers"] = layers
+
+func _apply_category_bonus_layers_to_counts(result: Dictionary, category_distinct_count: Dictionary, category_cell_count: Dictionary) -> void:
+	var layers: Dictionary = result.get("category_bonus_layers", {})
+	var applied: Dictionary = result.get("applied_category_bonus_layers", {})
+	for category in layers.keys():
+		var total: int = int(layers[category])
+		var already_applied: int = int(applied.get(category, 0))
+		var delta: int = total - already_applied
+		if delta <= 0:
+			continue
+		category_distinct_count[category] = int(category_distinct_count.get(category, 0)) + delta
+		category_cell_count[category] = int(category_cell_count.get(category, 0)) + delta
+		applied[category] = total
+	result["applied_category_bonus_layers"] = applied
+
 func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictionary, placed_foods: Array, board_state: Dictionary, result: Dictionary, unique_categories: Dictionary) -> void:
 	var adj: Dictionary = _adjacent_food_categories(item, placed_foods, run_state)
 	result["adjacent_categories"][food.id] = adj
@@ -483,6 +528,8 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 			pass
 		&"demon_durian":
 			result["fruit_retaliate_multiplier"] *= 2.0
+		&"bacon_strip":
+			result["economy_gold_bonus"] += 1.0
 		&"tree_fruit":
 			result["team_aura_flags"]["tree_heal_every"] = true
 		&"pudding_cup":
@@ -511,14 +558,15 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 			result["team_aura_flags"]["chicken_steak"] = true
 			result["chicken_steak"] = true
 		&"sausage_skewer":
-			result["extra_meat_bonus"] += float(_count_adjacent_items_in_categories(item, placed_foods, run_state, [&"staple"], true))
+			_add_category_bonus_layers(result, &"meat", _count_adjacent_items_in_categories(item, placed_foods, run_state, [&"staple"], true))
 		&"lamb_rib":
-			result["extra_meat_bonus"] += 0.5
+			pass
 		&"tomahawk_steak":
-			if adj.has(&"spice"):
+			if _count_adjacent_items_in_categories(item, placed_foods, run_state, [&"spice"], true) > 0:
 				result["crit_chance"] = maxf(result["crit_chance"], 0.25)
 		&"flame_sausage":
 			result["team_aura_flags"]["flame_sausage"] = true
+			result["flame_sausage"] = true
 		&"parma_ham":
 			pass
 		&"dragon_tail":
@@ -534,6 +582,7 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 				result["attack_speed_bonus"] += 10.0
 		&"honey_drink":
 			result["team_aura_flags"]["honey_drink"] = true
+			result["honey_drink"] = true
 		&"frozen_mint":
 			if adj.has(&"staple"):
 				result["frozen_extra_slow_chance"] = 0.2
@@ -634,13 +683,16 @@ func _apply_food_post_passive(run_state: Object, food: FoodDefinition, item: Dic
 		&"parma_ham":
 			if int(category_distinct_count.get(&"meat", 0)) >= 3:
 				result["max_hp_bonus"] += 24.0
+		&"lamb_rib":
+			if int(category_distinct_count.get(&"meat", 0)) >= 3:
+				result["extra_meat_bonus"] += 0.5
 		&"amber_tea":
 			result["amber_cancel_chance"] += 0.05 * _count_adjacent_items_in_categories(item, placed_foods, run_state, [&"drink"], true)
 		&"dragon_stove":
 			var category_count: int = unique_categories.size()
-			result["max_hp_bonus"] += 4.0 * category_count
-			result["attack_bonus"] += 0.75 * category_count
-			result["execute_threshold"] += 2.0 * category_count
+			result["team_aura_flags"]["dragon_stove_hp_bonus"] = float(result["team_aura_flags"].get("dragon_stove_hp_bonus", 0.0)) + 4.0 * category_count
+			result["team_aura_flags"]["dragon_stove_attack_bonus"] = float(result["team_aura_flags"].get("dragon_stove_attack_bonus", 0.0)) + 0.75 * category_count
+			_add_category_bonus_layers(result, &"staple", category_count * 2)
 		&"godfather":
 			result["economy_gold_bonus"] += 1.0 * _count_adjacent_empty_cells_orthogonal(item, board_state)
 		&"soy_sauce":
@@ -806,21 +858,25 @@ func _process_timed_team_effects(time: float, characters: Array[Dictionary], tea
 		if team_effects["dessert_multiplier_after_20"] and time >= 20.0:
 			heal_amount *= 1.5
 		for actor in characters:
-			_heal_actor(actor, heal_amount, _log, time, bool(team_effects["fairy_speed_on_heal"]))
+			if _are_bento_effects_active(actor, time):
+				_heal_actor(actor, heal_amount, _log, time, bool(team_effects["fairy_speed_on_heal"]))
 		team_effects["next_dessert_pulse"] += team_effects["dessert_pulse_interval"]
 	if team_effects["tree_heal_every"] and time >= team_effects["next_tree_heal"]:
 		for actor in characters:
-			_heal_actor(actor, 10.0, _log, time, bool(team_effects["fairy_speed_on_heal"]))
+			if _are_bento_effects_active(actor, time):
+				_heal_actor(actor, 10.0, _log, time, bool(team_effects["fairy_speed_on_heal"]))
 		team_effects["next_tree_heal"] += 15.0
 	if team_effects["caramel_mille"] and not team_effects["caramel_triggered"] and time >= 20.0:
 		team_effects["caramel_triggered"] = true
 		for actor in characters:
-			actor["attack_speed_bonus"] += 60.0
+			if _are_bento_effects_active(actor, time):
+				actor["attack_speed_bonus"] += 60.0
 		_log.append("[20.0s] Caramel Mille grants the whole team +60% attack speed.")
 	if team_effects["power_coffee"] and not team_effects["power_coffee_triggered"] and time >= 15.0:
 		team_effects["power_coffee_triggered"] = true
 		for actor in characters:
-			actor["attack_speed_bonus"] += 5.0
+			if _are_bento_effects_active(actor, time):
+				actor["attack_speed_bonus"] += 5.0
 		_log.append("[15.0s] Power Coffee grants the whole team +5% attack speed.")
 
 func _process_monster_timed_effects(time: float, monster: Dictionary, characters: Array[Dictionary], _log: Array[String]) -> void:
@@ -863,7 +919,7 @@ func _process_character_status_effects(time: float, characters: Array[Dictionary
 func _apply_regeneration(delta: float, time: float, characters: Array[Dictionary], team_effects: Dictionary, _log: Array[String]) -> void:
 	for actor_variant in characters:
 		var actor: Dictionary = actor_variant
-		if actor["alive"] and actor["heal_per_second"] > 0.0:
+		if actor["alive"] and actor["heal_per_second"] > 0.0 and _are_bento_effects_active(actor, time):
 			_heal_actor(actor, actor["heal_per_second"] * delta, _log, time, bool(team_effects.get("fairy_speed_on_heal", false)))
 
 func _apply_attrition(delta: float, time: float, monster: Dictionary, characters: Array[Dictionary], _log: Array[String]) -> void:
@@ -908,38 +964,42 @@ func _process_character_attacks(time: float, characters: Array[Dictionary], mons
 	for actor in characters:
 		if not actor["alive"] or not bool(monster.get("alive", true)) or monster["current_hp"] <= 0.0:
 			continue
+		if time < float(actor.get("action_disable_until", 0.0)):
+			continue
 		if time + 0.001 < actor["next_attack_time"]:
 			continue
-		var attack_data: Dictionary = _calculate_actor_attack(actor, time)
+		var bento_active: bool = _are_bento_effects_active(actor, time)
+		var attack_data: Dictionary = _calculate_actor_attack(actor, time, monster)
 		var damage: float = float(attack_data["damage"])
 		var speed_bonus_pct: float = float(attack_data["speed_bonus_pct"])
-		if randf() < actor["crit_chance"]:
+		if bento_active and randf() < actor["crit_chance"]:
 			damage *= actor["crit_multiplier"]
 			_log.append("[%.1fs] %s lands a critical hit for %.1f." % [time, actor["name"], damage])
 		damage = _apply_monster_incoming_damage_modifiers(monster, damage)
 		monster["current_hp"] -= damage
 		_handle_monster_hit_by_character(monster, actor, characters, damage, time, _log)
-		if actor["forbidden_attack_reduction"] > 0.0 and damage > 0.0:
+		if bento_active and actor["forbidden_attack_reduction"] > 0.0 and damage > 0.0:
 			monster["attack_multiplier"] *= maxf(0.1, 1.0 - actor["forbidden_attack_reduction"])
-		if actor["amber_cancel_chance"] > 0.0 and randf() < actor["amber_cancel_chance"]:
+		if bento_active and damage > 0.0 and actor["amber_cancel_chance"] > 0.0 and randf() < actor["amber_cancel_chance"]:
 			monster["skip_next_attack"] = true
-		if actor["frozen_extra_slow_chance"] > 0.0 and randf() < actor["frozen_extra_slow_chance"]:
+		if bento_active and actor["frozen_extra_slow_chance"] > 0.0 and randf() < actor["frozen_extra_slow_chance"]:
 			_add_monster_attack_speed_slow(monster, 5.0)
 		if attack_data["extra_enemy_slow"] > 0.0:
 			_add_monster_attack_speed_slow(monster, attack_data["extra_enemy_slow"])
-		if actor["execute_threshold"] + actor["dynamic_execute_bonus"] > 0.0 and monster["current_hp"] / monster["max_hp"] <= (actor["execute_threshold"] + actor["dynamic_execute_bonus"]) / 100.0:
+		if bento_active and actor["execute_threshold"] + actor["dynamic_execute_bonus"] > 0.0 and monster["current_hp"] / monster["max_hp"] <= (actor["execute_threshold"] + actor["dynamic_execute_bonus"]) / 100.0:
 			monster["current_hp"] = 0.0
 			_log.append("[%.1fs] %s executes %s." % [time, actor["name"], monster["name"]])
 		else:
 			_log.append("[%.1fs] %s deals %.1f damage to %s." % [time, actor["name"], damage, monster["name"]])
 		if monster["current_hp"] <= 0.0:
 			_handle_monster_death(monster, _log, time)
-		if actor["board_eval"].get("baguette", false):
+		if bento_active and actor["board_eval"].get("baguette", false):
 			actor["dynamic_execute_bonus"] += 2.0
-		actor["next_attack_time"] = time + _effective_interval(actor["base_interval"], speed_bonus_pct + _temporary_speed(actor))
+		var temporary_speed: float = _temporary_speed(actor) if bento_active else 0.0
+		actor["next_attack_time"] = time + _effective_interval(actor["base_interval"], speed_bonus_pct + temporary_speed)
 
-func _calculate_actor_attack(actor: Dictionary, time: float) -> Dictionary:
-	var bonuses_active: bool = time >= float(actor["disable_until"])
+func _calculate_actor_attack(actor: Dictionary, time: float, monster: Dictionary = {}) -> Dictionary:
+	var bonuses_active: bool = _are_bento_effects_active(actor, time)
 	var attack: float = float(actor["base_attack"])
 	var bonus_damage: float = 0.0
 	var speed_bonus: float = 0.0
@@ -958,9 +1018,10 @@ func _calculate_actor_attack(actor: Dictionary, time: float) -> Dictionary:
 			attack *= 1.0 + bonus_pct / 100.0
 		if actor["board_eval"].get("chicken_steak", false) and hp_ratio < 0.5:
 			attack += 3.0
-		if actor["board_eval"].get("flame_sausage", false):
+		var monster_hp_ratio: float = float(monster.get("current_hp", 1.0)) / maxf(float(monster.get("max_hp", 1.0)), 1.0)
+		if actor["board_eval"].get("flame_sausage", false) and monster_hp_ratio < 0.5:
 			speed_bonus += 8.0
-		if actor["board_eval"].get("honey_drink", false):
+		if actor["board_eval"].get("honey_drink", false) and bool(actor["board_eval"].get("active_category_bonds", {}).get(&"drink", false)):
 			extra_enemy_slow += 5.0
 		if actor["board_eval"].get("parma_ham", false):
 			pass
@@ -984,7 +1045,7 @@ func _process_monster_attack(time: float, monster: Dictionary, characters: Array
 		monster["next_attack_time"] = time + _effective_interval(monster["base_interval"], -monster["attack_speed_slow"])
 		_log.append("[%.1fs] %s's next attack is cancelled." % [time, monster["name"]])
 		return
-	var target: Dictionary = _select_monster_target(characters, monster["target_order"])
+	var target: Dictionary = _select_monster_target(monster, characters)
 	if target.is_empty():
 		return
 	var damage: float = float(monster["base_attack"]) * float(monster["attack_multiplier"])
@@ -994,9 +1055,6 @@ func _process_monster_attack(time: float, monster: Dictionary, characters: Array
 			damage += 3.0
 	if monster["id"] == &"spice_wizard" and time < float(target.get("healing_reduction_until", 0.0)):
 		damage += float(target["current_hp"]) * 0.01
-	if target["first_hit_reduction"] > 0.0 and not target["first_hit_spent"]:
-		damage *= (1.0 - target["first_hit_reduction"])
-		target["first_hit_spent"] = true
 	var source_name: String = String(monster["name"])
 	_apply_damage_to_actor(target, damage, _log, time, source_name)
 	if target["alive"] and target["retaliate_damage"] > 0.0 and time >= target["disable_until"]:
@@ -1010,6 +1068,7 @@ func _process_monster_attack(time: float, monster: Dictionary, characters: Array
 		monster["attack_count"] = int(monster.get("attack_count", 0)) + 1
 		if int(monster["attack_count"]) % 3 == 0:
 			target["disable_until"] = maxf(float(target.get("disable_until", 0.0)), time + 3.0)
+			target["action_disable_until"] = maxf(float(target.get("action_disable_until", 0.0)), time + 3.0)
 	monster["next_attack_time"] = time + _effective_interval(monster["base_interval"], -monster["attack_speed_slow"])
 
 func _apply_monster_incoming_damage_modifiers(monster: Dictionary, damage: float) -> float:
@@ -1061,7 +1120,19 @@ func _handle_monster_death(monster: Dictionary, _log: Array[String], time: float
 	monster["current_hp"] = 0.0
 	_log.append("[%.1fs] %s is defeated." % [time, monster["name"]])
 
-func _select_monster_target(characters: Array[Dictionary], order: Array) -> Dictionary:
+func _are_bento_effects_active(actor: Dictionary, time: float) -> bool:
+	return time >= float(actor.get("disable_until", 0.0))
+
+func _select_monster_target(monster: Dictionary, characters: Array[Dictionary]) -> Dictionary:
+	if monster.get("target_rule", &"default_frontline") == &"random_role":
+		var living: Array[Dictionary] = []
+		for actor in characters:
+			if actor["alive"]:
+				living.append(actor)
+		if living.is_empty():
+			return {}
+		return living[randi() % living.size()]
+	var order: Array = monster.get("target_order", [])
 	for role_id in order:
 		for actor in characters:
 			if actor["id"] == role_id and actor["alive"]:
@@ -1074,6 +1145,9 @@ func _apply_damage_to_actor(actor: Dictionary, amount: float, _log: Array[String
 	var final_amount: float = amount
 	if float(actor.get("armor_break_stacks", 0)) > 0:
 		final_amount *= 1.0 + 0.1 * float(actor["armor_break_stacks"])
+	if final_amount > 0.0 and float(actor.get("first_hit_reduction", 0.0)) > 0.0 and not bool(actor.get("first_hit_spent", false)) and _are_bento_effects_active(actor, time):
+		final_amount *= (1.0 - float(actor["first_hit_reduction"]))
+		actor["first_hit_spent"] = true
 	actor["current_hp"] -= final_amount
 	_log.append("[%.1fs] %s deals %.1f damage to %s." % [time, source_name, final_amount, actor["name"]])
 	if actor["current_hp"] <= 0.0:

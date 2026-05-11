@@ -56,6 +56,16 @@ func _run() -> void:
 
 	run_state.get_selected_character_state()["placed_foods"].clear()
 	run_state.shared_inventory.clear()
+	var low_stack_vintage: Dictionary = run_state.generate_item_instance(&"cellar_vintage")
+	low_stack_vintage["reroll_bonus_count"] = 0
+	var high_stack_vintage: Dictionary = run_state.generate_item_instance(&"cellar_vintage")
+	high_stack_vintage["reroll_bonus_count"] = 3
+	run_state.shared_inventory.append(low_stack_vintage)
+	run_state.shared_inventory.append(high_stack_vintage)
+	var picked_vintage: Dictionary = run_state.pick_inventory_instance(&"cellar_vintage")
+	_assert(picked_vintage.get("instance_id", &"") == high_stack_vintage["instance_id"], "Picking a grouped inventory food should choose the instance matching the displayed highest cellar stack")
+	run_state.clear_selection()
+	run_state.shared_inventory.clear()
 	run_state.shared_inventory.append(run_state.generate_item_instance(&"red_berry"))
 	var picked_inventory: Dictionary = run_state.pick_inventory_instance(&"red_berry")
 	_assert(not picked_inventory.is_empty(), "Picking one inventory instance should succeed")
@@ -246,6 +256,7 @@ func _run() -> void:
 	_assert(highlight_board._can_drop_data(Vector2(float(highlight_board.cell_pixel_size) * 1.0 + 1.0, float(highlight_board.cell_pixel_size) * 1.0 + 1.0), highlight_payload), "Board should accept the adjacent-highlight test placement")
 	var drag_highlights: Dictionary = highlight_board.debug_get_synergy_highlights()
 	_assert(drag_highlights.get("partner_cells", []).has(Vector2i(2, 1)), "Drag hover should visualize adjacent synergy partner cells before placement")
+	_assert(not highlight_board._is_cell_in_bounds(highlight_board._position_to_cell(Vector2(-4.0, -4.0))), "Board coordinate conversion should preserve out-of-bounds positions instead of clamping to an edge cell")
 	highlight_board.queue_free()
 
 	_finish()

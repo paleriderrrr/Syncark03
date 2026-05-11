@@ -34,6 +34,8 @@ func _validate_food_catalog(run_state: Node) -> void:
 		_assert(definition.gold_value > 0, "Food %s should have positive gold value" % String(definition.id))
 		if definition.id == &"godfather":
 			_assert(definition.passive_text.contains("相邻4格") and definition.passive_text.contains("额外+1金币"), "godfather description should clearly name the orthogonal bonus-gold rule")
+		if definition.id == &"bacon_strip":
+			_assert(definition.passive_text.contains("放在饭盒中") and definition.passive_text.contains("1金币"), "bacon_strip description should name the bento placement gold rule")
 		if definition.id == &"sausage_skewer":
 			_assert(definition.passive_text.contains("相邻8格") and definition.passive_text.contains("[主食]"), "sausage_skewer description should stay localized and name the 8-neighbor staple rule")
 
@@ -104,6 +106,14 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(8, 4)))
 			_assert(float(_preview_actor(run_state)["retaliate_damage"]) >= 2.0, "demon_durian should double fruit retaliation output")
 			_assert(is_equal_approx(float(_preview_actor(run_state)["retaliate_damage"]), 12.0), "demon_durian should double the active fruit bond retaliation after the bond value is calculated")
+			_reset_board(run_state, [
+				{"id": food_id, "anchor": Vector2i(0, 0)},
+				{"id": &"red_berry", "anchor": Vector2i(1, 0)},
+				{"id": &"lemon", "anchor": Vector2i(2, 0)},
+			], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 4)))
+			var durian_summary: Dictionary = run_state.get_synergy_summary(&"warrior")
+			var fruit_entry: Dictionary = _find_synergy_entry(durian_summary, &"fruit")
+			_assert(int(fruit_entry.get("count", 0)) == 1 and not bool(fruit_entry.get("active", false)), "synergy summary should ignore foods disabled by demon_durian")
 		&"tree_fruit":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 5)))
 			var tree_actor: Dictionary = _preview_actor(run_state)
@@ -154,7 +164,9 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("fairy_speed_on_heal", false)), "fairy_candy_castle should add speed on heal")
 		&"bacon_strip":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}])
-			_assert(_attack_bonus(_preview_actor(run_state)) == 1.5, "bacon_strip should grant +1.5 ATK")
+			var bacon_actor: Dictionary = _preview_actor(run_state)
+			_assert(_attack_bonus(bacon_actor) == 1.5, "bacon_strip should grant +1.5 ATK")
+			_assert(float(bacon_actor["economy_gold_bonus"]) == 1.0, "bacon_strip should grant +1 battle bonus gold while placed in a bento")
 		&"chicken_steak":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _full_grid_cells(), 0.4)
 			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("chicken_steak", false)), "chicken_steak should mark its low-HP attack trigger")
@@ -167,19 +179,32 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"mashed_potato", "anchor": Vector2i(1, 1)},
 				{"id": &"ramen", "anchor": Vector2i(1, 3)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 5)))
-			_assert(float(_preview_actor(run_state)["extra_meat_bonus"]) == 2.0, "sausage_skewer should add one meat bond value for each staple in its 8-neighbor area")
+			var sausage_summary: Dictionary = run_state.get_synergy_summary(&"warrior")
+			var meat_entry: Dictionary = _find_synergy_entry(sausage_summary, &"meat")
+			_assert(int(meat_entry.get("count", 0)) == 3 and bool(meat_entry.get("active", false)), "sausage_skewer should add visible meat bond layers for adjacent staples")
 		&"lamb_rib":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 3)))
-			_assert(float(_preview_actor(run_state)["extra_meat_bonus"]) == 0.5, "lamb_rib should add extra meat scaling")
+			_assert(float(_preview_actor(run_state)["extra_meat_bonus"]) == 0.0, "lamb_rib should not add extra meat scaling before the meat bond is active")
+			_reset_board(run_state, [
+				{"id": food_id, "anchor": Vector2i(0, 0)},
+				{"id": &"bacon_strip", "anchor": Vector2i(3, 0)},
+				{"id": &"chicken_steak", "anchor": Vector2i(4, 0)},
+			], _cells_in_rect(Vector2i(0, 0), Vector2i(6, 4)))
+			_assert(float(_preview_actor(run_state)["extra_meat_bonus"]) > 0.0, "lamb_rib should add extra meat scaling once the meat bond is active")
 		&"tomahawk_steak":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
-				{"id": &"sesame", "anchor": Vector2i(3, 0)},
+				{"id": &"sesame", "anchor": Vector2i(3, 2)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 4)))
-			_assert(float(_preview_actor(run_state)["crit_chance"]) == 0.25, "tomahawk_steak should gain 25% crit chance when adjacent to spice")
+			_assert(float(_preview_actor(run_state)["crit_chance"]) == 0.25, "tomahawk_steak should gain 25% crit chance from diagonal 8-neighbor spice")
 		&"flame_sausage":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _full_grid_cells(), 1.0)
-			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("flame_sausage", false)), "flame_sausage should register its enemy-low-HP speed trigger")
+			var flame_actor: Dictionary = _preview_actor(run_state)
+			var flame_engine: CombatEngine = CombatEngine.new()
+			var healthy_monster := {"current_hp": 100.0, "max_hp": 100.0}
+			var low_monster := {"current_hp": 49.0, "max_hp": 100.0}
+			_assert(is_equal_approx(float(flame_engine._calculate_actor_attack(flame_actor, 0.0, healthy_monster)["speed_bonus_pct"]), 0.0), "flame_sausage should not grant speed while the monster is above half HP")
+			_assert(is_equal_approx(float(flame_engine._calculate_actor_attack(flame_actor, 0.0, low_monster)["speed_bonus_pct"]), 8.0), "flame_sausage should grant speed below half monster HP")
 		&"parma_ham":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
@@ -211,7 +236,16 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_assert(float(_preview_actor(run_state)["attack_speed_bonus"]) == 20.0, "matcha should gain +10% speed when adjacent to dessert")
 		&"honey_drink":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 3)))
-			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("honey_drink", false)), "honey_drink should register its on-hit slow trigger")
+			var honey_actor: Dictionary = _preview_actor(run_state)
+			var honey_engine: CombatEngine = CombatEngine.new()
+			_assert(is_equal_approx(float(honey_engine._calculate_actor_attack(honey_actor, 0.0, {"current_hp": 100.0, "max_hp": 100.0})["extra_enemy_slow"]), 0.0), "honey_drink should not slow unless the drink bond is active")
+			_reset_board(run_state, [
+				{"id": food_id, "anchor": Vector2i(0, 0)},
+				{"id": &"iced_black_tea", "anchor": Vector2i(2, 0)},
+				{"id": &"matcha", "anchor": Vector2i(2, 1)},
+			], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 4)))
+			honey_actor = _preview_actor(run_state)
+			_assert(is_equal_approx(float(honey_engine._calculate_actor_attack(honey_actor, 0.0, {"current_hp": 100.0, "max_hp": 100.0})["extra_enemy_slow"]), 5.0), "honey_drink should slow once the drink bond is active")
 		&"godfather":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 5)))
 			_assert(float(_preview_actor(run_state)["economy_gold_bonus"]) > 0.0, "godfather should expose its adjacent-empty gold bonus")
@@ -231,6 +265,19 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"matcha", "anchor": Vector2i(3, 1)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(6, 3)))
 			_assert(float(_preview_actor(run_state)["amber_cancel_chance"]) == 0.1, "amber_tea should gain 5% cancel chance per adjacent drink")
+			var amber_actor: Dictionary = _preview_actor(run_state)
+			amber_actor["amber_cancel_chance"] = 1.0
+			amber_actor["next_attack_time"] = 0.0
+			var bread_monster := {
+				"id": &"bread_knight",
+				"name": "bread_knight",
+				"alive": true,
+				"current_hp": 100.0,
+				"max_hp": 100.0,
+				"crumbs": 1,
+			}
+			CombatEngine.new()._process_character_attacks(0.0, [amber_actor], bread_monster, {}, [])
+			_assert(not bool(bread_monster.get("skip_next_attack", false)), "amber_tea should not cancel attacks when damage is fully negated")
 		&"cellar_vintage":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 0), "reroll_bonus_count": 3}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 4)))
 			var cellar_actor: Dictionary = _preview_actor(run_state)
@@ -252,6 +299,12 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 		&"baguette":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 5)))
 			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("baguette", false)), "baguette should register its stacking staple trigger")
+			var baguette_actor: Dictionary = _preview_actor(run_state)
+			baguette_actor["disable_until"] = 5.0
+			baguette_actor["next_attack_time"] = 0.0
+			var baguette_monster := {"id": &"cream_overlord", "name": "monster", "alive": true, "current_hp": 100.0, "max_hp": 100.0}
+			CombatEngine.new()._process_character_attacks(0.0, [baguette_actor], baguette_monster, {}, [])
+			_assert(float(baguette_actor["dynamic_execute_bonus"]) == 0.0, "baguette should not stack while bento effects are disabled")
 		&"sandwich":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(1, 1)},
@@ -303,7 +356,9 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"bacon_strip", "anchor": Vector2i(5, 0)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(7, 4)))
 			var stove_actor: Dictionary = _preview_actor(run_state)
-			_assert(_hp_bonus(stove_actor) >= 20.0 and _attack_bonus(stove_actor) >= 3.75, "dragon_stove should scale with unique categories present")
+			_assert(_hp_bonus(stove_actor) >= 12.0 and _attack_bonus(stove_actor) >= 2.25, "dragon_stove should scale with unique categories present")
+			var stove_hunter: Dictionary = CombatEngine.preview_character_actor(run_state, &"hunter")
+			_assert(_hp_bonus(stove_hunter) >= 12.0 and _attack_bonus(stove_hunter) >= 2.25, "dragon_stove should grant its category stats to the whole team")
 		&"sesame":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}])
 			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 1.5, "sesame should grant +1.5 bonus damage")
@@ -477,6 +532,13 @@ func _find_report_actor(report: Dictionary, character_id: StringName) -> Diction
 		var actor: Dictionary = actor_variant
 		if actor.get("id", &"") == character_id:
 			return actor
+	return {}
+
+func _find_synergy_entry(summary: Dictionary, category_id: StringName) -> Dictionary:
+	for entry_variant in summary.get("entries", []):
+		var entry: Dictionary = entry_variant
+		if entry.get("category_id", &"") == category_id:
+			return entry
 	return {}
 
 func _hp_bonus(actor: Dictionary) -> float:

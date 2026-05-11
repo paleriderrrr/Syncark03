@@ -44,6 +44,8 @@ func _run_monster_cases(run_state: Node) -> void:
 	_test_cream_overlord_on_hit(engine)
 	_test_monster_death_stops_actions(engine)
 	_test_charging_beast_burst(engine)
+	_test_random_role_target_rule(run_state, engine)
+	_test_first_hit_reduction_applies_to_direct_damage(engine)
 	_test_water_giant_rules(engine)
 	_test_bread_knight_rules(engine)
 	_test_spice_wizard_rules(engine)
@@ -112,6 +114,19 @@ func _test_charging_beast_burst(engine: CombatEngine) -> void:
 			damaged_count += 1
 	_assert(damaged_count == 1, "charging_beast should burst one random role for 35 damage when dropping below 50% HP")
 	_assert(bool(monster.get("half_hp_burst_used", false)), "charging_beast should only trigger the half-HP burst once")
+
+func _test_random_role_target_rule(run_state: Node, engine: CombatEngine) -> void:
+	var monster: Dictionary = engine._build_monster(run_state.monster_lookup[&"charging_beast"])
+	_assert(monster.get("target_rule", &"") == &"random_role", "charging_beast should preserve its random-role target rule at runtime")
+
+func _test_first_hit_reduction_applies_to_direct_damage(engine: CombatEngine) -> void:
+	var target: Dictionary = _make_actor(&"warrior")
+	target["first_hit_reduction"] = 0.5
+	var before_hp: float = float(target["current_hp"])
+	var log: Array[String] = []
+	engine._apply_damage_to_actor(target, 10.0, log, 0.0, "Direct")
+	_assert(is_equal_approx(before_hp - float(target["current_hp"]), 5.0), "first-hit reduction should apply to direct monster damage sources")
+	_assert(bool(target["first_hit_spent"]), "direct damage should spend the first-hit reduction")
 
 func _test_water_giant_rules(engine: CombatEngine) -> void:
 	_assert(engine.has_method("_apply_monster_incoming_damage_modifiers"), "CombatEngine should expose _apply_monster_incoming_damage_modifiers for water_giant reduction")
@@ -186,6 +201,12 @@ func _test_boss_rules(engine: CombatEngine) -> void:
 	engine._process_monster_attack(10.0, monster, [boss_target], {}, attack_log)
 	engine._process_monster_attack(15.0, monster, [boss_target], {}, attack_log)
 	_assert(float(boss_target.get("disable_until", 0.0)) >= 18.0, "boss third attack should disable the target for 3 seconds")
+	var boss_target_hp: float = float(boss_target["current_hp"])
+	var target_monster: Dictionary = _make_monster_stub(&"cream_overlord", 300.0, 10.0, 1.6)
+	boss_target["next_attack_time"] = 16.0
+	engine._process_character_attacks(16.0, [boss_target], target_monster, {}, attack_log)
+	_assert(is_equal_approx(float(target_monster["current_hp"]), 300.0), "boss action disable should prevent the target from attacking")
+	_assert(is_equal_approx(float(boss_target["current_hp"]), boss_target_hp), "boss action disable should not damage the disabled actor during skipped attacks")
 
 func _make_actor(character_id: StringName) -> Dictionary:
 	return {
@@ -212,6 +233,7 @@ func _make_actor(character_id: StringName) -> Dictionary:
 		"revive_pct": 0.0,
 		"revived": false,
 		"disable_until": 0.0,
+		"action_disable_until": 0.0,
 		"next_attack_time": 2.0,
 		"temporary_speed_buffs": [],
 		"team_aura_flags": {},

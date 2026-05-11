@@ -15,6 +15,9 @@ func _run() -> void:
 	var lab: Node = scene.instantiate()
 	root.add_child(lab)
 	await process_frame
+	var lab_state := FoodEffectLabState.new()
+	_assert(lab_state.CATEGORY_DISPLAY_NAMES[&"fruit"] == "蔬果", "Food effect lab category labels should stay localized")
+	_assert(lab_state.CATEGORY_SYNERGY_NAMES[&"meat"] == "血怒", "Food effect lab synergy labels should stay localized")
 	_assert(lab.get_node_or_null("Margin/RootVBox/TopHBox/LeftPanel/LeftMargin/LeftVBox/FoodCatalogStrip") != null, "Food catalog strip should exist")
 	_assert(lab.get_node_or_null("Margin/RootVBox/TopHBox/CenterPanel/CenterMargin/CenterVBox/BoardCenter/BentoBoardView") != null, "Lab board should exist")
 	_assert(lab.get_node_or_null("Margin/RootVBox/TopHBox/RightPanel/RightMargin/RightVBox/ActualSummary") != null, "Actual summary should exist")
