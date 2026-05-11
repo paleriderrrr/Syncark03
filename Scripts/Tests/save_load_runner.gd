@@ -100,6 +100,18 @@ func _run() -> void:
 
 	run_state.delete_saved_run()
 	_assert(not run_state.has_saved_run(), "Deleting the save should remove the resumable run")
+
+	run_state.master_volume_percent = 37.0
+	run_state.tutorial_completed = true
+	run_state.start_new_run()
+	_assert(run_state.save_run(), "RunState should save metadata alongside a run before delete testing")
+	run_state.delete_saved_run()
+	_assert(not run_state.has_saved_run(), "Deleting a save should still remove only the resumable run data")
+	run_state.master_volume_percent = 100.0
+	run_state.tutorial_completed = false
+	run_state.call("_load_persistent_metadata")
+	_assert(is_equal_approx(run_state.get_master_volume_percent(), 37.0), "Deleting a save should preserve persisted volume settings")
+	_assert(run_state.is_tutorial_completed(), "Deleting a save should preserve persisted tutorial metadata")
 	_finish()
 
 func _assert(condition: bool, message: String) -> void:

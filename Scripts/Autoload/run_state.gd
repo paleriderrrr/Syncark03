@@ -210,9 +210,8 @@ func load_run() -> bool:
 	return true
 
 func delete_saved_run() -> void:
-	if not FileAccess.file_exists(SAVE_FILE_PATH):
-		return
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_FILE_PATH))
+	_has_persistable_run = false
+	_write_persistence_payload(_build_metadata_only_persistence_payload())
 
 func _on_state_changed_autosave() -> void:
 	if not _autosave_enabled or not _has_persistable_run:
@@ -242,6 +241,17 @@ func _build_persistence_payload() -> Dictionary:
 		},
 		"has_run_data": _has_persistable_run,
 		"run_data": _build_run_snapshot() if _has_persistable_run else {},
+	}
+
+func _build_metadata_only_persistence_payload() -> Dictionary:
+	return {
+		"version": SAVE_FORMAT_VERSION,
+		"settings": {
+			"master_volume_percent": master_volume_percent,
+			"tutorial_completed": tutorial_completed,
+		},
+		"has_run_data": false,
+		"run_data": {},
 	}
 
 func _build_run_snapshot() -> Dictionary:
