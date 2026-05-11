@@ -22,10 +22,11 @@ func _run() -> void:
 	run_state.current_reroll_count = 3
 	run_state.selected_character_id = &"mage"
 	run_state.tutorial_completed = true
-	run_state.shared_inventory = [
+	var saved_inventory: Array[Dictionary] = [
 		run_state.generate_item_instance(&"red_berry"),
 		run_state.generate_item_instance(&"soy_sauce"),
 	]
+	run_state.shared_inventory = saved_inventory
 	run_state.character_states[&"warrior"]["hp_ratio"] = 0.6
 	run_state.character_states[&"warrior"]["placed_foods"] = [{
 		"instance_id": &"placed_food_1",
@@ -41,7 +42,7 @@ func _run() -> void:
 		"shape_cells": [Vector2i.ZERO],
 		"target_character_id": &"mage",
 	}]
-	run_state.current_market_offers = [{
+	var saved_market_offers: Array[Dictionary] = [{
 		"offer_id": &"offer_1",
 		"slot_index": 0,
 		"kind": &"food",
@@ -51,13 +52,16 @@ func _run() -> void:
 		"discount": 0.75,
 		"price": 2,
 	}]
-	run_state.normal_monster_order = [&"fruit_tree_king", &"water_giant", &"bread_knight"]
+	run_state.current_market_offers = saved_market_offers
+	var saved_monster_order: Array[StringName] = [&"fruit_tree_king", &"water_giant", &"bread_knight"]
+	run_state.normal_monster_order = saved_monster_order
 	run_state.free_food_purchase_count = 1
 	run_state.spice_purchase_refund = 2
-	run_state.battle_reports = [{
+	var saved_battle_reports: Array[Dictionary] = [{
 		"result": "win",
 		"monster_id": &"fruit_tree_king",
 	}]
+	run_state.battle_reports = saved_battle_reports
 	run_state.pre_battle_snapshot = {
 		"character_food_layouts": {
 			&"warrior": [{

@@ -72,7 +72,10 @@ func _apply_food(food: FoodDefinition, row: Dictionary) -> Dictionary:
 	result = _parser.parse_string_name_list(str(row.get("hybrid_categories", "")))
 	if not bool(result.get("ok", false)):
 		return result
-	food.hybrid_categories = result.get("value", [])
+	var hybrid_categories: Array[StringName] = []
+	for category_variant in result.get("value", []):
+		hybrid_categories.append(StringName(category_variant))
+	food.hybrid_categories = hybrid_categories
 
 	result = _parser.parse_typed_value(str(row.get("rarity", "")), "string_name")
 	if not bool(result.get("ok", false)):
@@ -96,5 +99,8 @@ func _apply_food(food: FoodDefinition, row: Dictionary) -> Dictionary:
 	result = _parser.parse_vector2i_array(str(row.get("shape_cells", "")))
 	if not bool(result.get("ok", false)):
 		return {"ok": false, "error": "shape_cells: %s" % result.get("error", "")}
-	food.shape_cells = result.get("value", [])
+	var shape_cells: Array[Vector2i] = []
+	for cell_variant in result.get("value", []):
+		shape_cells.append(cell_variant)
+	food.shape_cells = shape_cells
 	return {"ok": true}

@@ -23,6 +23,7 @@ func _run() -> void:
 		get_root().add_child(ui_sfx_player)
 	await process_frame
 	run_state.set_master_volume_percent(64.0)
+	run_state.start_new_run()
 	var scene: PackedScene = load("res://Scenes/settings_screen.tscn")
 	assert(scene != null, "Settings scene failed to load")
 	var root: Control = scene.instantiate() as Control
@@ -46,7 +47,6 @@ func _run() -> void:
 	var bus_index: int = AudioServer.get_bus_index(&"Master")
 	assert(bus_index >= 0, "Master bus missing")
 	assert(AudioServer.get_bus_volume_db(bus_index) <= -11.0 and AudioServer.get_bus_volume_db(bus_index) >= -13.0, "Master bus dB did not follow slider change")
-	run_state.start_new_run()
 	var dev_clear_save_button: Button = root.get_node("%DevClearSaveButton")
 	assert(not dev_clear_save_button.disabled, "Dev clear save button should be enabled when a save exists")
 	dev_clear_save_button.pressed.emit()

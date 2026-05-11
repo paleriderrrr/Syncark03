@@ -12,6 +12,9 @@ func _run() -> void:
 	if run_state == null:
 		_finish()
 		return
+	for definition_variant in run_state.character_roster.characters:
+		var definition: CharacterDefinition = definition_variant
+		definition.base_attack = 500.0
 
 	var editor_scene: PackedScene = load("res://Scenes/main_editor_screen.tscn")
 	var editor: Node = editor_scene.instantiate()
@@ -62,7 +65,12 @@ func _run() -> void:
 	_assert(popup.visible, "One-step battle entry should open the battle popup immediately after leaving market")
 	var start_button: Button = popup.find_child("StartBattleButton", true, false) as Button
 	_assert(start_button != null, "Battle popup should expose the Start Battle button before playback")
-	_assert(start_button.visible, "Battle popup should expose the Start Battle button before playback")
+	await create_timer(1.5).timeout
+	var preparation_wait_frames: int = 0
+	while start_button != null and (start_button.disabled or not start_button.visible) and preparation_wait_frames < 120:
+		await process_frame
+		preparation_wait_frames += 1
+	_assert(start_button != null and start_button.visible and not start_button.disabled, "Battle popup should expose an enabled Start Battle button after preparation reveal")
 	start_button.pressed.emit()
 	await process_frame
 	while popup._is_playing:

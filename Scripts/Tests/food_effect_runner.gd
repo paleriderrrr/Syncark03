@@ -33,9 +33,9 @@ func _validate_food_catalog(run_state: Node) -> void:
 		_assert(not definition.shape_cells.is_empty(), "Food %s should define shape cells" % String(definition.id))
 		_assert(definition.gold_value > 0, "Food %s should have positive gold value" % String(definition.id))
 		if definition.id == &"godfather":
-			_assert(definition.passive_text.contains("orthogonally adjacent empty active cell"), "godfather description should name the actual orthogonal-empty-cell rule")
+			_assert(definition.passive_text.contains("相邻4格") and definition.passive_text.contains("额外+1金币"), "godfather description should clearly name the orthogonal bonus-gold rule")
 		if definition.id == &"sausage_skewer":
-			_assert(definition.passive_text.contains("8 surrounding cells"), "sausage_skewer description should name the actual 8-neighbor staple rule")
+			_assert(definition.passive_text.contains("相邻8格") and definition.passive_text.contains("[主食]"), "sausage_skewer description should stay localized and name the 8-neighbor staple rule")
 
 func _run_food_cases(run_state: Node) -> void:
 	for food_variant in run_state.food_catalog.foods:
@@ -62,7 +62,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_assert(_attack_bonus(_preview_actor(run_state)) == 3.0, "lemon should gain +1.5 ATK when adjacent to meat or staple food")
 		&"broccoli":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 3)))
-			_assert(_hp_bonus(_preview_actor(run_state)) > 20.0, "broccoli should gain extra HP from adjacent empty cells")
+			_assert(_hp_bonus(_preview_actor(run_state)) == 32.0, "broccoli should count only orthogonally adjacent empty cells for its HP bonus")
 		&"prickly_pear":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
@@ -77,6 +77,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			])
 			var baseline_actor: Dictionary = _preview_actor(run_state)
 			_assert(float(pear_actor["retaliate_damage"]) > float(baseline_actor["retaliate_damage"]), "prickly_pear should increase fruit retaliation damage")
+			_assert(is_equal_approx(float(pear_actor["retaliate_damage"]), 4.375), "prickly_pear should multiply the active fruit bond retaliation by 25%")
 		&"rock_melon":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 4)))
 			_assert(float(_preview_actor(run_state)["first_hit_reduction"]) == 0.5, "rock_melon should grant 50% first-hit reduction")
@@ -102,6 +103,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 				{"id": &"lemon", "anchor": Vector2i(5, 0)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(8, 4)))
 			_assert(float(_preview_actor(run_state)["retaliate_damage"]) >= 2.0, "demon_durian should double fruit retaliation output")
+			_assert(is_equal_approx(float(_preview_actor(run_state)["retaliate_damage"]), 12.0), "demon_durian should double the active fruit bond retaliation after the bond value is calculated")
 		&"tree_fruit":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 5)))
 			var tree_actor: Dictionary = _preview_actor(run_state)
@@ -156,6 +158,9 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 		&"chicken_steak":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _full_grid_cells(), 0.4)
 			_assert(bool(_preview_actor(run_state)["team_aura_flags"].get("chicken_steak", false)), "chicken_steak should mark its low-HP attack trigger")
+			var chicken_actor: Dictionary = _preview_actor(run_state)
+			var chicken_attack: Dictionary = CombatEngine.new()._calculate_actor_attack(chicken_actor, 0.0)
+			_assert(is_equal_approx(float(chicken_attack.get("damage", 0.0)), float(chicken_actor.get("base_attack", 0.0)) + 3.0), "chicken_steak should add +3 ATK below half HP")
 		&"sausage_skewer":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
@@ -267,6 +272,23 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			run_state.shared_inventory.append(travel_instance)
 			run_state._apply_food_purchase_side_effects(travel_instance)
 			_assert(run_state.free_food_purchase_count == 1, "travel_bento should grant one free food purchase")
+			run_state.current_market_offers.clear()
+			run_state.current_market_offers.append({
+				"offer_id": &"travel_bento_offer",
+				"slot_index": 0,
+				"kind": &"food",
+				"definition_id": &"travel_bento",
+				"quantity": 1,
+				"rarity": &"rare",
+				"discount": 1.0,
+				"price": 1,
+			})
+			run_state.current_gold = 30
+			run_state.current_reroll_count = 2
+			var purchased_bento: Array[Dictionary] = run_state.purchase_market_offer_package(&"travel_bento_offer")
+			_assert(not purchased_bento.is_empty(), "travel_bento should be purchasable through the market package path")
+			_assert(run_state.current_market_offers.size() == run_state.market_config.slot_count, "travel_bento purchase should leave a full refreshed market")
+			_assert(run_state.current_reroll_count == 2, "travel_bento free refresh should not reset the paid reroll count")
 		&"mixed_feast":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
@@ -357,7 +379,37 @@ func _run_runtime_balance_fix_cases(run_state: Node) -> void:
 	pudding_characters[0]["current_hp"] = maxf(1.0, float(pudding_characters[0]["current_hp"]) - 20.0)
 	var pudding_hp_before: float = float(pudding_characters[0]["current_hp"])
 	engine._process_character_status_effects(2.0, pudding_characters, log)
-	_assert(float(pudding_characters[0]["current_hp"]) > pudding_hp_before, "pudding_cup should heal its holder on its first timed trigger")
+	_assert(is_equal_approx(float(pudding_characters[0]["current_hp"]) - pudding_hp_before, 5.0), "pudding_cup should heal its holder by 5 HP on its first timed trigger")
+
+	_reset_board(run_state, [
+		{"id": &"fairy_candy_castle", "anchor": Vector2i(0, 0)},
+		{"id": &"gummy_block", "anchor": Vector2i(4, 0)},
+	], _cells_in_rect(Vector2i(0, 0), Vector2i(6, 4)))
+	var fairy_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var fairy_effects: Dictionary = engine._build_team_effects(fairy_characters)
+	fairy_characters[0]["current_hp"] = maxf(1.0, float(fairy_characters[0]["current_hp"]) - 10.0)
+	engine._apply_regeneration(1.0, 1.0, fairy_characters, fairy_effects, log)
+	_assert(not fairy_characters[0]["temporary_speed_buffs"].is_empty(), "fairy_candy_castle should grant speed when any healing effect restores HP")
+
+	_reset_board(run_state, [{"id": &"soda", "anchor": Vector2i(0, 0)}])
+	var soda_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var soda_effects: Dictionary = engine._build_team_effects(soda_characters)
+	_assert(is_equal_approx(float(soda_effects.get("opening_enemy_attack_slow", 0.0)), 25.0), "soda opening slow should be promoted to a team combat effect")
+	var soda_monster: Dictionary = engine._build_monster(run_state.get_current_monster_definition())
+	engine._apply_team_enemy_slow_to_monster(soda_monster, soda_effects)
+	_assert(is_equal_approx(float(soda_monster["attack_speed_slow"]), 25.0), "soda opening slow should apply to the runtime monster state")
+	_assert(is_equal_approx(float(soda_monster["next_attack_time"]), engine._effective_interval(float(soda_monster["base_interval"]), -25.0)), "soda opening slow should delay the monster's first attack")
+	engine._expire_monster_opening_slow(10.0, soda_monster)
+	_assert(is_equal_approx(float(soda_monster["attack_speed_slow"]), 0.0), "soda opening slow should expire after 10 seconds")
+
+	_reset_board(run_state, [{"id": &"cellar_vintage", "anchor": Vector2i(1, 1), "reroll_bonus_count": 3}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 5)))
+	var cellar_runtime_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var cellar_runtime_effects: Dictionary = engine._build_team_effects(cellar_runtime_characters)
+	var cellar_monster: Dictionary = engine._build_monster(run_state.get_current_monster_definition())
+	engine._apply_team_enemy_slow_to_monster(cellar_monster, cellar_runtime_effects)
+	_assert(is_equal_approx(float(cellar_monster["attack_speed_slow"]), 15.0), "cellar_vintage reroll slow should apply to the runtime monster state")
+	engine._expire_monster_opening_slow(10.0, cellar_monster)
+	_assert(is_equal_approx(float(cellar_monster["attack_speed_slow"]), 15.0), "cellar_vintage reroll slow should persist after opening slows expire")
 
 	_reset_board(run_state, [])
 	var baseline_characters: Array[Dictionary] = engine._build_characters(run_state)
@@ -376,6 +428,10 @@ func _run_runtime_balance_fix_cases(run_state: Node) -> void:
 	_assert(highlight_report.get("checked_cells", []).has(Vector2i(2, 1)), "Adjacency highlight should check the same orthogonal cells used by gameplay")
 	_assert(highlight_report.get("partner_cells", []).has(Vector2i(2, 1)), "Adjacency highlight should mark real adjacent synergy partners")
 	_assert(bool(highlight_report.get("adjacent_categories", {}).get(&"meat", false)), "Adjacency highlight categories should match gameplay adjacency categories")
+	var preview_cells: Array[Vector2i] = [Vector2i(1, 2)]
+	var preview_highlight: Dictionary = CombatEngine.preview_adjacency_synergy_for_cells(run_state, &"warrior", preview_cells, &"")
+	_assert(preview_highlight.get("checked_cells", []).has(Vector2i(2, 2)), "Adjacency preview should visualize orthogonal checks for unplaced foods")
+	_assert(not preview_highlight.get("checked_cells", []).has(Vector2i(2, 3)), "Adjacency preview should not include diagonal checks for unplaced foods")
 
 func _reset_board(run_state: Node, food_specs: Array, active_cells: Array[Vector2i] = [], hp_ratio: float = 1.0) -> void:
 	run_state.select_character(&"warrior")

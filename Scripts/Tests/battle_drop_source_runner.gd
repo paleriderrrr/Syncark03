@@ -14,7 +14,8 @@ func _run() -> void:
 		return
 
 	run_state.start_new_run()
-	run_state.normal_monster_order = [&"fruit_tree_king", &"spice_wizard"]
+	var monster_order: Array[StringName] = [&"fruit_tree_king", &"spice_wizard"]
+	run_state.normal_monster_order = monster_order
 	run_state.shared_inventory.clear()
 	run_state.current_route_index = 1
 

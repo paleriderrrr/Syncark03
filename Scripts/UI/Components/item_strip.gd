@@ -38,11 +38,12 @@ func set_title(text_value: String) -> void:
 	title_label.visible = not text_value.is_empty()
 
 func set_entries(entries: Array[Dictionary], texture_lookup: Dictionary) -> void:
+	var previous_page_index: int = _page_index
 	for child in card_row.get_children():
 		child.queue_free()
 	_cards.clear()
 	_entry_count = entries.size()
-	_page_index = 0
+	_page_index = previous_page_index
 	for entry in entries:
 		var card: ItemIconCard = CARD_SCENE.instantiate() as ItemIconCard
 		var texture: Texture2D = entry.get("icon_texture", null) as Texture2D
@@ -54,7 +55,10 @@ func set_entries(entries: Array[Dictionary], texture_lookup: Dictionary) -> void
 		card.hover_started.connect(_on_card_hover_started)
 		card.hover_ended.connect(_on_card_hover_ended)
 		_cards.append(card)
-	call_deferred("_refresh_page_state")
+	if is_inside_tree():
+		_refresh_page_state()
+	else:
+		call_deferred("_refresh_page_state")
 
 func get_entry_count() -> int:
 	return _entry_count

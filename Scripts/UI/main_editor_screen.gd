@@ -47,7 +47,7 @@ const GUIDE_TEXTURES: Array[Texture2D] = [
 const TEXT_UNKNOWN := "\u672a\u77e5"
 const TEXT_BOUNTY_EMPTY := "\u8d4f\u91d1\uff1a-"
 const TEXT_STAGE_EMPTY := "\u9636\u6bb5\uff1a-"
-const TEXT_BOUNTY := "\u8d4f\u91d1\uff1a%d\u91d1"
+const TEXT_BOUNTY := "\u8d4f\u91d1\uff1a%d\u91d1\n\u989d\u5916\u5956\u52b1\uff1a\u5269\u4f59\u751f\u547d+\u901f\u6218+\u98df\u7269\u52a0\u6210"
 const TEXT_STAGE := "\u9636\u6bb5\uff1a%d / %d"
 const TEXT_MONSTER_STATS := "\u751f\u547d %d\n\u653b\u51fb %.1f\n\u95f4\u9694 %.1f\u79d2"
 const TEXT_ROUTE := "\u8282\u70b9 %d / %d\uff1a%s"
@@ -65,6 +65,7 @@ const TEXT_RISK_DANGEROUS := "\u9669\u8c61\u73af\u751f"
 const TEXT_RISK_FATAL := "\u4e5d\u6b7b\u4e00\u751f"
 const TEXT_ROLE_TAB_STATS_PLACEHOLDER := "HP 0/0\nATK 0\nINT 0.0s"
 const TEXT_ROLE_TAB_STATS := "HP %d/%d\nATK %s\nINT %ss"
+const TEXT_CELLAR_STACK := "\n\u5f53\u524d\u53e0\u5c42\uff1a%d\uff08+%d%% \u653b\u901f\uff0c\u654c\u65b9\u653b\u901f-%d%%\uff09"
 const ROLE_TAB_PEEK_WIDTH := 196.0
 const ROLE_TAB_SLIDE_TIME := 0.18
 const BATTLE_MODAL_BLOCKER_ALPHA := 0.56
@@ -130,6 +131,7 @@ var _active_synergy_ids: Dictionary = {}
 var _guide_page_index: int = 0
 var _guide_marks_tutorial_complete: bool = false
 var _battle_modal_blocker_tween: Tween
+var persistent_gold_label: Label
 var item_tooltip_overlay: ImmediateItemTooltipOverlay
 var synergy_tooltip_overlay: ImmediateSynergyTooltipOverlay
 
@@ -154,6 +156,7 @@ func _ready() -> void:
 	add_child(synergy_tooltip_overlay)
 	item_tooltip_anchor.visible = false
 	gold_label.add_theme_color_override("font_color", Color.WHITE)
+	_setup_persistent_gold_label()
 	selected_item_label.add_theme_color_override("font_color", Color.WHITE)
 	market_refresh_button.add_theme_color_override("font_color", Color.WHITE)
 	_market_panel_open_position = top_market_panel.position
@@ -210,6 +213,18 @@ func _ready() -> void:
 	_refresh()
 	_play_intro_animation()
 
+func _setup_persistent_gold_label() -> void:
+	persistent_gold_label = Label.new()
+	persistent_gold_label.name = "PersistentGoldLabel"
+	persistent_gold_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	persistent_gold_label.z_index = 90
+	persistent_gold_label.position = Vector2(24.0, 14.0)
+	persistent_gold_label.custom_minimum_size = Vector2(180.0, 32.0)
+	persistent_gold_label.add_theme_color_override("font_color", Color.WHITE)
+	persistent_gold_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.78))
+	persistent_gold_label.add_theme_constant_override("outline_size", 4)
+	add_child(persistent_gold_label)
+
 func _refresh() -> void:
 	var run_state: Node = _run_state()
 	var current_node_type: StringName = run_state.get_current_node_type()
@@ -219,6 +234,9 @@ func _refresh() -> void:
 	_role_names = run_state.get_character_display_names()
 	_update_market_panel_state(run_state.get_current_node_type() == run_state.NODE_MARKET)
 	gold_label.text = TEXT_GOLD % run_state.current_gold
+	if persistent_gold_label != null:
+		persistent_gold_label.text = TEXT_GOLD % run_state.current_gold
+		persistent_gold_label.visible = true
 	selected_item_label.text = run_state.get_selected_item_summary_safe()
 	action_button.text = ""
 	_refresh_action_button_visual()
@@ -475,8 +493,18 @@ func _apply_food_tooltip(entry: Dictionary, definition: FoodDefinition) -> void:
 	entry["tooltip_price"] = TEXT_TOOLTIP_PRICE % _resolve_tooltip_price(entry, definition)
 	entry["tooltip_shape_summary"] = _build_shape_summary(definition.shape_cells)
 	entry["tooltip_base_bonus"] = _build_food_bonus_text(definition)
-	entry["tooltip_special_effect"] = definition.passive_text.strip_edges() if not definition.passive_text.strip_edges().is_empty() else TEXT_TOOLTIP_NONE
+	entry["tooltip_special_effect"] = _build_food_special_effect_text(entry, definition)
 	entry["tooltip_shape_cells"] = definition.shape_cells.duplicate()
+
+func _build_food_special_effect_text(entry: Dictionary, definition: FoodDefinition) -> String:
+	var text: String = definition.passive_text.strip_edges()
+	if text.is_empty():
+		text = TEXT_TOOLTIP_NONE
+	if definition.id == &"cellar_vintage":
+		var stack_count: int = int(entry.get("reroll_bonus_count", 0))
+		if stack_count > 0:
+			text += TEXT_CELLAR_STACK % [stack_count, stack_count * 10, stack_count * 5]
+	return text
 
 func _apply_expansion_tooltip(entry: Dictionary) -> void:
 	entry["tooltip_name"] = String(entry.get("display_name", TEXT_EXPANSION_DEFAULT))
@@ -583,6 +611,18 @@ func _refresh_board() -> void:
 	item_tooltip_overlay.hide_tooltip()
 	synergy_tooltip_overlay.hide_tooltip()
 	board_view.refresh_board(run_state.get_selected_character_state(), preview_cells, run_state.food_lookup, _food_textures)
+	if preview_cells.is_empty():
+		board_view.clear_synergy_highlights()
+	else:
+		var excluded_instance_id: StringName = &""
+		if run_state.selected_item.get("source", &"") == &"board_food":
+			excluded_instance_id = run_state.selected_item.get("instance_id", &"")
+		board_view.set_synergy_highlights(CombatEngine.preview_adjacency_synergy_for_cells(
+			run_state,
+			run_state.selected_character_id,
+			preview_cells,
+			excluded_instance_id
+		))
 
 
 func _refresh_next_monster_panel() -> void:
@@ -772,6 +812,7 @@ func _on_board_hover_food_changed(item: Dictionary, global_rect: Rect2) -> void:
 	var entry: Dictionary = {
 		"display_name": definition.display_name,
 		"definition_id": definition.id,
+		"reroll_bonus_count": int(item.get("reroll_bonus_count", 0)),
 	}
 	_apply_food_tooltip(entry, definition)
 	item_tooltip_overlay.show_entry(entry, global_rect)
@@ -995,12 +1036,12 @@ func _on_role_tab_pressed(character_id: StringName) -> void:
 	_refresh_role_tab_visual_state()
 	_run_state().select_character(character_id)
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if guide_overlay.visible:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 			_hide_guide_overlay()
 		get_viewport().set_input_as_handled()
 		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R and not _run_state().selected_item.is_empty():
 		_run_state().rotate_selected_item()
 		get_viewport().set_input_as_handled()

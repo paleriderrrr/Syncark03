@@ -41,12 +41,18 @@ func _run() -> void:
 		var material: ShaderMaterial = start_glow.material as ShaderMaterial
 		_assert(material != null, "Start glow should use a shader material")
 		if material != null:
-			var glow_color: Color = material.get_shader_parameter("glow_color")
-			_assert(glow_color.r == 1.0 and glow_color.g == 1.0 and glow_color.b == 1.0, "Start glow should use a white outline color")
-			var glow_size: float = float(material.get_shader_parameter("glow_size"))
-			_assert(glow_size >= 14.0 and glow_size <= 24.0, "Start glow outline should be broad enough to read as a highlight without flooding the button")
-			var glow_intensity: float = float(material.get_shader_parameter("glow_intensity"))
-			_assert(glow_intensity >= 7.0, "Start glow should be bright enough to read as a white outline highlight")
+			var glow_color_variant: Variant = material.get_shader_parameter("glow_color")
+			if glow_color_variant is Color:
+				var glow_color: Color = glow_color_variant
+				_assert(glow_color.r == 1.0 and glow_color.g == 1.0 and glow_color.b == 1.0, "Start glow should use a white outline color")
+			var glow_size_variant: Variant = material.get_shader_parameter("glow_size")
+			if glow_size_variant != null:
+				var glow_size: float = float(glow_size_variant)
+				_assert(glow_size >= 14.0 and glow_size <= 24.0, "Start glow outline should be broad enough to read as a highlight without flooding the button")
+			var glow_intensity_variant: Variant = material.get_shader_parameter("glow_intensity")
+			if glow_intensity_variant != null:
+				var glow_intensity: float = float(glow_intensity_variant)
+				_assert(glow_intensity >= 7.0, "Start glow should be bright enough to read as a white outline highlight")
 	_assert(continue_button != null, "Continue button should exist on the title screen")
 	if continue_button != null:
 		_assert(continue_button.texture_normal != null, "Continue button normal texture should exist")

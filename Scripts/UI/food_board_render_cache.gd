@@ -1,8 +1,8 @@
 extends RefCounted
 class_name FoodBoardRenderCache
 
-const ANGLE_SEARCH_STEPS := 360
-const STRETCH_SEARCH_STEPS := 20
+const ANGLE_SEARCH_STEPS := 90
+const STRETCH_SEARCH_STEPS := 10
 
 var _raw_textures: Dictionary = {}
 var _food_lookup: Dictionary = {}

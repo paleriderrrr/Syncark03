@@ -83,7 +83,7 @@ func _run() -> void:
 	_assert(battle_popup != null and battle_popup.find_child("StartBattleButton", true, false) != null, "Battle popup should expose a Start Battle button")
 	var help_button: Button = editor.get_node_or_null("HelpButton")
 	var guide_overlay: Control = editor.get_node_or_null("GuideOverlay")
-	var guide_image: TextureRect = editor.get_node_or_null("GuideImage")
+	var guide_image: TextureRect = editor.get_node_or_null("GuideOverlay/GuideImage")
 	_assert(help_button != null, "Main editor should expose a help button beside the settings button")
 	if help_button != null:
 		_assert(help_button.icon != null, "Main editor help button should render the configured question-mark icon")
@@ -199,6 +199,17 @@ func _run() -> void:
 		_assert(run_state.call("get_action_button_visual_key") == &"restart", "Finished runs should map to restart visual")
 		run_state.run_finished = false
 		run_state.current_route_index = 0
+	run_state.current_route_index = 1
+	editor.call("_refresh")
+	await process_frame
+	var persistent_gold_label: Label = editor.get_node_or_null("PersistentGoldLabel") as Label
+	_assert(persistent_gold_label != null, "Editor should expose a persistent gold label outside the collapsible market panel")
+	if persistent_gold_label != null:
+		_assert(persistent_gold_label.visible, "Persistent gold label should stay visible when the market panel is closed")
+		_assert(persistent_gold_label.text.contains(str(run_state.current_gold)), "Persistent gold label should show the current gold amount")
+	run_state.current_route_index = 0
+	editor.call("_refresh")
+	await process_frame
 	var viewport_rect := Rect2(Vector2.ZERO, editor.get_viewport().get_visible_rect().size)
 	_assert(_rect_inside_viewport(editor.get_node("TopMarketPanel/GoldIcon").get_global_rect(), viewport_rect), "Gold icon should remain inside the viewport")
 	_assert(_rect_inside_viewport(editor.get_node("RightPanel/RightInfoBoard").get_global_rect(), viewport_rect), "Right info board should remain inside the viewport")

@@ -2,7 +2,7 @@ extends RefCounted
 class_name CombatEngine
 
 const TICK := 0.25
-const ATTRITION_START_TIME := 60.0
+const ATTRITION_START_TIME := 120.0
 const ATTRITION_DPS := 7.0
 
 static func simulate(run_state: Object, party_order: Array[StringName] = []) -> Dictionary:
@@ -24,6 +24,10 @@ static func preview_adjacency_synergy(run_state: Object, character_id: StringNam
 	var engine: CombatEngine = CombatEngine.new()
 	return engine._preview_adjacency_synergy_internal(run_state, character_id, source_instance_id)
 
+static func preview_adjacency_synergy_for_cells(run_state: Object, character_id: StringName, source_cells: Array[Vector2i], excluded_instance_id: StringName = &"") -> Dictionary:
+	var engine: CombatEngine = CombatEngine.new()
+	return engine._preview_adjacency_synergy_for_cells_internal(run_state, character_id, source_cells, excluded_instance_id)
+
 func _preview_adjacency_synergy_internal(run_state: Object, character_id: StringName, source_instance_id: StringName) -> Dictionary:
 	var state: Dictionary = run_state.get_character_state(character_id)
 	var source_item: Dictionary = {}
@@ -41,14 +45,42 @@ func _preview_adjacency_synergy_internal(run_state: Object, character_id: String
 			"invalid_cells": [],
 			"adjacent_categories": {},
 		}
+	return _preview_adjacency_synergy_from_source(run_state, state, _clone_cell_array(source_item.get("cells", [])), source_item.get("instance_id", &""))
+
+func _preview_adjacency_synergy_for_cells_internal(run_state: Object, character_id: StringName, source_cells: Array[Vector2i], excluded_instance_id: StringName) -> Dictionary:
+	var state: Dictionary = run_state.get_character_state(character_id)
+	return _preview_adjacency_synergy_from_source(run_state, state, source_cells, excluded_instance_id)
+
+func _preview_adjacency_synergy_from_source(run_state: Object, state: Dictionary, source_cells: Array[Vector2i], excluded_instance_id: StringName) -> Dictionary:
+	if source_cells.is_empty():
+		return {
+			"selected_cells": [],
+			"checked_cells": [],
+			"partner_cells": [],
+			"missing_cells": [],
+			"invalid_cells": [],
+			"adjacent_categories": {},
+		}
 	var active_lookup: Dictionary = ShapeUtils.cells_to_lookup(state.get("active_cells", []))
-	var occupied_lookup: Dictionary = ShapeUtils.cells_to_lookup(_flatten_food_cells(state.get("placed_foods", [])))
+	var occupied_cells: Array[Vector2i] = []
+	for item_variant in state.get("placed_foods", []):
+		var item: Dictionary = item_variant
+		if item.get("instance_id", &"") == excluded_instance_id:
+			continue
+		for cell_variant in item.get("cells", []):
+			occupied_cells.append(cell_variant)
+	occupied_cells.append_array(source_cells)
+	var occupied_lookup: Dictionary = ShapeUtils.cells_to_lookup(occupied_cells)
 	var checked_lookup: Dictionary = {}
 	var partner_lookup: Dictionary = {}
 	var missing_lookup: Dictionary = {}
 	var invalid_lookup: Dictionary = {}
 	var adjacent_categories: Dictionary = {}
-	for cell_variant in source_item.get("cells", []):
+	var source_item := {
+		"instance_id": excluded_instance_id,
+		"cells": source_cells,
+	}
+	for cell_variant in source_cells:
 		var cell: Vector2i = cell_variant
 		for neighbor in [
 			Vector2i(cell.x + 1, cell.y),
@@ -65,7 +97,7 @@ func _preview_adjacency_synergy_internal(run_state: Object, character_id: String
 				invalid_lookup[key] = neighbor
 	for other_variant in state.get("placed_foods", []):
 		var other: Dictionary = other_variant
-		if other.get("instance_id", &"") == source_item.get("instance_id", &""):
+		if other.get("instance_id", &"") == excluded_instance_id:
 			continue
 		if not _items_touch(source_item, other):
 			continue
@@ -78,7 +110,7 @@ func _preview_adjacency_synergy_internal(run_state: Object, character_id: String
 			var partner_cell: Vector2i = partner_cell_variant
 			partner_lookup["%d:%d" % [partner_cell.x, partner_cell.y]] = partner_cell
 	return {
-		"selected_cells": _clone_cell_array(source_item.get("cells", [])),
+		"selected_cells": source_cells.duplicate(),
 		"checked_cells": _cell_lookup_values(checked_lookup),
 		"partner_cells": _cell_lookup_values(partner_lookup),
 		"missing_cells": _cell_lookup_values(missing_lookup),
@@ -110,6 +142,7 @@ func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) 
 	if monster.is_empty():
 		report["title"] = "鎴樻枟閰嶇疆缂哄け"
 		return report
+	_apply_team_enemy_slow_to_monster(monster, team_effects)
 	report["monster_id"] = monster["id"]
 	report["monster_name"] = monster["name"]
 
@@ -123,13 +156,14 @@ func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) 
 	while true:
 		_process_timed_team_effects(time, characters, team_effects, monster, battle_log)
 		_process_monster_timed_effects(time, monster, characters, battle_log)
-		_process_character_status_effects(time, characters, battle_log)
+		_expire_monster_opening_slow(time, monster)
+		_process_character_status_effects(time, characters, battle_log, team_effects)
 		_apply_regeneration(TICK, time, characters, team_effects, battle_log)
 
 		if time >= ATTRITION_START_TIME:
 			if not attrition_started:
 				attrition_started = true
-				battle_log.append("[60.0s] Battle enters attrition mode.")
+				battle_log.append("[%.1fs] Battle enters attrition mode." % time)
 			_apply_attrition(TICK, time, monster, characters, battle_log)
 		if not bool(monster.get("alive", true)) or monster["current_hp"] <= 0.0:
 			report["result"] = "win"
@@ -261,9 +295,14 @@ func _build_team_effects(characters: Array[Dictionary]) -> Dictionary:
 		"power_coffee": false,
 		"power_coffee_triggered": false,
 		"fairy_speed_on_heal": false,
+		"enemy_attack_slow": 0.0,
+		"opening_enemy_attack_slow": 0.0,
 	}
 	for actor in characters:
 		var flags: Dictionary = actor["team_aura_flags"]
+		var opening_enemy_slow: float = float(actor["board_eval"].get("opening_enemy_attack_slow", 0.0))
+		effects["enemy_attack_slow"] += maxf(0.0, float(actor.get("enemy_attack_slow", 0.0)) - opening_enemy_slow)
+		effects["opening_enemy_attack_slow"] += opening_enemy_slow
 		effects["dessert_pulse_amount"] += float(flags.get("dessert_pulse_amount", 0.0))
 		if flags.get("dessert_multiplier_after_20", false):
 			effects["dessert_multiplier_after_20"] = true
@@ -296,6 +335,10 @@ func _build_monster(definition: MonsterDefinition, target_order: Array[StringNam
 		"attack_multiplier": 1.0,
 		"base_interval": float(definition.attack_interval),
 		"attack_speed_slow": 0.0,
+		"base_attack_speed_slow": 0.0,
+		"opening_attack_speed_slow": 0.0,
+		"opening_attack_speed_slow_until": -1.0,
+		"stacked_attack_speed_slow": 0.0,
 		"next_attack_time": float(definition.attack_interval),
 		"corrosion_damage": 3.0,
 		"next_cream_heal_tick": 5.0,
@@ -320,7 +363,9 @@ func _evaluate_character_board(run_state: Object, definition: CharacterDefinitio
 		"heal_per_second": 0.0,
 		"execute_threshold": 0.0,
 		"retaliate_damage": 0.0,
+		"fruit_retaliate_multiplier": 1.0,
 		"enemy_attack_slow": 0.0,
+		"opening_enemy_attack_slow": 0.0,
 		"first_hit_reduction": 0.0,
 		"crit_chance": 0.0,
 		"crit_multiplier": 2.0,
@@ -381,7 +426,8 @@ func _evaluate_character_board(run_state: Object, definition: CharacterDefinitio
 			var total_cells: int = int(category_cell_count[category])
 			match category:
 				&"fruit":
-					result["retaliate_damage"] += 2.0 + max(total_cells - 3, 0) * 0.5
+					var fruit_retaliate: float = 2.0 + max(total_cells - 3, 0) * 0.5
+					result["retaliate_damage"] += fruit_retaliate * float(result.get("fruit_retaliate_multiplier", 1.0))
 				&"dessert":
 					result["team_aura_flags"]["dessert_pulse_amount"] = float(result["team_aura_flags"].get("dessert_pulse_amount", 0.0)) + 1.0 + floor(max(total_cells - 3, 0) / 2.0)
 				&"meat":
@@ -428,20 +474,20 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 		&"lemon":
 			result["attack_bonus"] += 1.5 * _count_adjacent_categories(adj, [&"meat", &"staple"])
 		&"broccoli":
-			result["max_hp_bonus"] += 2.0 * _count_adjacent_empty_cells(item, board_state)
+			result["max_hp_bonus"] += 2.0 * _count_adjacent_empty_cells_orthogonal(item, board_state)
 		&"prickly_pear":
-			result["retaliate_damage"] *= 1.25
+			result["fruit_retaliate_multiplier"] *= 1.25
 		&"rock_melon":
 			result["first_hit_reduction"] = maxf(result["first_hit_reduction"], 0.5)
 		&"rosemary_tomato":
 			pass
 		&"demon_durian":
-			result["retaliate_damage"] *= 2.0
+			result["fruit_retaliate_multiplier"] *= 2.0
 		&"tree_fruit":
 			result["team_aura_flags"]["tree_heal_every"] = true
 		&"pudding_cup":
 			result["team_aura_flags"]["pudding"] = true
-			result["pudding_heal_amount"] = 8.0
+			result["pudding_heal_amount"] = 5.0
 			result["pudding_heal_interval"] = 2.0
 			result["pudding_heal_until"] = 10.0
 		&"jam_cookie":
@@ -463,6 +509,7 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 			result["team_aura_flags"]["fairy_speed_on_heal"] = true
 		&"chicken_steak":
 			result["team_aura_flags"]["chicken_steak"] = true
+			result["chicken_steak"] = true
 		&"sausage_skewer":
 			result["extra_meat_bonus"] += float(_count_adjacent_items_in_categories(item, placed_foods, run_state, [&"staple"], true))
 		&"lamb_rib":
@@ -481,6 +528,7 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 			result["monster_tartare"] = true
 		&"soda":
 			result["enemy_attack_slow"] += 25.0
+			result["opening_enemy_attack_slow"] += 25.0
 		&"matcha":
 			if adj.has(&"dessert"):
 				result["attack_speed_bonus"] += 10.0
@@ -544,8 +592,9 @@ func _adjacent_food_categories(item: Dictionary, placed_foods: Array, run_state:
 	return categories
 
 func _items_touch(item_a: Dictionary, item_b: Dictionary) -> bool:
-	var lookup: Dictionary = ShapeUtils.cells_to_lookup(item_b["cells"])
-	for cell in item_a["cells"]:
+	var lookup: Dictionary = ShapeUtils.cells_to_lookup(_clone_cell_array(item_b.get("cells", [])))
+	for cell_variant in item_a.get("cells", []):
+		var cell: Vector2i = cell_variant
 		var neighbors := [
 			Vector2i(cell.x + 1, cell.y),
 			Vector2i(cell.x - 1, cell.y),
@@ -562,30 +611,6 @@ func _count_adjacent_categories(adjacency: Dictionary, categories: Array[StringN
 	for category in categories:
 		if adjacency.has(category):
 			count += 1
-	return count
-
-func _count_adjacent_empty_cells(item: Dictionary, board_state: Dictionary) -> int:
-	var active_lookup: Dictionary = ShapeUtils.cells_to_lookup(board_state.get("active_cells", []))
-	var occupied_lookup: Dictionary = ShapeUtils.cells_to_lookup(_flatten_food_cells(board_state.get("placed_foods", [])))
-	var seen: Dictionary = {}
-	var count: int = 0
-	for cell in item["cells"]:
-		for neighbor in [
-			Vector2i(cell.x + 1, cell.y),
-			Vector2i(cell.x - 1, cell.y),
-			Vector2i(cell.x, cell.y + 1),
-			Vector2i(cell.x, cell.y - 1),
-			Vector2i(cell.x + 1, cell.y + 1),
-			Vector2i(cell.x - 1, cell.y - 1),
-			Vector2i(cell.x + 1, cell.y - 1),
-			Vector2i(cell.x - 1, cell.y + 1),
-		]:
-			var key: String = "%d:%d" % [neighbor.x, neighbor.y]
-			if seen.has(key):
-				continue
-			seen[key] = true
-			if active_lookup.has(key) and not occupied_lookup.has(key):
-				count += 1
 	return count
 
 func _count_adjacent_foods(item: Dictionary, placed_foods: Array) -> int:
@@ -662,8 +687,8 @@ func _count_adjacent_items_in_categories(item: Dictionary, placed_foods: Array, 
 	return count
 
 func _items_touch_mode(item_a: Dictionary, item_b: Dictionary, include_diagonals: bool) -> bool:
-	var lookup: Dictionary = ShapeUtils.cells_to_lookup(item_b["cells"])
-	for cell_variant in item_a["cells"]:
+	var lookup: Dictionary = ShapeUtils.cells_to_lookup(_clone_cell_array(item_b.get("cells", [])))
+	for cell_variant in item_a.get("cells", []):
 		var cell: Vector2i = cell_variant
 		var neighbors: Array[Vector2i] = [
 			Vector2i(cell.x + 1, cell.y),
@@ -781,13 +806,11 @@ func _process_timed_team_effects(time: float, characters: Array[Dictionary], tea
 		if team_effects["dessert_multiplier_after_20"] and time >= 20.0:
 			heal_amount *= 1.5
 		for actor in characters:
-			_heal_actor(actor, heal_amount, _log, time)
-			if team_effects["fairy_speed_on_heal"]:
-				_add_temporary_speed(actor, 10.0, time + 4.0)
+			_heal_actor(actor, heal_amount, _log, time, bool(team_effects["fairy_speed_on_heal"]))
 		team_effects["next_dessert_pulse"] += team_effects["dessert_pulse_interval"]
 	if team_effects["tree_heal_every"] and time >= team_effects["next_tree_heal"]:
 		for actor in characters:
-			_heal_actor(actor, 10.0, _log, time)
+			_heal_actor(actor, 10.0, _log, time, bool(team_effects["fairy_speed_on_heal"]))
 		team_effects["next_tree_heal"] += 15.0
 	if team_effects["caramel_mille"] and not team_effects["caramel_triggered"] and time >= 20.0:
 		team_effects["caramel_triggered"] = true
@@ -824,14 +847,14 @@ func _process_monster_timed_effects(time: float, monster: Dictionary, characters
 			_log.append("[%.1fs] %s applies heal reduction to %s." % [time, monster["name"], target["name"]])
 		monster["next_heal_lock_tick"] = float(monster.get("next_heal_lock_tick", 5.0)) + 5.0
 
-func _process_character_status_effects(time: float, characters: Array[Dictionary], _log: Array[String]) -> void:
+func _process_character_status_effects(time: float, characters: Array[Dictionary], _log: Array[String], team_effects: Dictionary = {}) -> void:
 	for actor_variant in characters:
 		var actor: Dictionary = actor_variant
 		if not actor["alive"]:
 			continue
 		while float(actor.get("pudding_heal_amount", 0.0)) > 0.0 and float(actor.get("next_pudding_heal", -1.0)) >= 0.0 and time >= float(actor["next_pudding_heal"]) and float(actor["next_pudding_heal"]) <= float(actor.get("pudding_heal_until", 0.0)):
 			if float(actor["next_pudding_heal"]) >= float(actor.get("disable_until", 0.0)):
-				_heal_actor(actor, float(actor["pudding_heal_amount"]), _log, float(actor["next_pudding_heal"]))
+				_heal_actor(actor, float(actor["pudding_heal_amount"]), _log, float(actor["next_pudding_heal"]), bool(team_effects.get("fairy_speed_on_heal", false)))
 			actor["next_pudding_heal"] = float(actor["next_pudding_heal"]) + float(actor.get("pudding_heal_interval", 0.0))
 		if actor["corrosion_damage_per_second"] > 0.0 and time >= actor["next_corrosion_tick"] and time <= actor["corrosion_until"]:
 			actor["next_corrosion_tick"] += 1.0
@@ -841,7 +864,7 @@ func _apply_regeneration(delta: float, time: float, characters: Array[Dictionary
 	for actor_variant in characters:
 		var actor: Dictionary = actor_variant
 		if actor["alive"] and actor["heal_per_second"] > 0.0:
-			_heal_actor(actor, actor["heal_per_second"] * delta, _log, time)
+			_heal_actor(actor, actor["heal_per_second"] * delta, _log, time, bool(team_effects.get("fairy_speed_on_heal", false)))
 
 func _apply_attrition(delta: float, time: float, monster: Dictionary, characters: Array[Dictionary], _log: Array[String]) -> void:
 	monster["current_hp"] -= ATTRITION_DPS * delta
@@ -851,7 +874,35 @@ func _apply_attrition(delta: float, time: float, monster: Dictionary, characters
 		if actor["alive"]:
 			actor["current_hp"] -= ATTRITION_DPS * delta
 			if actor["current_hp"] <= 0.0:
-				_handle_actor_death(actor, _log, ATTRITION_START_TIME)
+				_handle_actor_death(actor, _log, time)
+
+func _apply_team_enemy_slow_to_monster(monster: Dictionary, team_effects: Dictionary) -> void:
+	monster["base_attack_speed_slow"] = minf(80.0, float(team_effects.get("enemy_attack_slow", 0.0)))
+	monster["opening_attack_speed_slow"] = minf(80.0, float(team_effects.get("opening_enemy_attack_slow", 0.0)))
+	monster["opening_attack_speed_slow_until"] = 10.0 if float(monster["opening_attack_speed_slow"]) > 0.0 else -1.0
+	_refresh_monster_attack_speed_slow(monster)
+	monster["next_attack_time"] = _effective_interval(float(monster["base_interval"]), -float(monster["attack_speed_slow"]))
+
+func _expire_monster_opening_slow(time: float, monster: Dictionary) -> void:
+	if float(monster.get("opening_attack_speed_slow", 0.0)) <= 0.0:
+		return
+	if time + 0.001 < float(monster.get("opening_attack_speed_slow_until", -1.0)):
+		return
+	monster["opening_attack_speed_slow"] = 0.0
+	monster["opening_attack_speed_slow_until"] = -1.0
+	_refresh_monster_attack_speed_slow(monster)
+
+func _add_monster_attack_speed_slow(monster: Dictionary, amount: float) -> void:
+	monster["stacked_attack_speed_slow"] = float(monster.get("stacked_attack_speed_slow", 0.0)) + amount
+	_refresh_monster_attack_speed_slow(monster)
+
+func _refresh_monster_attack_speed_slow(monster: Dictionary) -> void:
+	monster["attack_speed_slow"] = minf(
+		80.0,
+		float(monster.get("base_attack_speed_slow", 0.0)) +
+		float(monster.get("opening_attack_speed_slow", 0.0)) +
+		float(monster.get("stacked_attack_speed_slow", 0.0))
+	)
 
 func _process_character_attacks(time: float, characters: Array[Dictionary], monster: Dictionary, team_effects: Dictionary, _log: Array[String]) -> void:
 	for actor in characters:
@@ -873,9 +924,9 @@ func _process_character_attacks(time: float, characters: Array[Dictionary], mons
 		if actor["amber_cancel_chance"] > 0.0 and randf() < actor["amber_cancel_chance"]:
 			monster["skip_next_attack"] = true
 		if actor["frozen_extra_slow_chance"] > 0.0 and randf() < actor["frozen_extra_slow_chance"]:
-			monster["attack_speed_slow"] = minf(80.0, monster["attack_speed_slow"] + 5.0)
+			_add_monster_attack_speed_slow(monster, 5.0)
 		if attack_data["extra_enemy_slow"] > 0.0:
-			monster["attack_speed_slow"] = minf(80.0, monster["attack_speed_slow"] + attack_data["extra_enemy_slow"])
+			_add_monster_attack_speed_slow(monster, attack_data["extra_enemy_slow"])
 		if actor["execute_threshold"] + actor["dynamic_execute_bonus"] > 0.0 and monster["current_hp"] / monster["max_hp"] <= (actor["execute_threshold"] + actor["dynamic_execute_bonus"]) / 100.0:
 			monster["current_hp"] = 0.0
 			_log.append("[%.1fs] %s executes %s." % [time, actor["name"], monster["name"]])
@@ -1038,7 +1089,7 @@ func _handle_actor_death(actor: Dictionary, _log: Array[String], time: float) ->
 	actor["current_hp"] = 0.0
 	_log.append("[%.1fs] %s is defeated." % [time, actor["name"]])
 
-func _heal_actor(actor: Dictionary, amount: float, _log: Array[String], time: float) -> void:
+func _heal_actor(actor: Dictionary, amount: float, _log: Array[String], time: float, grant_speed_on_heal: bool = false) -> void:
 	if not actor["alive"] or amount <= 0.0:
 		return
 	var final_amount: float = amount
@@ -1049,6 +1100,8 @@ func _heal_actor(actor: Dictionary, amount: float, _log: Array[String], time: fl
 	var healed: float = float(actor["current_hp"]) - before
 	if healed > 0.0:
 		_log.append("[%.1fs] %s restores %.1f HP." % [time, actor["name"], healed])
+		if grant_speed_on_heal:
+			_add_temporary_speed(actor, 10.0, time + 4.0)
 
 func _add_temporary_speed(actor: Dictionary, amount: float, expires_at: float) -> void:
 	actor["temporary_speed_buffs"].append({

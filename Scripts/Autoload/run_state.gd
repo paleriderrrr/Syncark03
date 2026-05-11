@@ -536,7 +536,6 @@ func get_current_market_tier() -> int:
 
 func _generate_market_offers() -> void:
 	current_market_offers.clear()
-	current_reroll_count = 0 if current_market_offers.is_empty() else current_reroll_count
 	if get_current_node_type() != NODE_MARKET:
 		state_changed.emit()
 		return
@@ -657,6 +656,7 @@ func buy_market_offer(index: int) -> bool:
 	if current_gold < price:
 		return false
 	current_gold -= price
+	current_market_offers.remove_at(index)
 	if offer["kind"] == &"food":
 		for _i in int(offer["quantity"]):
 			var instance: Dictionary = generate_item_instance(offer["definition_id"])
@@ -672,7 +672,6 @@ func buy_market_offer(index: int) -> bool:
 		}
 		var character_state: Dictionary = get_character_state(offer["target_character_id"])
 		character_state["pending_expansions"].append(expansion)
-	current_market_offers.remove_at(index)
 	state_changed.emit()
 	return true
 
@@ -689,6 +688,7 @@ func purchase_market_offer_package(offer_id: StringName) -> Array[Dictionary]:
 	if current_gold < price:
 		return []
 	current_gold -= price
+	current_market_offers.remove_at(index)
 	if offer["kind"] == &"food":
 		for _i in int(offer["quantity"]):
 			var instance: Dictionary = generate_item_instance(offer["definition_id"])
@@ -706,7 +706,6 @@ func purchase_market_offer_package(offer_id: StringName) -> Array[Dictionary]:
 		var character_state: Dictionary = get_character_state(offer["target_character_id"])
 		character_state["pending_expansions"].append(expansion)
 		gained_items.append(expansion)
-	current_market_offers.remove_at(index)
 	state_changed.emit()
 	return gained_items
 
@@ -1410,8 +1409,13 @@ func get_grouped_inventory_entries() -> Array[Dictionary]:
 				"count": 0,
 				"category": definition.category,
 				"rarity": definition.rarity,
+				"reroll_bonus_count": 0,
 			}
 		grouped[key]["count"] = int(grouped[key]["count"]) + 1
+		grouped[key]["reroll_bonus_count"] = max(
+			int(grouped[key].get("reroll_bonus_count", 0)),
+			int(item.get("reroll_bonus_count", 0))
+		)
 	var entries: Array[Dictionary] = []
 	for category_id in CATEGORY_ORDER:
 		for group_key in grouped.keys():
@@ -1675,7 +1679,7 @@ func get_character_health_display(character_id: StringName) -> Dictionary:
 
 func _apply_battle_victory(report: Dictionary) -> void:
 	var battle_index: int = get_completed_battle_count() - 1
-	var defeated_monster: MonsterDefinition = _resolve_defeated_monster(report)
+	var defeated_monster: MonsterDefinition = _resolve_defeated_monster(report, battle_index)
 	if battle_index >= 0 and battle_index < stage_flow_config.normal_battle_reward_gold.size():
 		current_gold += stage_flow_config.normal_battle_reward_gold[battle_index]
 		current_gold += int(report.get("bonus_gold", 0))
@@ -1689,12 +1693,14 @@ func _apply_battle_victory(report: Dictionary) -> void:
 		current_route_index += 1
 		_apply_route_arrival_state()
 
-func _resolve_defeated_monster(report: Dictionary) -> MonsterDefinition:
+func _resolve_defeated_monster(report: Dictionary, battle_index: int) -> MonsterDefinition:
 	var monster_id: StringName = report.get("monster_id", &"")
 	if monster_id != &"":
 		var report_monster: MonsterDefinition = get_monster_definition(monster_id)
 		if report_monster != null:
 			return report_monster
+	if battle_index >= 0 and battle_index < normal_monster_order.size():
+		return get_monster_definition(normal_monster_order[battle_index])
 	return get_current_monster_definition()
 
 func _apply_victory_character_recovery(report: Dictionary) -> void:
@@ -1739,10 +1745,19 @@ func get_battle_drop_candidates(monster: MonsterDefinition) -> Array[FoodDefinit
 func try_restore_snapshot() -> bool:
 	if pre_battle_snapshot.is_empty():
 		return false
-	for character_id in character_states.keys():
-		character_states[character_id]["placed_foods"].clear()
 	var inventory_pool: Array[Dictionary] = shared_inventory.duplicate(true)
+	for character_id in character_states.keys():
+		for placed_variant in character_states[character_id].get("placed_foods", []):
+			var placed: Dictionary = placed_variant
+			inventory_pool.append({
+				"instance_id": placed["instance_id"],
+				"definition_id": placed["definition_id"],
+				"rotation": int(placed.get("rotation", 0)),
+				"reroll_bonus_count": int(placed.get("reroll_bonus_count", 0)),
+			})
+	var restored_layouts: Dictionary = {}
 	for character_id in pre_battle_snapshot["character_food_layouts"].keys():
+		var character_layouts: Array[Dictionary] = []
 		for layout in pre_battle_snapshot["character_food_layouts"][character_id]:
 			var found_index: int = -1
 			for index in inventory_pool.size():
@@ -1753,7 +1768,7 @@ func try_restore_snapshot() -> bool:
 				return false
 			var item: Dictionary = inventory_pool[found_index]
 			inventory_pool.remove_at(found_index)
-			character_states[character_id]["placed_foods"].append({
+			character_layouts.append({
 				"instance_id": item["instance_id"],
 				"definition_id": item["definition_id"],
 				"rotation": int(layout["rotation"]),
@@ -1761,6 +1776,11 @@ func try_restore_snapshot() -> bool:
 				"cells": _clone_cells(layout["cells"]),
 				"reroll_bonus_count": int(item.get("reroll_bonus_count", 0)),
 			})
+		restored_layouts[character_id] = character_layouts
+	for character_id in character_states.keys():
+		character_states[character_id]["placed_foods"].clear()
+	for character_id in restored_layouts.keys():
+		character_states[character_id]["placed_foods"] = restored_layouts[character_id]
 	shared_inventory = inventory_pool
 	state_changed.emit()
 	return true

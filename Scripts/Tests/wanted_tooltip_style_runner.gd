@@ -21,11 +21,12 @@ func _run() -> void:
 	var front_wanted_poster_rect: TextureRect = editor.get_node("RightPanel/RightInfoBoard/BoardScale/FrontFace/FrontWantedPosterRect")
 	var back_wanted_poster_rect: TextureRect = editor.get_node("RightPanel/RightInfoBoard/BoardScale/BackFace/BackWantedPosterRect")
 
-	_assert(stats_label.get_theme_font_size("font_size") == 17, "Right info board back stats font should stay at 17")
-	_assert(skill_label.get_theme_font_size("font_size") == 16, "Right info board back skill font should stay at 16")
+	_assert(stats_label.get_theme_font_size("font_size") == 30, "Right info board back stats font should stay at 30")
+	_assert(skill_label.get_theme_font_size("font_size") == 26, "Right info board back skill font should stay at 26")
 	_assert(right_info_board.get_global_rect().end.y <= bottom_inventory_panel.get_global_rect().position.y, "Right info board should stay above the bottom inventory panel")
 
-	run_state.normal_monster_order = [&"fruit_tree_king", &"spice_wizard"]
+	var monster_order: Array[StringName] = [&"fruit_tree_king", &"spice_wizard"]
+	run_state.normal_monster_order = monster_order
 	run_state.battle_reports.clear()
 	editor.call("_refresh_next_monster_panel")
 	await process_frame
@@ -38,7 +39,8 @@ func _run() -> void:
 		"Back-face poster should stay in sync with the front face"
 	)
 
-	run_state.battle_reports = [{"result": "win"}]
+	var reports: Array[Dictionary] = [{"result": "win"}]
+	run_state.battle_reports = reports
 	editor.call("_refresh_next_monster_panel")
 	await process_frame
 	_assert(

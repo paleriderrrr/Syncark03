@@ -145,7 +145,7 @@ func open_battle() -> void:
 		return
 	_is_preparing = true
 	close_button.disabled = false
-	start_battle_button.disabled = false
+	start_battle_button.disabled = true
 	start_battle_button.visible = true
 	preparation_hint_label.visible = true
 	_configure_stage_controls()

@@ -54,7 +54,10 @@ func _run() -> void:
 	_assert(not inventory_group.is_empty(), "Grouped inventory should include the bought food definition")
 	_assert(int(inventory_group.get("count", 0)) == int(first_food_offer["quantity"]), "Grouped inventory should stack the full purchased package quantity")
 
-	var picked_inventory: Dictionary = run_state.pick_inventory_instance(inventory_group.get("group_key", &""))
+	run_state.get_selected_character_state()["placed_foods"].clear()
+	run_state.shared_inventory.clear()
+	run_state.shared_inventory.append(run_state.generate_item_instance(&"red_berry"))
+	var picked_inventory: Dictionary = run_state.pick_inventory_instance(&"red_berry")
 	_assert(not picked_inventory.is_empty(), "Picking one inventory instance should succeed")
 	run_state.selected_item = picked_inventory
 	var placed: bool = false
@@ -82,6 +85,13 @@ func _run() -> void:
 	_assert(run_state.try_place_selected_item(rotated_inventory_anchor), "Rotated selected inventory food should place successfully")
 	var rotated_inventory_food: Dictionary = run_state.get_item_at_cell(rotated_inventory_anchor)
 	_assert(int(rotated_inventory_food.get("rotation", 0)) == 1, "Placed inventory food should keep the rotated state")
+	var tartare_inventory: Dictionary = run_state.generate_item_instance(&"monster_tartare")
+	run_state.shared_inventory.append(tartare_inventory)
+	run_state.select_inventory_item(tartare_inventory["instance_id"])
+	var tartare_before_rotation: Array[Vector2i] = run_state.get_selected_item_cells()
+	run_state.rotate_selected_item()
+	var tartare_after_rotation: Array[Vector2i] = run_state.get_selected_item_cells()
+	_assert(tartare_before_rotation != tartare_after_rotation, "Rotating monster_tartare should update its placement preview cells")
 
 	var market_offer_id: StringName = &"rotation_offer_test"
 	run_state.current_market_offers.append({
@@ -107,10 +117,11 @@ func _run() -> void:
 	_assert(int(market_food_on_board.get("rotation", 0)) == 1, "Placed market food should keep the rotated state")
 	_assert(run_state.current_gold == market_gold_before_place - 4, "Direct market placement should still spend the package price once")
 
-	var moved_food_anchor: Vector2i = placed_anchor + Vector2i(1, 0)
+	var moved_food_anchor: Vector2i = placed_anchor + Vector2i(0, 2)
+	var placed_food_count_before_move: int = run_state.get_selected_character_state()["placed_foods"].size()
 	var move_success: bool = run_state.move_placed_food(placed_anchor, moved_food_anchor)
 	_assert(move_success, "Placed food should move to a new valid anchor")
-	_assert(run_state.get_selected_character_state()["placed_foods"].size() == 1, "Moving a placed food should preserve a single placed-food entry")
+	_assert(run_state.get_selected_character_state()["placed_foods"].size() == placed_food_count_before_move, "Moving a placed food should preserve the placed-food entry count")
 	_assert(run_state.begin_board_food_action(rotated_inventory_anchor), "Placed food should enter a board action when grabbed from the board")
 	var board_before_rotation: Array[Vector2i] = run_state.get_selected_item_cells()
 	run_state.rotate_selected_item()
@@ -211,6 +222,31 @@ func _run() -> void:
 	_assert(not next_monster.is_empty(), "Next monster summary should exist on active route")
 	var synergy_summary: Dictionary = run_state.get_synergy_summary(&"warrior")
 	_assert(synergy_summary.has("entries"), "Synergy summary should expose entries")
+	run_state.select_character(&"warrior")
+	var warrior_state: Dictionary = run_state.get_selected_character_state()
+	warrior_state["active_cells"] = _full_grid_cells()
+	warrior_state["placed_foods"] = [{
+		"instance_id": &"highlight_bacon",
+		"definition_id": &"bacon_strip",
+		"rotation": 0,
+		"anchor": Vector2i(2, 1),
+		"cells": [Vector2i(2, 1)],
+		"reroll_bonus_count": 0,
+	}]
+	var highlight_lemon: Dictionary = run_state.generate_item_instance(&"lemon")
+	run_state.shared_inventory.append(highlight_lemon)
+	run_state.select_inventory_item(highlight_lemon["instance_id"])
+	var highlight_board := BentoBoardView.new()
+	root.add_child(highlight_board)
+	highlight_board.refresh_board(warrior_state, [], run_state.food_lookup)
+	var highlight_payload := {
+		"source": &"inventory",
+		"definition_id": &"lemon",
+	}
+	_assert(highlight_board._can_drop_data(Vector2(float(highlight_board.cell_pixel_size) * 1.0 + 1.0, float(highlight_board.cell_pixel_size) * 1.0 + 1.0), highlight_payload), "Board should accept the adjacent-highlight test placement")
+	var drag_highlights: Dictionary = highlight_board.debug_get_synergy_highlights()
+	_assert(drag_highlights.get("partner_cells", []).has(Vector2i(2, 1)), "Drag hover should visualize adjacent synergy partner cells before placement")
+	highlight_board.queue_free()
 
 	_finish()
 
@@ -256,6 +292,13 @@ func _find_valid_expansion_move_anchor(run_state: Node, instance_id: StringName)
 			if ShapeUtils.within_bounds(placed_cells, run_state.GRID_WIDTH, run_state.GRID_HEIGHT) and not ShapeUtils.overlaps(active_without_self, placed_cells) and ShapeUtils.shares_edge(placed_cells, active_without_self):
 				return anchor
 	return Vector2i(-1, -1)
+
+func _full_grid_cells() -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for y in range(6):
+		for x in range(8):
+			result.append(Vector2i(x, y))
+	return result
 
 func _finish() -> void:
 	if _failures.is_empty():

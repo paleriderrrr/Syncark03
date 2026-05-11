@@ -92,6 +92,9 @@ func clear_synergy_highlights() -> void:
 	_synergy_highlights.clear()
 	queue_redraw()
 
+func debug_get_synergy_highlights() -> Dictionary:
+	return _synergy_highlights.duplicate(true)
+
 func set_synergy_highlights_for_item(run_state: Object, character_id: StringName, source_instance_id: StringName) -> void:
 	set_synergy_highlights(CombatEngine.preview_adjacency_synergy(run_state, character_id, source_instance_id))
 
@@ -300,6 +303,7 @@ func _get_drag_data(at_position: Vector2) -> Variant:
 func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 	if not (data is Dictionary):
 		_hover_cells.clear()
+		clear_synergy_highlights()
 		queue_redraw()
 		return false
 	var payload: Dictionary = data
@@ -308,6 +312,7 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 	var valid: bool = _validate_payload_cells(payload, cells)
 	_hover_cells = cells
 	_hover_valid = valid
+	_update_drag_synergy_highlights(payload, cells)
 	queue_redraw()
 	return valid
 
@@ -317,18 +322,33 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
 	var anchor: Vector2i = _position_to_cell(at_position)
 	board_drop_requested.emit(anchor, data)
 	_hover_cells.clear()
+	clear_synergy_highlights()
 	queue_redraw()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_END:
 		_hover_cells.clear()
 		_hover_valid = false
+		clear_synergy_highlights()
 		queue_redraw()
 		_clear_food_hover()
 	elif what == NOTIFICATION_DRAG_BEGIN:
 		_clear_food_hover()
 	elif what == NOTIFICATION_MOUSE_EXIT:
 		_clear_food_hover()
+
+func _update_drag_synergy_highlights(payload: Dictionary, cells: Array[Vector2i]) -> void:
+	var source: StringName = payload.get("source", &"")
+	if not [&"inventory", &"market_offer", &"board_food", &"lab_catalog"].has(source):
+		clear_synergy_highlights()
+		return
+	var excluded_instance_id: StringName = payload.get("instance_id", &"") if source == &"board_food" else &""
+	set_synergy_highlights(CombatEngine.preview_adjacency_synergy_for_cells(
+		_run_state(),
+		_character_state.get("id", &""),
+		cells,
+		excluded_instance_id
+	))
 
 func _build_drag_payload(cell: Vector2i) -> Dictionary:
 	for item in _character_state.get("placed_foods", []):

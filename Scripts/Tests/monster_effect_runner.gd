@@ -39,6 +39,7 @@ func _validate_monster_roster(run_state: Node) -> void:
 
 func _run_monster_cases(run_state: Node) -> void:
 	var engine: CombatEngine = CombatEngine.new()
+	_test_attrition_timing()
 	_test_fruit_tree_opening(run_state, engine)
 	_test_cream_overlord_on_hit(engine)
 	_test_monster_death_stops_actions(engine)
@@ -47,6 +48,9 @@ func _run_monster_cases(run_state: Node) -> void:
 	_test_bread_knight_rules(engine)
 	_test_spice_wizard_rules(engine)
 	_test_boss_rules(engine)
+
+func _test_attrition_timing() -> void:
+	_assert(is_equal_approx(CombatEngine.ATTRITION_START_TIME, 120.0), "Combat attrition should start after 2 minutes")
 
 func _test_fruit_tree_opening(run_state: Node, engine: CombatEngine) -> void:
 	var monster: Dictionary = engine._build_monster(run_state.monster_lookup[&"fruit_tree_king"])
@@ -63,7 +67,7 @@ func _test_cream_overlord_on_hit(engine: CombatEngine) -> void:
 	if not engine.has_method("_handle_monster_hit_by_character"):
 		return
 	var monster: Dictionary = _make_monster_stub(&"cream_overlord", 300.0, 10.0, 1.6)
-	monster["current_hp"] = 300.0
+	monster["current_hp"] = 280.0
 	var attacker: Dictionary = _make_actor(&"warrior")
 	var characters: Array[Dictionary] = [attacker]
 	var log: Array[String] = []
@@ -71,7 +75,7 @@ func _test_cream_overlord_on_hit(engine: CombatEngine) -> void:
 		engine._handle_monster_hit_by_character(monster, attacker, characters, 10.0, 0.0, log)
 	_assert(int(attacker.get("monster_attack_down_stacks", 0)) == 5, "cream_overlord should reduce attacker ATK up to 5 stacks")
 	engine._process_monster_timed_effects(5.0, monster, characters, log)
-	_assert(is_equal_approx(float(monster.get("current_hp", 0.0)), 320.0), "cream_overlord should restore a fixed 20 HP every 5 seconds")
+	_assert(is_equal_approx(float(monster.get("current_hp", 0.0)), 300.0), "cream_overlord should restore a fixed 20 HP every 5 seconds without exceeding max HP")
 	_assert(is_equal_approx(float(monster.get("next_cream_heal_tick", 0.0)), 10.0), "cream_overlord heal timer should advance by 5 seconds each trigger")
 
 func _test_monster_death_stops_actions(engine: CombatEngine) -> void:

@@ -36,6 +36,22 @@ func _run() -> void:
 	_assert(first_rect.end.x <= viewport_rect.end.x, "The third-page first card should fit inside the visible strip")
 	_assert(first_rect.size.x > 0.0, "The third-page first card should have non-zero visible width")
 
+	entries.append({
+		"group_key": StringName("entry_11"),
+		"definition_id": &"iced_black_tea",
+		"display_name": "Entry 11",
+		"count": 1,
+		"category": &"drink",
+		"rarity": &"common",
+	})
+	strip.set_entries(entries, {})
+	await process_frame
+	_assert(strip.get_page_index() == 2, "Updating inventory entries should preserve the current page when it remains valid")
+	var preserved_first_index: int = strip.get_first_visible_entry_index_for_page()
+	var preserved_first_rect: Rect2 = strip.get_entry_visible_rect(preserved_first_index)
+	_assert(preserved_first_index == 10, "The preserved third page should keep showing the deterministic tail entries")
+	_assert(preserved_first_rect.position.x >= viewport_rect.position.x, "The preserved page first card should remain fully visible")
+
 	strip.queue_free()
 	if _failures.is_empty():
 		print("ITEM_STRIP_TEST_PASS")

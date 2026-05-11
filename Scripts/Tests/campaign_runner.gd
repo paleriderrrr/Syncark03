@@ -34,6 +34,28 @@ func _run() -> void:
 	run_state.start_new_run()
 	await process_frame
 
+	run_state.normal_monster_order.clear()
+	run_state.normal_monster_order.append(&"fruit_tree_king")
+	run_state.normal_monster_order.append(&"water_giant")
+	run_state.shared_inventory.clear()
+	run_state.apply_battle_report({
+		"result": "win",
+		"bonus_gold": 0,
+		"log": PackedStringArray(),
+		"characters": [
+			{"id": &"warrior", "current_hp": 180.0, "max_hp": 180.0, "alive": true},
+			{"id": &"hunter", "current_hp": 90.0, "max_hp": 90.0, "alive": true},
+			{"id": &"mage", "current_hp": 70.0, "max_hp": 70.0, "alive": true},
+		],
+	})
+	_assert(not run_state.shared_inventory.is_empty(), "Victory without monster_id should still grant battle drops")
+	for item_variant in run_state.shared_inventory:
+		var item: Dictionary = item_variant
+		var definition: FoodDefinition = run_state.get_food_definition(item["definition_id"])
+		_assert(definition != null and definition.category == &"fruit", "Victory fallback drops should use the defeated battle monster, not the next monster")
+	run_state.start_new_run()
+	await process_frame
+
 	run_state.apply_battle_report({
 		"result": "win",
 		"bonus_gold": 0,
@@ -67,6 +89,9 @@ func _run() -> void:
 	_assert(run_state.try_place_selected_item(Vector2i.ZERO), "Should place a smoke-test food on the warrior board")
 	run_state.prepare_battle()
 	_assert(not run_state.pre_battle_snapshot.is_empty(), "Preparing battle should capture a snapshot")
+	var placed_count_at_snapshot: int = run_state.get_character_state(&"warrior")["placed_foods"].size()
+	_assert(run_state.try_restore_snapshot(), "Snapshot restore should succeed when the pre-battle layout is already on the board")
+	_assert(run_state.get_character_state(&"warrior")["placed_foods"].size() == placed_count_at_snapshot, "Snapshot restore should not clear an already-matching pre-battle layout")
 	_assert(run_state.remove_item_at_cell(Vector2i.ZERO), "Placed food should be removable")
 	_assert(run_state.try_restore_snapshot(), "Snapshot restore should rebuild the pre-battle layout")
 
@@ -81,25 +106,25 @@ func _run() -> void:
 	run_state.select_pending_expansion(expansion_id)
 	_assert(run_state.try_place_selected_item(Vector2i(3, 0)), "Expansion should place adjacent to the base board")
 
-	var battle_requests: int = 0
+	var battle_request_probe: Dictionary = {"count": 0}
 	run_state.battle_requested.connect(func() -> void:
-		battle_requests += 1
+		battle_request_probe["count"] = int(battle_request_probe["count"]) + 1
 	)
 
 	while not run_state.run_finished:
 		var route_index: int = run_state.current_route_index
 		if route_index in [0, 4, 8, 12]:
-			var requests_before_market: int = battle_requests
+			var requests_before_market: int = int(battle_request_probe["count"])
 			var left_market: bool = run_state.perform_primary_action()
 			_assert(left_market, "Market node should advance through the primary action")
 			_assert(route_index + 1 == run_state.current_route_index, "Market primary action should advance exactly one route node")
-			_assert(battle_requests == requests_before_market + 1, "Leaving a market for battle should request battle entry exactly once")
+			_assert(int(battle_request_probe["count"]) == requests_before_market + 1, "Leaving a market for battle should request battle entry exactly once")
 		elif route_index in [2, 6, 10]:
-			var requests_before_rest: int = battle_requests
+			var requests_before_rest: int = int(battle_request_probe["count"])
 			var left_rest: bool = run_state.perform_primary_action()
 			_assert(left_rest, "Rest node should advance through the primary action")
 			_assert(route_index + 1 == run_state.current_route_index, "Rest primary action should advance exactly one route node")
-			_assert(battle_requests == requests_before_rest + 1, "Leaving a rest node for battle should request battle entry exactly once")
+			_assert(int(battle_request_probe["count"]) == requests_before_rest + 1, "Leaving a rest node for battle should request battle entry exactly once")
 		else:
 			run_state.apply_battle_report({
 				"result": "win",
