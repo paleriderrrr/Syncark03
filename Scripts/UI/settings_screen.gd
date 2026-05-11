@@ -2,8 +2,8 @@ extends Control
 
 const TITLE_SCENE_PATH := "res://Scenes/title_screen.tscn"
 const MAIN_EDITOR_SCENE_PATH := "res://Scenes/main_editor_screen.tscn"
-const DEV_CLEAR_SAVE_TEXT := "DEV CLEAR SAVE"
-const DEV_CLEAR_SAVE_EMPTY_TEXT := "NO SAVE TO CLEAR"
+const DEV_CLEAR_SAVE_TEXT := "清除存档"
+const DEV_CLEAR_SAVE_EMPTY_TEXT := "暂无存档"
 
 @onready var volume_slider: HSlider = %VolumeSlider
 @onready var restart_button: TextureButton = %RestartButton

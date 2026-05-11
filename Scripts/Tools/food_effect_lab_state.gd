@@ -191,31 +191,20 @@ func remove_food_at_cell(cell: Vector2i) -> bool:
 	return false
 
 func get_synergy_summary(character_id: StringName) -> Dictionary:
-	var category_definition_sets: Dictionary = {}
-	for category_id_variant in CATEGORY_ORDER:
-		var category_id: StringName = category_id_variant
-		category_definition_sets[category_id] = {}
-	var state: Dictionary = get_character_state(character_id)
-	for item_variant in state.get("placed_foods", []):
-		var item: Dictionary = item_variant
-		var definition: FoodDefinition = get_food_definition(item["definition_id"])
-		if definition == null:
-			continue
-		for category_id_variant in get_food_categories(definition):
-			var category_id: StringName = category_id_variant
-			var definition_set: Dictionary = category_definition_sets.get(category_id, {})
-			definition_set[definition.id] = true
-			category_definition_sets[category_id] = definition_set
+	var actor: Dictionary = CombatEngine.preview_character_actor(self, character_id)
+	var board_eval: Dictionary = actor.get("board_eval", {}) if not actor.is_empty() else {}
+	var category_layers: Dictionary = board_eval.get("category_layers", {})
+	var active_bonds: Dictionary = board_eval.get("active_category_bonds", {})
 	var entries: Array[Dictionary] = []
 	for category_id_variant in CATEGORY_ORDER:
 		var category_id: StringName = category_id_variant
-		var count: int = int((category_definition_sets.get(category_id, {}) as Dictionary).size())
+		var count: int = int(category_layers.get(category_id, 0))
 		entries.append({
 			"category_id": category_id,
 			"category_name": CATEGORY_DISPLAY_NAMES.get(category_id, String(category_id)),
 			"synergy_name": CATEGORY_SYNERGY_NAMES.get(category_id, ""),
 			"count": count,
-			"active": count >= 3,
+			"active": bool(active_bonds.get(category_id, false)),
 		})
 	return {
 		"character_id": character_id,

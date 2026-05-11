@@ -1,51 +1,51 @@
 extends Control
 
 const CATEGORY_OPTIONS: Array[Dictionary] = [
-	{"id": &"all", "label": "All"},
-	{"id": &"fruit", "label": "Fruit"},
-	{"id": &"dessert", "label": "Dessert"},
-	{"id": &"meat", "label": "Meat"},
-	{"id": &"drink", "label": "Drink"},
-	{"id": &"staple", "label": "Staple"},
-	{"id": &"spice", "label": "Spice"},
+	{"id": &"all", "label": "全部"},
+	{"id": &"fruit", "label": "蔬果"},
+	{"id": &"dessert", "label": "甜品"},
+	{"id": &"meat", "label": "肉类"},
+	{"id": &"drink", "label": "饮品"},
+	{"id": &"staple", "label": "主食"},
+	{"id": &"spice", "label": "香料"},
 ]
 
 const PRESETS: Array[Dictionary] = [
-	{"id": &"selected_single", "label": "Selected Food Solo"},
-	{"id": &"fruit_distinct", "label": "3 Distinct Fruit"},
-	{"id": &"fruit_duplicate", "label": "3 Same Fruit"},
-	{"id": &"lettuce_stack", "label": "Lettuce Under Food"},
-	{"id": &"rosemary_spice", "label": "Rosemary + Spice"},
-	{"id": &"mixed_category", "label": "Mixed Category Board"},
+	{"id": &"selected_single", "label": "选中食物单测"},
+	{"id": &"fruit_distinct", "label": "3种蔬果"},
+	{"id": &"fruit_duplicate", "label": "3个同种蔬果"},
+	{"id": &"lettuce_stack", "label": "生菜垫底"},
+	{"id": &"rosemary_spice", "label": "番茄+香料"},
+	{"id": &"mixed_category", "label": "混合类别盘面"},
 ]
 
 const METRIC_DEFS: Array[Dictionary] = [
-	{"key": "current_hp", "label": "Current HP", "decimals": 1},
-	{"key": "max_hp", "label": "Max HP", "decimals": 1},
-	{"key": "base_hp", "label": "Base HP", "decimals": 1},
-	{"key": "base_attack", "label": "Base ATK", "decimals": 1},
-	{"key": "attack_bonus", "label": "ATK Bonus", "decimals": 1},
-	{"key": "bonus_damage", "label": "Bonus Damage", "decimals": 1},
-	{"key": "attack_speed_bonus", "label": "ATK Speed %", "decimals": 1},
-	{"key": "effective_interval", "label": "Atk Interval", "decimals": 3},
-	{"key": "heal_per_second", "label": "HPS", "decimals": 1},
-	{"key": "execute_threshold", "label": "Execute %", "decimals": 1},
-	{"key": "retaliate_damage", "label": "Retaliate", "decimals": 1},
-	{"key": "enemy_attack_slow", "label": "Enemy Slow %", "decimals": 1},
-	{"key": "first_hit_reduction", "label": "First Hit Reduct", "decimals": 2},
-	{"key": "crit_chance", "label": "Crit Chance", "decimals": 2},
-	{"key": "revive_pct", "label": "Revive %", "decimals": 2},
-	{"key": "amber_cancel_chance", "label": "Cancel Chance", "decimals": 2},
-	{"key": "frozen_extra_slow_chance", "label": "Extra Slow Chance", "decimals": 2},
-	{"key": "forbidden_attack_reduction", "label": "Atk Down Chance", "decimals": 2},
-	{"key": "economy_gold_bonus", "label": "Economy Gold", "decimals": 1},
-	{"key": "active_bonds", "label": "Active Bonds", "decimals": 0},
-	{"key": "fruit_count", "label": "Fruit Types", "decimals": 0},
-	{"key": "dessert_count", "label": "Dessert Types", "decimals": 0},
-	{"key": "meat_count", "label": "Meat Types", "decimals": 0},
-	{"key": "drink_count", "label": "Drink Types", "decimals": 0},
-	{"key": "staple_count", "label": "Staple Types", "decimals": 0},
-	{"key": "spice_count", "label": "Spice Types", "decimals": 0},
+	{"key": "current_hp", "label": "当前HP", "decimals": 1},
+	{"key": "max_hp", "label": "最大HP", "decimals": 1},
+	{"key": "base_hp", "label": "基础HP", "decimals": 1},
+	{"key": "base_attack", "label": "基础ATK", "decimals": 1},
+	{"key": "attack_bonus", "label": "ATK加成", "decimals": 1},
+	{"key": "bonus_damage", "label": "附加伤害", "decimals": 1},
+	{"key": "attack_speed_bonus", "label": "攻速%", "decimals": 1},
+	{"key": "effective_interval", "label": "攻击间隔", "decimals": 3},
+	{"key": "heal_per_second", "label": "每秒回复", "decimals": 1},
+	{"key": "execute_threshold", "label": "处决%", "decimals": 1},
+	{"key": "retaliate_damage", "label": "反伤", "decimals": 1},
+	{"key": "enemy_attack_slow", "label": "敌方减速%", "decimals": 1},
+	{"key": "first_hit_reduction", "label": "首伤减免", "decimals": 2},
+	{"key": "crit_chance", "label": "暴击率", "decimals": 2},
+	{"key": "revive_pct", "label": "复活%", "decimals": 2},
+	{"key": "amber_cancel_chance", "label": "取消概率", "decimals": 2},
+	{"key": "frozen_extra_slow_chance", "label": "额外减速概率", "decimals": 2},
+	{"key": "forbidden_attack_reduction", "label": "降攻概率", "decimals": 2},
+	{"key": "economy_gold_bonus", "label": "额外金币", "decimals": 1},
+	{"key": "active_bonds", "label": "激活羁绊", "decimals": 0},
+	{"key": "fruit_count", "label": "蔬果层数", "decimals": 0},
+	{"key": "dessert_count", "label": "甜品层数", "decimals": 0},
+	{"key": "meat_count", "label": "肉类层数", "decimals": 0},
+	{"key": "drink_count", "label": "饮品层数", "decimals": 0},
+	{"key": "staple_count", "label": "主食层数", "decimals": 0},
+	{"key": "spice_count", "label": "香料层数", "decimals": 0},
 ]
 
 @onready var character_option: OptionButton = %CharacterOption
@@ -131,7 +131,7 @@ func _build_compare_rows() -> void:
 	for child in compare_grid.get_children():
 		child.queue_free()
 	_metric_rows.clear()
-	var headers: Array[String] = ["Metric", "Actual", "Expected", "Delta", "Match"]
+	var headers: Array[String] = ["指标", "实际", "期望", "差值", "匹配"]
 	for header in headers:
 		var label := Label.new()
 		label.text = header
@@ -231,26 +231,26 @@ func _build_actual_metrics(actor: Dictionary, synergy: Dictionary) -> Dictionary
 
 func _build_actual_summary_text(actor: Dictionary, synergy: Dictionary) -> String:
 	var lines: Array[String] = []
-	lines.append("[b]Actor Preview[/b]")
-	lines.append("HP %.1f / %.1f  |  Base HP %.1f" % [float(actor.get("current_hp", 0.0)), float(actor.get("max_hp", 0.0)), float(actor.get("base_hp", 0.0))])
-	lines.append("ATK %.1f + %.1f  |  Interval %.3fs" % [float(actor.get("base_attack", 0.0)), float(actor.get("attack_bonus", 0.0)), float(_latest_actual_metrics.get("effective_interval", 0.0))])
-	lines.append("Bonus %.1f  |  ASPD %.1f%%  |  HPS %.1f" % [float(actor.get("bonus_damage", 0.0)), float(actor.get("attack_speed_bonus", 0.0)), float(actor.get("heal_per_second", 0.0))])
-	lines.append("Execute %.1f%%  |  Retaliate %.1f  |  Enemy Slow %.1f%%" % [float(actor.get("execute_threshold", 0.0)), float(actor.get("retaliate_damage", 0.0)), float(actor.get("enemy_attack_slow", 0.0))])
-	lines.append("Revive %.0f%%  |  Crit %.0f%%  |  Cancel %.0f%%" % [float(actor.get("revive_pct", 0.0)) * 100.0, float(actor.get("crit_chance", 0.0)) * 100.0, float(actor.get("amber_cancel_chance", 0.0)) * 100.0])
+	lines.append("[b]角色预览[/b]")
+	lines.append("HP %.1f / %.1f  |  基础HP %.1f" % [float(actor.get("current_hp", 0.0)), float(actor.get("max_hp", 0.0)), float(actor.get("base_hp", 0.0))])
+	lines.append("ATK %.1f + %.1f  |  间隔 %.3fs" % [float(actor.get("base_attack", 0.0)), float(actor.get("attack_bonus", 0.0)), float(_latest_actual_metrics.get("effective_interval", 0.0))])
+	lines.append("附伤 %.1f  |  攻速 %.1f%%  |  回复 %.1f" % [float(actor.get("bonus_damage", 0.0)), float(actor.get("attack_speed_bonus", 0.0)), float(actor.get("heal_per_second", 0.0))])
+	lines.append("处决 %.1f%%  |  反伤 %.1f  |  敌方减速 %.1f%%" % [float(actor.get("execute_threshold", 0.0)), float(actor.get("retaliate_damage", 0.0)), float(actor.get("enemy_attack_slow", 0.0))])
+	lines.append("复活 %.0f%%  |  暴击 %.0f%%  |  取消 %.0f%%" % [float(actor.get("revive_pct", 0.0)) * 100.0, float(actor.get("crit_chance", 0.0)) * 100.0, float(actor.get("amber_cancel_chance", 0.0)) * 100.0])
 	lines.append("")
-	lines.append("[b]Synergy[/b]")
+	lines.append("[b]羁绊[/b]")
 	for entry_variant in synergy.get("entries", []):
 		var entry: Dictionary = entry_variant
 		lines.append("%s: %d type(s)  [%s]" % [
 			str(entry.get("category_name", "")),
 			int(entry.get("count", 0)),
-			"ON" if bool(entry.get("active", false)) else "OFF",
+			"开" if bool(entry.get("active", false)) else "关",
 		])
 	lines.append("")
-	lines.append("[b]Team Aura Flags[/b]")
+	lines.append("[b]团队效果标记[/b]")
 	var flags: Dictionary = actor.get("team_aura_flags", {})
 	if flags.is_empty():
-		lines.append("None")
+		lines.append("无")
 	else:
 		for key_variant in flags.keys():
 			lines.append("%s: %s" % [str(key_variant), str(flags[key_variant])])
@@ -270,7 +270,7 @@ func _refresh_compare_grid() -> void:
 		(row["actual"] as Label).text = _format_number(actual_value, decimals)
 		(row["delta"] as Label).text = _format_number(delta_value, decimals)
 		var matched: bool = is_equal_approx(actual_value, expected_spin.value)
-		(row["match"] as Label).text = "OK" if matched else "DIFF"
+		(row["match"] as Label).text = "匹配" if matched else "不同"
 
 func _on_catalog_entry_clicked(entry: Dictionary) -> void:
 	_selected_food_id = entry.get("definition_id", &"")
@@ -360,19 +360,19 @@ func _apply_preset(preset_id: StringName) -> void:
 func _on_battle_preview_pressed() -> void:
 	var report: Dictionary = _lab_state.build_battle_preview()
 	var lines: Array[String] = []
-	lines.append("[b]%s[/b]" % String(report.get("title", "Battle Preview")))
-	lines.append("Monster: %s" % String(report.get("monster_name", "Unknown")))
-	lines.append("Result: %s  |  Duration: %.1fs  |  Bonus Gold: %d" % [
+	lines.append("[b]%s[/b]" % String(report.get("title", "战斗预览")))
+	lines.append("怪物: %s" % String(report.get("monster_name", "未知")))
+	lines.append("结果: %s  |  时长: %.1fs  |  额外金币: %d" % [
 		String(report.get("result", "")).to_upper(),
 		float(report.get("duration", 0.0)),
 		int(report.get("bonus_gold", 0)),
 	])
-	lines.append("Monster HP: %.1f / %.1f" % [float(report.get("monster_hp", 0.0)), float(report.get("monster_max_hp", 0.0))])
+	lines.append("怪物HP: %.1f / %.1f" % [float(report.get("monster_hp", 0.0)), float(report.get("monster_max_hp", 0.0))])
 	lines.append("")
-	lines.append("[b]Recent Log[/b]")
+	lines.append("[b]最近日志[/b]")
 	var log_lines: PackedStringArray = report.get("log", PackedStringArray())
 	for line_variant in log_lines.slice(max(log_lines.size() - 8, 0), log_lines.size()):
-		lines.append(String(line_variant))
+		lines.append(_localize_battle_log_line(String(line_variant)))
 	battle_summary.text = "\n".join(lines)
 
 func _fill_expected_from_actual() -> void:
@@ -392,14 +392,34 @@ func _clear_expected_values() -> void:
 
 func _update_selected_food_info() -> void:
 	if _selected_food_id == &"":
-		selected_food_label.text = "Selected Food: None"
-		selected_rotation_label.text = "Rotation: 0"
-		passive_text_label.text = "Select a food from the catalog strip, then click or drag onto the board."
+		selected_food_label.text = "选中食物: 无"
+		selected_rotation_label.text = "旋转: 0"
+		passive_text_label.text = "从食物列表选择食物，然后点击或拖到饭盒中。"
 		return
 	var definition: FoodDefinition = _lab_state.get_food_definition(_selected_food_id)
-	selected_food_label.text = "Selected Food: %s" % definition.display_name
-	selected_rotation_label.text = "Rotation: %d" % _selected_rotation
+	selected_food_label.text = "选中食物: %s" % definition.display_name
+	selected_rotation_label.text = "旋转: %d" % _selected_rotation
 	passive_text_label.text = definition.passive_text
+
+func _localize_battle_log_line(line: String) -> String:
+	var close_index: int = line.find("] ")
+	var prefix: String = ""
+	var content: String = line
+	if line.begins_with("[") and close_index != -1:
+		prefix = line.substr(0, close_index + 2)
+		content = line.substr(close_index + 2)
+	if content.contains(" deals ") and content.contains(" damage to "):
+		var first: PackedStringArray = content.split(" deals ", false, 1)
+		var second: PackedStringArray = String(first[1]).split(" damage to ", false, 1)
+		if second.size() == 2:
+			return "%s%s 对 %s 造成 %s 伤害。" % [prefix, first[0], String(second[1]).trim_suffix("."), second[0]]
+	if content.ends_with(" is defeated."):
+		return "%s%s 被击败。" % [prefix, content.trim_suffix(" is defeated.")]
+	if content.contains(" restores ") and content.contains(" HP"):
+		var first_heal: PackedStringArray = content.split(" restores ", false, 1)
+		if first_heal.size() == 2:
+			return "%s%s 回复 %s" % [prefix, first_heal[0], first_heal[1]]
+	return "%s%s" % [prefix, content]
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:

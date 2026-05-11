@@ -176,10 +176,10 @@ func _rarity_color(rarity: StringName) -> Color:
 func _rarity_label(rarity: StringName) -> String:
 	match rarity:
 		&"common":
-			return "Common"
+			return "普通"
 		&"rare":
-			return "Rare"
+			return "稀有"
 		&"epic":
-			return "Epic"
+			return "史诗"
 		_:
 			return ""

@@ -35,6 +35,11 @@ func _run() -> void:
 	_assert(left_curtain != null and right_curtain != null, "Battle popup should create both curtain nodes")
 	run_state.perform_primary_action()
 	await process_frame
+	_assert(popup.get_node("%TitleLabel").text == "战斗准备", "Battle popup ready title should be localized")
+	_assert(popup.get_node("%PlaybackTimeLabel").text == "准备", "Battle popup ready time label should be localized")
+	popup._append_recent_log_line("[1.0s] Warrior deals 3.0 damage to Monster.")
+	var battle_log: RichTextLabel = popup.get_node("%BattleLog")
+	_assert(battle_log.text.contains("造成") and not battle_log.text.contains(" deals "), "Battle popup should localize visible battle log lines")
 	_assert(start_button.disabled, "Battle popup should keep Start Battle disabled until the preparation reveal finishes")
 	_assert(not popup._is_playing, "Battle popup should stay in preparation mode before Start Battle is pressed")
 	_assert(stage_background.texture != null and stage_background.texture.resource_path.ends_with("battle_stage_popup_bg.png"), "Battle popup should use the new stage background art")
@@ -58,6 +63,11 @@ func _run() -> void:
 	await process_frame
 	_assert(popup._is_playing, "Battle popup should enter playback after Start Battle is pressed")
 	_assert(popup.get_stage_phase() == &"monster_reveal" or popup.get_stage_phase() == &"battle", "Start Battle should enter the monster reveal contract before playback")
+	var localized_title_wait_ticks: int = 0
+	while popup.get_node("%TitleLabel").text != "战斗进行中" and popup._is_playing and localized_title_wait_ticks < 120:
+		await create_timer(0.05).timeout
+		localized_title_wait_ticks += 1
+	_assert(popup.get_node("%TitleLabel").text == "战斗进行中", "Battle popup in-progress title should be localized")
 	var playback_wait_ticks: int = 0
 	while popup._is_playing and playback_wait_ticks < 300:
 		await create_timer(0.05).timeout

@@ -181,9 +181,9 @@ func _on_start_battle_pressed() -> void:
 	close_button.disabled = false
 	_is_playing = false
 func _prepare_playback() -> void:
-	title_label.text = "Battle In Progress"
+	title_label.text = "战斗进行中"
 	route_label.text = _run_state().get_route_label()
-	playback_time_label.text = "Time 0.0s"
+	playback_time_label.text = "时间 0.0s"
 	result_label.text = ""
 	_recent_lines.clear()
 	battle_log.clear()
@@ -192,9 +192,9 @@ func _prepare_playback() -> void:
 	_refresh_battle_visual_state()
 	_set_stage_phase(STAGE_PHASE_BATTLE)
 func _prepare_pre_battle_preview() -> void:
-	title_label.text = "Battle Ready"
+	title_label.text = "战斗准备"
 	route_label.text = _run_state().get_route_label()
-	playback_time_label.text = "Ready"
+	playback_time_label.text = "准备"
 	result_label.text = ""
 	_recent_lines.clear()
 	battle_log.clear()
@@ -399,7 +399,7 @@ func _play_report(report: Dictionary) -> void:
 		if event_time > previous_time:
 			var wait_seconds: float = event_time - previous_time
 			await get_tree().create_timer(wait_seconds).timeout
-			playback_time_label.text = "Time %.1fs" % event_time
+			playback_time_label.text = "时间 %.1fs" % event_time
 			previous_time = event_time
 		await _process_battle_event(line)
 		if line.contains(" is defeated."):
@@ -409,7 +409,7 @@ func _play_report(report: Dictionary) -> void:
 	if not has_events:
 		await get_tree().create_timer(0.25).timeout
 	if float(report.get("duration", 0.0)) > previous_time:
-		playback_time_label.text = "Time %.1fs" % float(report.get("duration", 0.0))
+		playback_time_label.text = "时间 %.1fs" % float(report.get("duration", 0.0))
 func _render_final_report(report: Dictionary) -> void:
 	var result: String = String(report.get("result", ""))
 	if result == "win":
@@ -417,7 +417,7 @@ func _render_final_report(report: Dictionary) -> void:
 	else:
 		_ui_sfx().play_battle_lose()
 	_apply_final_display_state(report)
-	playback_time_label.text = "Time %.1fs" % float(report.get("duration", 0.0))
+	playback_time_label.text = "时间 %.1fs" % float(report.get("duration", 0.0))
 	result_label.text = ""
 	_refresh_battle_visual_state()
 	_set_stage_phase(STAGE_PHASE_RESULT)
@@ -448,14 +448,14 @@ func _capture_initial_monster_state(run_state: Node) -> Dictionary:
 	if summary.is_empty():
 		return {
 			"id": &"",
-			"name": "Unknown",
+			"name": "未知",
 			"current_hp": 0.0,
 			"max_hp": 0.0,
 			"alive": false,
 		}
 	return {
 		"id": summary.get("id", &""),
-		"name": String(summary.get("display_name", "Unknown")),
+		"name": String(summary.get("display_name", "未知")),
 		"current_hp": float(summary.get("hp", 0.0)),
 		"max_hp": float(summary.get("hp", 0.0)),
 		"alive": true,
@@ -596,12 +596,12 @@ func _apply_final_display_state(report: Dictionary) -> void:
 				_display_party[index] = report_by_id[actor_id]
 		_rebuild_name_lookup()
 	_display_monster["id"] = report.get("monster_id", _display_monster.get("id", &""))
-	_display_monster["name"] = String(report.get("monster_name", _display_monster.get("name", "Unknown")))
+	_display_monster["name"] = String(report.get("monster_name", _display_monster.get("name", "未知")))
 	_display_monster["current_hp"] = maxf(0.0, float(report.get("monster_hp", _display_monster.get("current_hp", 0.0))))
 	_display_monster["max_hp"] = float(report.get("monster_max_hp", _display_monster.get("max_hp", 0.0)))
 	_display_monster["alive"] = float(_display_monster.get("current_hp", 0.0)) > 0.0
 func _append_recent_log_line(line: String) -> void:
-	_recent_lines.append(line)
+	_recent_lines.append(_localize_battle_log_line(line))
 	while _recent_lines.size() > MAX_VISIBLE_LOG_LINES:
 		_recent_lines.remove_at(0)
 	var rendered_lines: Array[String] = []
@@ -611,7 +611,7 @@ func _append_recent_log_line(line: String) -> void:
 		rendered_lines.append("[color=#%s]%s[/color]" % [color_hex, _recent_lines[index]])
 	battle_log.bbcode_enabled = true
 	battle_log.clear()
-	battle_log.append_text("\n".join(rendered_lines))
+	battle_log.text = "\n".join(rendered_lines)
 func _extract_log_time(line: String) -> float:
 	var close_index: int = line.find("s]")
 	if not line.begins_with("[") or close_index <= 1:
@@ -735,6 +735,47 @@ func _process_notice_event(content: String) -> void:
 	var skill_notice: String = _monster_skill_notice(content)
 	if skill_notice != "":
 		_spawn_notice_text(skill_notice)
+
+func _localize_battle_log_line(line: String) -> String:
+	var close_index: int = line.find("] ")
+	var prefix: String = ""
+	var content: String = line
+	if line.begins_with("[") and close_index != -1:
+		prefix = line.substr(0, close_index + 2)
+		content = line.substr(close_index + 2)
+	if content == "Battle enters attrition mode.":
+		return "%s战斗进入消耗阶段。" % prefix
+	if content.contains(" lands a critical hit for "):
+		var crit_split: PackedStringArray = content.split(" lands a critical hit for ", false, 1)
+		if crit_split.size() == 2:
+			return "%s%s 暴击造成 %s。" % [prefix, crit_split[0], String(crit_split[1]).trim_suffix(".")]
+	if content.contains(" deals ") and content.contains(" damage to "):
+		var first: PackedStringArray = content.split(" deals ", false, 1)
+		if first.size() == 2:
+			var second: PackedStringArray = String(first[1]).split(" damage to ", false, 1)
+			if second.size() == 2:
+				return "%s%s 对 %s 造成 %s 伤害。" % [prefix, first[0], String(second[1]).trim_suffix("."), second[0]]
+	if content.contains(" restores ") and content.contains(" HP"):
+		var heal_split: PackedStringArray = content.split(" restores ", false, 1)
+		if heal_split.size() == 2:
+			return "%s%s 回复 %s" % [prefix, heal_split[0], heal_split[1]]
+	if content.contains(" retaliates for "):
+		var retaliate_split: PackedStringArray = content.split(" retaliates for ", false, 1)
+		if retaliate_split.size() == 2:
+			return "%s%s 反击造成 %s" % [prefix, retaliate_split[0], retaliate_split[1]]
+	if content.contains(" executes "):
+		var execute_split: PackedStringArray = content.split(" executes ", false, 1)
+		if execute_split.size() == 2:
+			return "%s%s 处决 %s。" % [prefix, execute_split[0], String(execute_split[1]).trim_suffix(".")]
+	if content.ends_with(" is defeated."):
+		return "%s%s 被击败。" % [prefix, content.trim_suffix(" is defeated.")]
+	if content.contains(" revives with "):
+		var revive_split: PackedStringArray = content.split(" revives with ", false, 1)
+		if revive_split.size() == 2:
+			return "%s%s 复活，HP %s" % [prefix, revive_split[0], String(revive_split[1]).trim_suffix(" HP.")]
+	if content.ends_with("'s next attack is cancelled."):
+		return "%s%s 的下一次攻击被取消。" % [prefix, content.trim_suffix("'s next attack is cancelled.")]
+	return "%s%s" % [prefix, content]
 func _on_hero_portrait_frame_gui_input(event: InputEvent, hero_portrait_frame: Control) -> void:
 	if not _is_preparing or _is_playing:
 		return
