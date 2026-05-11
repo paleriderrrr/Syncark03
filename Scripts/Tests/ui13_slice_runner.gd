@@ -37,9 +37,19 @@ func _run() -> void:
 	for file_name in EXPECTED_FILES:
 		var path: String = OUTPUT_DIR + file_name
 		_assert(FileAccess.file_exists(path), "Missing UI1-3 slice output: %s" % path)
-	quit(0 if _failures.is_empty() else 1)
+	_finish()
 
 func _assert(condition: bool, message: String) -> void:
 	if not condition:
 		_failures.append(message)
 		push_error(message)
+
+func _finish() -> void:
+	if _failures.is_empty():
+		print("UI13_SLICE_TEST_PASS")
+		quit(0)
+	else:
+		printerr("UI13_SLICE_TEST_FAIL")
+		for failure in _failures:
+			printerr("- %s" % failure)
+		quit(1)
