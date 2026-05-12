@@ -140,6 +140,7 @@ func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) 
 		float(monster_multipliers.get("attack", 1.0))
 	)
 	if monster.is_empty():
+		report["result"] = "error"
 		report["title"] = "战斗配置缺失"
 		return report
 	_apply_team_enemy_slow_to_monster(monster, team_effects)
@@ -620,10 +621,10 @@ func _apply_food_passive(run_state: Object, food: FoodDefinition, item: Dictiona
 		&"soy_sauce":
 			pass
 		&"cilantro":
-			result["bonus_damage"] += maxf(0.0, 9.0 - 3.0 * _count_adjacent_foods(item, placed_foods))
+			result["bonus_damage"] -= minf(9.0, 3.0 * _count_adjacent_foods(item, placed_foods))
 		&"pepper_bundle":
 			if adj.has(&"fruit"):
-				result["bonus_damage"] += 1.5
+				result["bonus_damage"] += 0.5
 		&"sage_ashes":
 			result["revive_pct"] = 0.3
 		&"forbidden_herb":
@@ -1251,9 +1252,9 @@ func _all_characters_dead(characters: Array[Dictionary]) -> bool:
 
 func _calculate_bonus_gold(run_state: Object, characters: Array[Dictionary], duration: float) -> int:
 	var battle_index: int = run_state.get_completed_battle_count()
-	if battle_index < 0 or battle_index >= run_state.stage_flow_config.normal_battle_reward_gold.size():
-		return 0
-	var base_gold: int = run_state.stage_flow_config.normal_battle_reward_gold[battle_index]
+	var base_gold: int = 0
+	if battle_index >= 0 and battle_index < run_state.stage_flow_config.normal_battle_reward_gold.size():
+		base_gold = run_state.stage_flow_config.normal_battle_reward_gold[battle_index]
 	var hp_ratio: float = 0.0
 	for actor in characters:
 		hp_ratio += actor["current_hp"] / maxf(actor["max_hp"], 1.0)

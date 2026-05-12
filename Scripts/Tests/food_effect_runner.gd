@@ -396,6 +396,7 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 3.0, "wasabi should add three extra damage")
 		&"soy_sauce":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 4)))
+			_assert(is_equal_approx(float(_preview_actor(run_state)["bonus_damage"]), 0.0), "soy_sauce should not add a fixed bonus damage before counting adjacent empty cells")
 			_assert(int(_preview_actor(run_state).get("extra_damage_hits", 0)) > 0, "soy_sauce should gain separate extra damage hits from adjacent empty cells")
 			var soy_engine: CombatEngine = CombatEngine.new()
 			var soy_characters: Array[Dictionary] = soy_engine._build_characters(run_state)
@@ -405,13 +406,13 @@ func _run_food_case(run_state: Node, food_id: StringName) -> void:
 			_assert(int(soy_monster.get("received_hit_count", 0)) > 1, "soy_sauce extra damage should count as separate attack hits")
 		&"cilantro":
 			_reset_board(run_state, [{"id": food_id, "anchor": Vector2i(0, 0)}], _cells_in_rect(Vector2i(0, 0), Vector2i(3, 3)))
-			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 18.0, "cilantro should start at +9 bonus damage when not adjacent to food")
+			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 9.0, "cilantro should start at +9 bonus damage when not adjacent to food")
 		&"pepper_bundle":
 			_reset_board(run_state, [
 				{"id": food_id, "anchor": Vector2i(0, 0)},
 				{"id": &"red_berry", "anchor": Vector2i(1, 0)},
 			], _cells_in_rect(Vector2i(0, 0), Vector2i(4, 5)))
-			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 2.5, "pepper_bundle should gain +1.5 bonus damage when adjacent to fruit")
+			_assert(float(_preview_actor(run_state)["bonus_damage"]) == 1.5, "pepper_bundle should deal 1.5 total bonus damage when adjacent to fruit")
 		&"curry_can":
 			run_state.start_new_run()
 			run_state.current_gold -= 6
@@ -519,6 +520,15 @@ func _run_runtime_balance_fix_cases(run_state: Node) -> void:
 	var godfather_characters: Array[Dictionary] = engine._build_characters(run_state)
 	var godfather_bonus_gold: int = engine._calculate_bonus_gold(run_state, godfather_characters, 0.0)
 	_assert(godfather_bonus_gold > baseline_bonus_gold, "godfather should convert its economy bonus into battle bonus gold")
+
+	run_state.start_new_run()
+	run_state.current_route_index = run_state.stage_flow_config.route_nodes.size() - 1
+	for _battle_index in range(run_state.stage_flow_config.normal_battle_reward_gold.size()):
+		run_state.battle_reports.append({"result": "win"})
+	_reset_board(run_state, [{"id": &"godfather", "anchor": Vector2i(1, 1)}], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 5)))
+	var boss_godfather_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var boss_bonus_gold: int = engine._calculate_bonus_gold(run_state, boss_godfather_characters, 0.0)
+	_assert(boss_bonus_gold > 0, "economy foods should still grant bonus gold during boss battles")
 
 	_reset_board(run_state, [
 		{"id": &"lemon", "anchor": Vector2i(1, 1)},

@@ -525,7 +525,6 @@ category = &"spice"
 rarity = &"rare"
 gold_value = 6
 shape_cells = Array[Vector2i]([Vector2i(0, 0), Vector2i(0, 1)])
-bonus_damage = 1.0
 passive_text = "相邻4格每一个空格，攻击造成一次1点附加伤害。"
 
 [sub_resource type="Resource" id="Food_cilantro"]

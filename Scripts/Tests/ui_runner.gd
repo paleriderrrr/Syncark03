@@ -228,6 +228,20 @@ func _run() -> void:
 			if offer.get("rarity", &"") == &"epic":
 				_assert(int(offer.get("quantity", 0)) == 1, "Epic food packages should not refresh with quantity above 1")
 
+	run_state.start_new_run()
+	run_state.shared_inventory.append(run_state.generate_item_instance(&"red_berry"))
+	var board_drop_food: Dictionary = run_state.shared_inventory[run_state.shared_inventory.size() - 1]
+	run_state.select_inventory_item(board_drop_food["instance_id"])
+	_assert(run_state.try_place_selected_item(Vector2i.ZERO), "UI drop cleanup test should place a food before board-dragging it")
+	_assert(run_state.begin_board_food_action(Vector2i.ZERO), "UI drop cleanup test should grab the placed board food")
+	editor.call("_on_board_drop_requested", Vector2i(-10, -10), {
+		"source": &"board_food",
+		"instance_id": board_drop_food["instance_id"],
+		"from_cell": Vector2i.ZERO,
+		"grab_offset": Vector2i.ZERO,
+	})
+	_assert(run_state.selected_item.is_empty(), "Invalid board-food drops should clear the selected drag action")
+
 	editor.queue_free()
 	if _failures.is_empty():
 		print("UI_TEST_PASS")

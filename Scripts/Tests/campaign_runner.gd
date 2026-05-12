@@ -108,6 +108,26 @@ func _run() -> void:
 	_assert(run_state.remove_item_at_cell(Vector2i.ZERO), "Placed food should be removable")
 	_assert(run_state.try_restore_snapshot(), "Snapshot restore should rebuild the pre-battle layout")
 
+	run_state.pre_battle_snapshot = {"character_food_layouts": {}}
+	var placed_before_bad_snapshot: int = run_state.get_character_state(&"warrior")["placed_foods"].size()
+	var inventory_before_bad_snapshot: int = run_state.shared_inventory.size()
+	_assert(not run_state.try_restore_snapshot(), "Malformed snapshot restore should fail explicitly instead of mutating board state")
+	_assert(run_state.get_character_state(&"warrior")["placed_foods"].size() == placed_before_bad_snapshot, "Malformed snapshot restore should preserve placed foods")
+	_assert(run_state.shared_inventory.size() == inventory_before_bad_snapshot, "Malformed snapshot restore should preserve inventory")
+
+	run_state.start_new_run()
+	await process_frame
+	run_state.current_route_index = 1
+	run_state.normal_monster_order.clear()
+	var invalid_report: Dictionary = CombatEngine.simulate(run_state)
+	_assert(invalid_report.get("result", "") == "error", "Missing battle configuration should produce an explicit error report")
+	_assert(String(invalid_report.get("title", "")).contains("战斗配置缺失"), "Missing battle configuration report should explain the configuration error")
+	run_state.apply_battle_report(invalid_report)
+	_assert(run_state.battle_reports.is_empty(), "Error battle reports should not be committed as normal battle history")
+	_assert(not run_state.run_finished, "Error battle reports should not end the run as a player defeat")
+	run_state.start_new_run()
+	await process_frame
+
 	var expansion_id: StringName = &"test_expansion"
 	run_state.get_character_state(&"warrior")["pending_expansions"].append({
 		"instance_id": expansion_id,

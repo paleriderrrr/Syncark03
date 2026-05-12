@@ -1666,6 +1666,10 @@ func _capture_snapshot() -> Dictionary:
 	return result
 
 func apply_battle_report(report: Dictionary) -> void:
+	if report.get("result", "") == "error":
+		state_changed.emit()
+		battle_finished.emit(report)
+		return
 	battle_reports.append(report)
 	_apply_persistent_health(report)
 	if report.get("result", "") == "win":
@@ -1706,8 +1710,9 @@ func _apply_battle_victory(report: Dictionary) -> void:
 	var defeated_monster: MonsterDefinition = _resolve_defeated_monster(report, battle_index)
 	if battle_index >= 0 and battle_index < stage_flow_config.normal_battle_reward_gold.size():
 		current_gold += stage_flow_config.normal_battle_reward_gold[battle_index]
-		current_gold += int(report.get("bonus_gold", 0))
-	grant_battle_drops(defeated_monster, battle_index)
+	current_gold += int(report.get("bonus_gold", 0))
+	if battle_index >= 0 and battle_index < stage_flow_config.normal_battle_reward_gold.size():
+		grant_battle_drops(defeated_monster, battle_index)
 	_apply_victory_character_recovery(report)
 	for character_id in character_states.keys():
 		character_states[character_id]["placed_foods"].clear()
@@ -1770,6 +1775,11 @@ func get_battle_drop_candidates(monster: MonsterDefinition) -> Array[FoodDefinit
 func try_restore_snapshot() -> bool:
 	if pre_battle_snapshot.is_empty():
 		return false
+	if not pre_battle_snapshot.has("character_food_layouts"):
+		return false
+	var snapshot_layouts: Dictionary = pre_battle_snapshot["character_food_layouts"]
+	if snapshot_layouts.is_empty():
+		return false
 	var inventory_pool: Array[Dictionary] = shared_inventory.duplicate(true)
 	for character_id in character_states.keys():
 		for placed_variant in character_states[character_id].get("placed_foods", []):
@@ -1781,9 +1791,9 @@ func try_restore_snapshot() -> bool:
 				"reroll_bonus_count": int(placed.get("reroll_bonus_count", 0)),
 			})
 	var restored_layouts: Dictionary = {}
-	for character_id in pre_battle_snapshot["character_food_layouts"].keys():
+	for character_id in snapshot_layouts.keys():
 		var character_layouts: Array[Dictionary] = []
-		for layout in pre_battle_snapshot["character_food_layouts"][character_id]:
+		for layout in snapshot_layouts[character_id]:
 			var found_index: int = -1
 			for index in inventory_pool.size():
 				if layout.has("instance_id") and inventory_pool[index]["instance_id"] == layout["instance_id"]:
