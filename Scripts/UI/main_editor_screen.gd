@@ -17,6 +17,7 @@ const WANTED_POSTER_TEXTURES := {
 	&"water_giant": preload("res://Art/Wanted/water.png"),
 	&"bread_knight": preload("res://Art/Wanted/bread.png"),
 	&"spice_wizard": preload("res://Art/Wanted/mushroom.png"),
+	&"nc2_auto_cooker": preload("res://Art/Wanted/nc-2boss.png"),
 }
 const TEXT_GOLD := "\u91d1\u5e01\uff1a%d"
 const TEXT_MARKET_REFRESH := "\u5237\u65b0\uff08%d\u91d1\uff09"

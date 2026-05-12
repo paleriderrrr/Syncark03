@@ -23,6 +23,7 @@ const MONSTER_TEXTURE_COWDRAGON := preload("res://Art/PaperEnemies/cowdragon.png
 const MONSTER_TEXTURE_WATER := preload("res://Art/PaperEnemies/water.png")
 const MONSTER_TEXTURE_BREAD := preload("res://Art/PaperEnemies/bread.png")
 const MONSTER_TEXTURE_MUSHROOM := preload("res://Art/PaperEnemies/mushroom.png")
+const MONSTER_TEXTURE_NC2_BOSS := preload("res://Art/PaperEnemies/nc-2boss.png")
 const STAGE_BACKGROUND_TEXTURE := preload("res://Art/NewBattleBackground/battle_stage_popup_bg.png")
 const STAGE_OVERLAY_TEXTURE := preload("res://Art/NewBattleBackground/battle_stage_overlay.png")
 const STAGE_CLOSED_LEFT_CURTAIN_TEXTURE := preload("res://Art/NewBattleBackground/battle_curtain_left_panel.png")
@@ -957,6 +958,8 @@ func _monster_texture_for(monster_data: Dictionary) -> Texture2D:
 			return MONSTER_TEXTURE_BREAD
 		&"spice_wizard":
 			return MONSTER_TEXTURE_MUSHROOM
+		&"nc2_auto_cooker":
+			return MONSTER_TEXTURE_NC2_BOSS
 		_:
 			return null
 func _play_attack_animation(actor_name: String) -> void:

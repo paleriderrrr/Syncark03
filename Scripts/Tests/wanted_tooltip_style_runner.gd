@@ -47,6 +47,13 @@ func _run() -> void:
 		front_wanted_poster_rect.texture != null and front_wanted_poster_rect.texture.resource_path.ends_with("Art/Wanted/mushroom.png"),
 		"Wanted poster should switch with the upcoming monster id"
 	)
+	run_state.current_route_index = run_state.stage_flow_config.route_nodes.size() - 1
+	editor.call("_refresh_next_monster_panel")
+	await process_frame
+	_assert(
+		front_wanted_poster_rect.texture != null and front_wanted_poster_rect.texture.resource_path.ends_with("Art/Wanted/nc-2boss.png"),
+		"Wanted poster should use the NC-2 boss art on the boss route node"
+	)
 	right_info_board.call("flip_to_back")
 	await create_timer(0.35).timeout
 	_assert(not bool(right_info_board.call("is_showing_front")), "Right info board should be able to flip to the back face")

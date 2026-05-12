@@ -33,6 +33,8 @@ func _run() -> void:
 	var monster_actor: Control = popup.get_node("%MonsterActor") as Control
 	_assert(start_button != null, "Battle popup should expose a Start Battle button node")
 	_assert(left_curtain != null and right_curtain != null, "Battle popup should create both curtain nodes")
+	var boss_texture: Texture2D = popup.call("_monster_texture_for", {"id": &"nc2_auto_cooker"}) as Texture2D
+	_assert(boss_texture != null and boss_texture.resource_path.ends_with("nc-2boss.png"), "Battle popup should render the NC-2 boss with its paper enemy art")
 	run_state.perform_primary_action()
 	await process_frame
 	_assert(popup.get_node("%TitleLabel").text == "战斗准备", "Battle popup ready title should be localized")
