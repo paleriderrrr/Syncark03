@@ -120,10 +120,10 @@ cell_pixel_size = 48
 
 [node name="TopMarketPanel" type="Control" parent="." unique_id=187167841]
 anchors_preset = 0
-offset_left = 238.0
-offset_top = 0.0
-offset_right = 1670.0
-offset_bottom = 224.0
+offset_left = 221.0
+offset_top = -49.0
+offset_right = 1653.0
+offset_bottom = 175.0
 
 [node name="TopMarketBackground" type="TextureRect" parent="TopMarketPanel" unique_id=517598199]
 unique_name_in_owner = true

@@ -81,6 +81,7 @@ var _instance_counter: int = 1
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _autosave_enabled: bool = false
 var _has_persistable_run: bool = false
+var _current_run_started_without_save: bool = true
 
 func _ready() -> void:
 	_rng.randomize()
@@ -116,6 +117,7 @@ func ensure_initialized() -> void:
 		start_new_run()
 
 func start_new_run(persist_run: bool = true) -> void:
+	_current_run_started_without_save = not has_saved_run()
 	current_gold = stage_flow_config.initial_gold if stage_flow_config else 30
 	current_route_index = 0
 	current_market_index = 1
@@ -180,6 +182,9 @@ func has_saved_run() -> bool:
 	var payload: Dictionary = _read_persistence_payload()
 	return bool(payload.get("has_run_data", false)) and payload.has("run_data")
 
+func should_auto_open_tutorial_on_editor_entry() -> bool:
+	return _current_run_started_without_save or not has_saved_run()
+
 func save_run() -> bool:
 	return _write_persistence_payload(_build_persistence_payload())
 
@@ -201,6 +206,7 @@ func load_run() -> bool:
 	_apply_persistent_metadata_from_payload(payload)
 	if not _apply_run_snapshot(run_data):
 		return false
+	_current_run_started_without_save = false
 	_has_persistable_run = true
 	selected_item.clear()
 	apply_master_volume()
@@ -211,6 +217,7 @@ func load_run() -> bool:
 
 func delete_saved_run() -> void:
 	_has_persistable_run = false
+	_current_run_started_without_save = true
 	_write_persistence_payload(_build_metadata_only_persistence_payload())
 
 func _on_state_changed_autosave() -> void:

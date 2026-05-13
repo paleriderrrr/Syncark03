@@ -131,6 +131,7 @@ var _last_right_info_monster_id: StringName = &""
 var _active_synergy_ids: Dictionary = {}
 var _guide_page_index: int = 0
 var _guide_marks_tutorial_complete: bool = false
+var _should_auto_open_tutorial: bool = false
 var _battle_modal_blocker_tween: Tween
 var persistent_gold_label: Label
 var item_tooltip_overlay: ImmediateItemTooltipOverlay
@@ -166,6 +167,7 @@ func _ready() -> void:
 	top_market_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var run_state: Node = _run_state()
 	run_state.ensure_initialized()
+	_should_auto_open_tutorial = run_state.should_auto_open_tutorial_on_editor_entry()
 	run_state.ensure_persistable_run()
 	_food_textures = FoodVisuals.build_food_texture_lookup()
 	_food_board_textures = FoodVisuals.build_food_board_texture_lookup()
@@ -896,11 +898,13 @@ func _on_help_pressed() -> void:
 	_show_guide_overlay(false)
 
 func _maybe_show_first_time_tutorial() -> void:
-	if _run_state().is_tutorial_completed():
+	if not _should_auto_open_tutorial and _run_state().is_tutorial_completed():
 		return
 	_show_guide_overlay(true)
 
 func _show_guide_overlay(mark_tutorial_complete_on_finish: bool) -> void:
+	if GUIDE_TEXTURES.is_empty():
+		return
 	_guide_page_index = 0
 	_guide_marks_tutorial_complete = mark_tutorial_complete_on_finish
 	_apply_guide_page()
@@ -932,6 +936,17 @@ func _on_guide_backdrop_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_advance_guide_overlay()
 		get_viewport().set_input_as_handled()
+
+func _handle_guide_overlay_input(event: InputEvent) -> bool:
+	if not guide_overlay.visible:
+		return false
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		_hide_guide_overlay()
+		return true
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_advance_guide_overlay()
+		return true
+	return false
 
 func _on_settings_pressed() -> void:
 	_ui_sfx().play_button()
@@ -1041,9 +1056,7 @@ func _on_role_tab_pressed(character_id: StringName) -> void:
 	_run_state().select_character(character_id)
 
 func _input(event: InputEvent) -> void:
-	if guide_overlay.visible:
-		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-			_hide_guide_overlay()
+	if _handle_guide_overlay_input(event):
 		get_viewport().set_input_as_handled()
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R and not _run_state().selected_item.is_empty():

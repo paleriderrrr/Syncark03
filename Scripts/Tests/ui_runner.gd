@@ -8,6 +8,7 @@ func _initialize() -> void:
 func _run() -> void:
 	await process_frame
 	var run_state: Node = root.get_node("/root/RunState")
+	run_state.delete_saved_run()
 	run_state.start_new_run()
 	run_state.tutorial_completed = false
 	var editor_scene: PackedScene = load("res://Scenes/main_editor_screen.tscn")
@@ -107,8 +108,29 @@ func _run() -> void:
 		await process_frame
 	if guide_overlay != null:
 		_assert(guide_overlay.visible, "Help button should reopen the guide overlay after tutorial completion")
-		editor.call("_hide_guide_overlay")
+		var first_guide_texture: Texture2D = guide_image.texture
+		editor.call("_input", _build_left_click_event())
 		await process_frame
+		_assert(guide_image.texture != first_guide_texture, "Guide overlay left click should advance to the next tutorial page")
+		editor.call("_input", _build_escape_event())
+		await process_frame
+		_assert(not guide_overlay.visible, "Guide overlay Escape input should close the tutorial")
+
+	run_state.tutorial_completed = true
+	run_state.delete_saved_run()
+	editor.queue_free()
+	await process_frame
+	editor = editor_scene.instantiate()
+	root.add_child(editor)
+	await process_frame
+	await create_timer(1.0).timeout
+	guide_overlay = editor.get_node_or_null("GuideOverlay")
+	guide_image = editor.get_node_or_null("GuideOverlay/GuideImage")
+	_assert(guide_overlay != null and guide_overlay.visible, "Guide image overlay should auto-open when entering without a resumable save even if tutorial metadata was preserved")
+	if guide_overlay != null:
+		editor.call("_input", _build_escape_event())
+		await process_frame
+		_assert(not guide_overlay.visible, "Guide overlay should still close after reopening on a no-save entry")
 	var market_strip: Node = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip")
 	_assert(market_strip.has_method("get_entry_count"), "Top market strip should expose grouped entries")
 	var market_viewport: Control = editor.get_node("TopMarketPanel/TopMarketVBox/TopMarketStrip/VBox/StripHBox/Viewport")
@@ -255,6 +277,18 @@ func _assert(condition: bool, message: String) -> void:
 	if not condition:
 		_failures.append(message)
 		push_error(message)
+
+func _build_left_click_event() -> InputEventMouseButton:
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	return event
+
+func _build_escape_event() -> InputEventKey:
+	var event := InputEventKey.new()
+	event.pressed = true
+	event.keycode = KEY_ESCAPE
+	return event
 
 func _rect_inside_viewport(rect: Rect2, viewport_rect: Rect2) -> bool:
 	return rect.position.x >= viewport_rect.position.x and rect.position.y >= viewport_rect.position.y and rect.end.x <= viewport_rect.end.x and rect.end.y <= viewport_rect.end.y

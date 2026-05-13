@@ -15,6 +15,7 @@ func _run() -> void:
 	run_state.delete_saved_run()
 	run_state.start_new_run()
 	await process_frame
+	_assert(run_state.should_auto_open_tutorial_on_editor_entry(), "Fresh runs started without an existing save should auto-open the tutorial on editor entry")
 
 	run_state.current_gold = 77
 	run_state.current_route_index = 4
@@ -80,6 +81,7 @@ func _run() -> void:
 	run_state.start_new_run(false)
 	await process_frame
 	_assert(run_state.load_run(), "Saved run should remain loadable after resetting runtime state")
+	_assert(not run_state.should_auto_open_tutorial_on_editor_entry(), "Loaded runs should not be treated as no-save tutorial entries")
 
 	_assert(run_state.current_gold == 77, "Saved gold should be restored")
 	_assert(run_state.current_route_index == 4, "Saved route index should be restored")
@@ -100,6 +102,7 @@ func _run() -> void:
 
 	run_state.delete_saved_run()
 	_assert(not run_state.has_saved_run(), "Deleting the save should remove the resumable run")
+	_assert(run_state.should_auto_open_tutorial_on_editor_entry(), "Deleting the resumable save should restore no-save tutorial entry behavior")
 
 	run_state.master_volume_percent = 37.0
 	run_state.tutorial_completed = true
