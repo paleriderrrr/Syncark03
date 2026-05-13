@@ -139,6 +139,32 @@ func _run() -> void:
 	run_state.select_pending_expansion(expansion_id)
 	_assert(run_state.try_place_selected_item(Vector2i(3, 0)), "Expansion should place adjacent to the base board")
 
+	var bridge_expansion_id: StringName = &"bridge_expansion"
+	var leaf_expansion_id: StringName = &"leaf_expansion"
+	run_state.get_character_state(&"warrior")["pending_expansions"].append({
+		"instance_id": bridge_expansion_id,
+		"label": "1x1",
+		"shape_cells": [Vector2i(0, 0)],
+		"rotation": 0,
+		"target_character_id": &"warrior",
+	})
+	run_state.select_pending_expansion(bridge_expansion_id)
+	_assert(run_state.try_place_selected_item(Vector2i(4, 0)), "Bridge expansion should extend from an existing expansion")
+	run_state.get_character_state(&"warrior")["pending_expansions"].append({
+		"instance_id": leaf_expansion_id,
+		"label": "1x1",
+		"shape_cells": [Vector2i(0, 0)],
+		"rotation": 0,
+		"target_character_id": &"warrior",
+	})
+	run_state.select_pending_expansion(leaf_expansion_id)
+	_assert(run_state.try_place_selected_item(Vector2i(5, 0)), "Leaf expansion should place through the bridge expansion")
+	var leaf_food: Dictionary = run_state.generate_item_instance(&"red_berry")
+	run_state.shared_inventory.append(leaf_food)
+	run_state.select_inventory_item(leaf_food["instance_id"])
+	_assert(run_state.try_place_selected_item(Vector2i(5, 0)), "Food should place on the leaf expansion")
+	_assert(not run_state.remove_item_at_cell(Vector2i(4, 0)), "Removing a bridge expansion should fail when it would disconnect occupied cells")
+
 	var battle_request_probe: Dictionary = {"count": 0}
 	run_state.battle_requested.connect(func() -> void:
 		battle_request_probe["count"] = int(battle_request_probe["count"]) + 1

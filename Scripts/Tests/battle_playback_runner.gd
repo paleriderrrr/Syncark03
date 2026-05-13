@@ -88,6 +88,14 @@ func _run() -> void:
 		_assert(banner_path.ends_with("defeat.png"), "Losing battles should show the defeat banner")
 	else:
 		_assert(false, "Battle playback test expected a win or lose result, got %s" % result)
+	await popup._render_final_report({
+		"result": "error",
+		"title": "战斗配置缺失",
+		"duration": 0.0,
+		"log": PackedStringArray(),
+	})
+	_assert(not result_banner.visible, "Error battle reports should not show victory or defeat banners")
+	_assert((popup.get_node("%ResultLabel") as Label).text.contains("战斗配置缺失"), "Error battle reports should show the configuration error title")
 	popup.hide()
 	await create_timer(0.3).timeout
 	_assert(not blocker.visible, "Battle popup should release the outside blocker after closing")

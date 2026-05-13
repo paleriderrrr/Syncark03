@@ -499,11 +499,65 @@ func get_base_cells(character_id: StringName) -> Array[Vector2i]:
 	return ShapeUtils.translate_cells(_clone_cells(state.get("base_shape", [])), state.get("base_anchor", Vector2i.ZERO))
 
 func _rebuild_active_cells(state: Dictionary) -> void:
+	state["active_cells"] = _build_active_cells_for_expansions(state, state.get("placed_expansions", []))
+
+func _build_active_cells_for_expansions(state: Dictionary, expansions: Array) -> Array[Vector2i]:
 	var active_cells: Array[Vector2i] = ShapeUtils.translate_cells(_clone_cells(state.get("base_shape", [])), state.get("base_anchor", Vector2i.ZERO))
-	for expansion in state.get("placed_expansions", []):
+	for expansion in expansions:
 		for cell_variant in expansion.get("cells", []):
 			active_cells.append(cell_variant)
-	state["active_cells"] = active_cells
+	return active_cells
+
+func _are_expansions_connected_to_base(state: Dictionary, expansions: Array) -> bool:
+	var active_cells: Array[Vector2i] = _build_active_cells_for_expansions(state, expansions)
+	if active_cells.is_empty():
+		return false
+	var active_lookup: Dictionary = ShapeUtils.cells_to_lookup(active_cells)
+	var base_cells: Array[Vector2i] = ShapeUtils.translate_cells(_clone_cells(state.get("base_shape", [])), state.get("base_anchor", Vector2i.ZERO))
+	var queue: Array[Vector2i] = []
+	var visited: Dictionary = {}
+	for base_cell in base_cells:
+		var base_key: String = "%d:%d" % [base_cell.x, base_cell.y]
+		if active_lookup.has(base_key):
+			queue.append(base_cell)
+			visited[base_key] = true
+	var offsets: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+	var cursor: int = 0
+	while cursor < queue.size():
+		var current: Vector2i = queue[cursor]
+		cursor += 1
+		for offset in offsets:
+			var neighbor: Vector2i = current + offset
+			var key: String = "%d:%d" % [neighbor.x, neighbor.y]
+			if not active_lookup.has(key) or visited.has(key):
+				continue
+			visited[key] = true
+			queue.append(neighbor)
+	for active_cell in active_cells:
+		if not visited.has("%d:%d" % [active_cell.x, active_cell.y]):
+			return false
+	return true
+
+func _build_candidate_expansion_layout(state: Dictionary, moving_instance_id: StringName, anchor: Vector2i, cells: Array[Vector2i], rotation: int) -> Array:
+	var result: Array = []
+	var replaced: bool = false
+	for expansion_variant in state.get("placed_expansions", []):
+		var expansion: Dictionary = expansion_variant
+		var candidate: Dictionary = expansion.duplicate(true)
+		if expansion.get("instance_id", &"") == moving_instance_id:
+			candidate["anchor"] = anchor
+			candidate["cells"] = cells
+			candidate["rotation"] = rotation
+			replaced = true
+		result.append(candidate)
+	if not replaced and moving_instance_id != &"":
+		result.append({
+			"instance_id": moving_instance_id,
+			"anchor": anchor,
+			"cells": cells,
+			"rotation": rotation,
+		})
+	return result
 
 func _next_instance_id(prefix: String) -> StringName:
 	var value: String = "%s_%d" % [prefix, _instance_counter]
@@ -659,6 +713,11 @@ func buy_market_offer(index: int) -> bool:
 	if index < 0 or index >= current_market_offers.size():
 		return false
 	var offer: Dictionary = current_market_offers[index]
+	var offer_definition: FoodDefinition = null
+	if offer.get("kind", &"") == &"food":
+		offer_definition = get_food_definition(offer.get("definition_id", &""))
+		if offer_definition == null:
+			return false
 	var price: int = int(offer["price"])
 	if offer["kind"] == &"food" and free_food_purchase_count > 0:
 		price = 0
@@ -668,13 +727,12 @@ func buy_market_offer(index: int) -> bool:
 	current_gold -= price
 	current_market_offers.remove_at(index)
 	if offer["kind"] == &"food":
-		var offer_definition: FoodDefinition = get_food_definition(offer["definition_id"])
 		for _i in int(offer["quantity"]):
 			var instance: Dictionary = generate_item_instance(offer["definition_id"])
 			shared_inventory.append(instance)
-			if offer_definition == null or offer_definition.id != &"travel_bento":
+			if offer_definition.id != &"travel_bento":
 				_apply_food_purchase_side_effects(instance)
-		if offer_definition != null and offer_definition.id == &"travel_bento":
+		if offer_definition.id == &"travel_bento":
 			_apply_food_purchase_side_effects_for_package(offer_definition)
 	else:
 		var expansion: Dictionary = {
@@ -694,6 +752,11 @@ func purchase_market_offer_package(offer_id: StringName) -> Array[Dictionary]:
 	if index < 0 or index >= current_market_offers.size():
 		return []
 	var offer: Dictionary = current_market_offers[index]
+	var offer_definition: FoodDefinition = null
+	if offer.get("kind", &"") == &"food":
+		offer_definition = get_food_definition(offer.get("definition_id", &""))
+		if offer_definition == null:
+			return []
 	var gained_items: Array[Dictionary] = []
 	var price: int = int(offer["price"])
 	if offer["kind"] == &"food" and free_food_purchase_count > 0:
@@ -704,14 +767,13 @@ func purchase_market_offer_package(offer_id: StringName) -> Array[Dictionary]:
 	current_gold -= price
 	current_market_offers.remove_at(index)
 	if offer["kind"] == &"food":
-		var offer_definition: FoodDefinition = get_food_definition(offer["definition_id"])
 		for _i in int(offer["quantity"]):
 			var instance: Dictionary = generate_item_instance(offer["definition_id"])
 			shared_inventory.append(instance)
 			gained_items.append(instance)
-			if offer_definition == null or offer_definition.id != &"travel_bento":
+			if offer_definition.id != &"travel_bento":
 				_apply_food_purchase_side_effects(instance)
-		if offer_definition != null and offer_definition.id == &"travel_bento":
+		if offer_definition.id == &"travel_bento":
 			_apply_food_purchase_side_effects_for_package(offer_definition)
 	else:
 		var expansion: Dictionary = {
@@ -736,6 +798,9 @@ func get_effective_offer_price(offer: Dictionary) -> int:
 
 func _apply_food_purchase_side_effects(instance: Dictionary) -> void:
 	var definition: FoodDefinition = get_food_definition(instance["definition_id"])
+	if definition == null:
+		push_error("Cannot apply purchase side effects for unknown food definition: %s" % String(instance.get("definition_id", &"")))
+		return
 	match definition.id:
 		&"travel_bento":
 			_apply_food_purchase_side_effects_for_package(definition)
@@ -1081,13 +1146,20 @@ func can_place_selected_item(anchor: Vector2i) -> bool:
 				_remove_active_cell(active_without_self, owned_cell)
 			if ShapeUtils.overlaps(active_without_self, placed_cells):
 				return false
-			return ShapeUtils.shares_edge(placed_cells, active_without_self)
+			if not ShapeUtils.shares_edge(placed_cells, active_without_self):
+				return false
+			var candidate_layout: Array = _build_candidate_expansion_layout(state, moving_expansion.get("instance_id", &""), anchor, placed_cells, int(selected_item["rotation"]))
+			return _are_expansions_connected_to_base(state, candidate_layout)
 		&"pending_expansion", &"expansion", &"market_expansion":
 			if selected_item.get("target_character_id", selected_character_id) != selected_character_id:
 				return false
 			if ShapeUtils.overlaps(state["active_cells"], placed_cells):
 				return false
-			return ShapeUtils.shares_edge(placed_cells, state["active_cells"])
+			if not ShapeUtils.shares_edge(placed_cells, state["active_cells"]):
+				return false
+			var expansion_id: StringName = selected_item.get("instance_id", &"")
+			var new_layout: Array = _build_candidate_expansion_layout(state, expansion_id, anchor, placed_cells, int(selected_item["rotation"]))
+			return _are_expansions_connected_to_base(state, new_layout)
 		_:
 			return false
 
@@ -1248,6 +1320,13 @@ func remove_item_at_cell(cell: Vector2i) -> bool:
 		if ShapeUtils.cells_to_lookup(item["cells"]).has("%d:%d" % [cell.x, cell.y]):
 			if _has_food_on_cells(selected_character_id, item["cells"]):
 				return false
+			var remaining_expansions: Array = []
+			for other_index in range(state["placed_expansions"].size()):
+				if other_index == index:
+					continue
+				remaining_expansions.append((state["placed_expansions"][other_index] as Dictionary).duplicate(true))
+			if not _are_expansions_connected_to_base(state, remaining_expansions):
+				return false
 			state["pending_expansions"].append({
 				"instance_id": item["instance_id"],
 				"label": item["label"],
@@ -1316,6 +1395,9 @@ func move_placed_expansion(from_cell: Vector2i, to_anchor: Vector2i) -> bool:
 		if ShapeUtils.overlaps(active_without_self, placed_cells):
 			return false
 		if not ShapeUtils.shares_edge(placed_cells, active_without_self):
+			return false
+		var candidate_layout: Array = _build_candidate_expansion_layout(state, item.get("instance_id", &""), to_anchor, placed_cells, int(item.get("rotation", 0)))
+		if not _are_expansions_connected_to_base(state, candidate_layout):
 			return false
 		item["anchor"] = to_anchor
 		item["cells"] = placed_cells
@@ -1711,7 +1793,7 @@ func _apply_battle_victory(report: Dictionary) -> void:
 	if battle_index >= 0 and battle_index < stage_flow_config.normal_battle_reward_gold.size():
 		current_gold += stage_flow_config.normal_battle_reward_gold[battle_index]
 	current_gold += int(report.get("bonus_gold", 0))
-	if battle_index >= 0 and battle_index < stage_flow_config.normal_battle_reward_gold.size():
+	if defeated_monster != null:
 		grant_battle_drops(defeated_monster, battle_index)
 	_apply_victory_character_recovery(report)
 	for character_id in character_states.keys():

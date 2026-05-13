@@ -16,6 +16,7 @@ func _run() -> void:
 	run_state.start_new_run()
 	_validate_category_locked_candidates(run_state)
 	_validate_granted_items_match_monster_category(run_state)
+	_validate_boss_victory_grants_drops(run_state)
 	_finish()
 
 func _validate_category_locked_candidates(run_state: Node) -> void:
@@ -62,6 +63,27 @@ func _validate_granted_items_match_monster_category(run_state: Node) -> void:
 					String(monster.category),
 				]
 			)
+
+func _validate_boss_victory_grants_drops(run_state: Node) -> void:
+	run_state.start_new_run()
+	run_state.current_route_index = run_state.stage_flow_config.route_nodes.size() - 1
+	run_state.battle_reports.clear()
+	for _i in range(run_state.stage_flow_config.normal_battle_reward_gold.size()):
+		run_state.battle_reports.append({"result": "win"})
+	run_state.shared_inventory.clear()
+	run_state.apply_battle_report({
+		"result": "win",
+		"monster_id": &"nc2_auto_cooker",
+		"bonus_gold": 0,
+		"log": PackedStringArray(),
+		"characters": [
+			{"id": &"warrior", "current_hp": 180.0, "max_hp": 180.0, "alive": true},
+			{"id": &"hunter", "current_hp": 90.0, "max_hp": 90.0, "alive": true},
+			{"id": &"mage", "current_hp": 70.0, "max_hp": 70.0, "alive": true},
+		],
+	})
+	_assert(run_state.run_finished, "Boss victory should finish the run")
+	_assert(not run_state.shared_inventory.is_empty(), "Boss victory through apply_battle_report should grant battle drops")
 
 func _assert(condition: bool, message: String) -> void:
 	if not condition:

@@ -454,6 +454,19 @@ func _run_runtime_balance_fix_cases(run_state: Node) -> void:
 	engine._process_timed_team_effects(20.0, caramel_characters, caramel_effects, {"alive": true}, log)
 	_assert(float(caramel_characters[0]["attack_speed_bonus"]) >= 60.0, "caramel_mille timing should grant its team speed bonus only when present")
 
+	_reset_board(run_state, [
+		{"id": &"gummy_block", "anchor": Vector2i(0, 0)},
+		{"id": &"pudding_cup", "anchor": Vector2i(1, 0)},
+		{"id": &"jam_cookie", "anchor": Vector2i(3, 0)},
+	], _cells_in_rect(Vector2i(0, 0), Vector2i(5, 4)))
+	var dessert_characters: Array[Dictionary] = engine._build_characters(run_state)
+	var dessert_effects: Dictionary = engine._build_team_effects(dessert_characters)
+	dessert_characters[0]["disable_until"] = 5.0
+	dessert_characters[1]["current_hp"] = maxf(1.0, float(dessert_characters[1]["current_hp"]) - 10.0)
+	var hunter_hp_before: float = float(dessert_characters[1]["current_hp"])
+	engine._process_timed_team_effects(4.0, dessert_characters, dessert_effects, {"alive": true}, log)
+	_assert(is_equal_approx(float(dessert_characters[1]["current_hp"]), hunter_hp_before), "disabled dessert aura sources should not heal the team")
+
 	_reset_board(run_state, [])
 	var no_coffee_characters: Array[Dictionary] = engine._build_characters(run_state)
 	var no_coffee_effects: Dictionary = engine._build_team_effects(no_coffee_characters)
@@ -543,6 +556,26 @@ func _run_runtime_balance_fix_cases(run_state: Node) -> void:
 	var preview_highlight: Dictionary = CombatEngine.preview_adjacency_synergy_for_cells(run_state, &"warrior", preview_cells, &"")
 	_assert(preview_highlight.get("checked_cells", []).has(Vector2i(2, 2)), "Adjacency preview should visualize orthogonal checks for unplaced foods")
 	_assert(not preview_highlight.get("checked_cells", []).has(Vector2i(2, 3)), "Adjacency preview should not include diagonal checks for unplaced foods")
+
+	run_state.start_new_run()
+	run_state.current_gold = 30
+	run_state.free_food_purchase_count = 1
+	run_state.current_market_offers.clear()
+	run_state.current_market_offers.append({
+		"offer_id": &"invalid_food_offer",
+		"slot_index": 0,
+		"kind": &"food",
+		"definition_id": &"missing_food",
+		"quantity": 1,
+		"rarity": &"common",
+		"discount": 1.0,
+		"price": 5,
+	})
+	var invalid_purchase: Array[Dictionary] = run_state.purchase_market_offer_package(&"invalid_food_offer")
+	_assert(invalid_purchase.is_empty(), "Invalid food market offers should not be purchased")
+	_assert(run_state.current_gold == 30, "Invalid food market offers should not spend gold")
+	_assert(run_state.free_food_purchase_count == 1, "Invalid food market offers should not consume free purchase charges")
+	_assert(run_state.current_market_offers.size() == 1, "Invalid food market offers should remain visible for diagnosis")
 
 func _reset_board(run_state: Node, food_specs: Array, active_cells: Array[Vector2i] = [], hp_ratio: float = 1.0) -> void:
 	run_state.select_character(&"warrior")

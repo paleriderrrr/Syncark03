@@ -108,6 +108,9 @@ func get_food_categories(definition: FoodDefinition) -> Array[StringName]:
 	return categories
 
 func get_completed_battle_count() -> int:
+	var monster: MonsterDefinition = get_current_monster_definition()
+	if monster != null and monster.category == &"boss":
+		return _normal_monster_count()
 	return 0
 
 func get_current_monster_multipliers() -> Dictionary:
@@ -277,4 +280,13 @@ func _get_stage_curve_value(property_name: StringName, default_value: float) -> 
 	var values: Array = values_variant
 	if values.is_empty():
 		return default_value
-	return float(values[0])
+	var index: int = clampi(get_completed_battle_count(), 0, values.size() - 1)
+	return float(values[index])
+
+func _normal_monster_count() -> int:
+	var count: int = 0
+	for monster_variant in monster_roster.monsters:
+		var monster: MonsterDefinition = monster_variant
+		if monster.category != &"boss":
+			count += 1
+	return count

@@ -416,13 +416,19 @@ func _render_final_report(report: Dictionary) -> void:
 	var result: String = String(report.get("result", ""))
 	if result == "win":
 		_ui_sfx().play_battle_win()
-	else:
+	elif result == "lose":
 		_ui_sfx().play_battle_lose()
 	_apply_final_display_state(report)
 	playback_time_label.text = "时间 %.1fs" % float(report.get("duration", 0.0))
-	result_label.text = ""
+	if result == "error":
+		result_label.text = String(report.get("title", "战斗配置错误"))
+	else:
+		result_label.text = ""
 	_refresh_battle_visual_state()
 	_set_stage_phase(STAGE_PHASE_RESULT)
+	if result == "error":
+		_reset_result_banner()
+		return
 	await _play_result_banner(result)
 func _capture_initial_party_state(run_state: Node) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []

@@ -200,7 +200,8 @@ func _test_boss_rules(engine: CombatEngine) -> void:
 	engine._process_monster_attack(5.0, monster, [boss_target], {}, attack_log)
 	engine._process_monster_attack(10.0, monster, [boss_target], {}, attack_log)
 	engine._process_monster_attack(15.0, monster, [boss_target], {}, attack_log)
-	_assert(float(boss_target.get("disable_until", 0.0)) >= 18.0, "boss third attack should disable the target for 3 seconds")
+	_assert(float(boss_target.get("action_disable_until", 0.0)) >= 18.0, "boss third attack should disable target actions for 3 seconds")
+	_assert(is_equal_approx(float(boss_target.get("disable_until", 0.0)), 0.0), "boss third attack should not disable bento effects")
 	var boss_target_hp: float = float(boss_target["current_hp"])
 	var target_monster: Dictionary = _make_monster_stub(&"cream_overlord", 300.0, 10.0, 1.6)
 	boss_target["next_attack_time"] = 16.0

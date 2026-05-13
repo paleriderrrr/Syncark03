@@ -859,17 +859,21 @@ func _apply_character_opening_effects(characters: Array[Dictionary], team_effect
 
 func _process_timed_team_effects(time: float, characters: Array[Dictionary], team_effects: Dictionary, monster: Dictionary, _log: Array[String]) -> void:
 	if team_effects["dessert_pulse_amount"] > 0.0 and time >= team_effects["next_dessert_pulse"]:
-		var heal_amount: float = float(team_effects["dessert_pulse_amount"])
-		if team_effects["dessert_multiplier_after_20"] and time >= 20.0:
+		var heal_amount: float = _active_team_aura_amount(characters, &"dessert_pulse_amount", time)
+		var dessert_fairy_speed_on_heal: bool = _has_active_team_aura_source(characters, &"fairy_speed_on_heal", time)
+		if _has_active_team_aura_source(characters, &"dessert_multiplier_after_20", time) and time >= 20.0:
 			heal_amount *= 1.5
-		for actor in characters:
-			if _are_bento_effects_active(actor, time):
-				_heal_actor(actor, heal_amount, _log, time, bool(team_effects["fairy_speed_on_heal"]))
+		if heal_amount > 0.0:
+			for actor in characters:
+				if _are_bento_effects_active(actor, time):
+					_heal_actor(actor, heal_amount, _log, time, dessert_fairy_speed_on_heal)
 		team_effects["next_dessert_pulse"] += team_effects["dessert_pulse_interval"]
 	if team_effects["tree_heal_every"] and time >= team_effects["next_tree_heal"]:
-		for actor in characters:
-			if _are_bento_effects_active(actor, time):
-				_heal_actor(actor, 10.0, _log, time, bool(team_effects["fairy_speed_on_heal"]))
+		if _has_active_team_aura_source(characters, &"tree_heal_every", time):
+			var tree_fairy_speed_on_heal: bool = _has_active_team_aura_source(characters, &"fairy_speed_on_heal", time)
+			for actor in characters:
+				if _are_bento_effects_active(actor, time):
+					_heal_actor(actor, 10.0, _log, time, tree_fairy_speed_on_heal)
 		team_effects["next_tree_heal"] += 15.0
 	if team_effects["caramel_mille"] and not team_effects["caramel_triggered"] and time >= 20.0 and _has_active_team_aura_source(characters, &"caramel_mille", time):
 		team_effects["caramel_triggered"] = true
@@ -893,6 +897,16 @@ func _has_active_team_aura_source(characters: Array[Dictionary], flag: StringNam
 		if bool(actor.get("team_aura_flags", {}).get(flag, false)):
 			return true
 	return false
+
+func _active_team_aura_amount(characters: Array[Dictionary], flag: StringName, time: float) -> float:
+	var total: float = 0.0
+	for actor in characters:
+		if not bool(actor.get("alive", true)):
+			continue
+		if not _are_bento_effects_active(actor, time):
+			continue
+		total += float(actor.get("team_aura_flags", {}).get(flag, 0.0))
+	return total
 
 func _process_monster_timed_effects(time: float, monster: Dictionary, characters: Array[Dictionary], _log: Array[String]) -> void:
 	if not bool(monster.get("alive", true)):
@@ -925,17 +939,19 @@ func _process_character_status_effects(time: float, characters: Array[Dictionary
 			continue
 		while float(actor.get("pudding_heal_amount", 0.0)) > 0.0 and float(actor.get("next_pudding_heal", -1.0)) >= 0.0 and time >= float(actor["next_pudding_heal"]) and float(actor["next_pudding_heal"]) <= float(actor.get("pudding_heal_until", 0.0)):
 			if float(actor["next_pudding_heal"]) >= float(actor.get("disable_until", 0.0)):
-				_heal_actor(actor, float(actor["pudding_heal_amount"]), _log, float(actor["next_pudding_heal"]), bool(team_effects.get("fairy_speed_on_heal", false)))
+				var pudding_time: float = float(actor["next_pudding_heal"])
+				_heal_actor(actor, float(actor["pudding_heal_amount"]), _log, pudding_time, _has_active_team_aura_source(characters, &"fairy_speed_on_heal", pudding_time))
 			actor["next_pudding_heal"] = float(actor["next_pudding_heal"]) + float(actor.get("pudding_heal_interval", 0.0))
 		if actor["corrosion_damage_per_second"] > 0.0 and time >= actor["next_corrosion_tick"] and time <= actor["corrosion_until"]:
 			actor["next_corrosion_tick"] += 1.0
 			_apply_damage_to_actor(actor, actor["corrosion_damage_per_second"], _log, time, "Corrosion")
 
 func _apply_regeneration(delta: float, time: float, characters: Array[Dictionary], team_effects: Dictionary, _log: Array[String]) -> void:
+	var fairy_speed_on_heal: bool = _has_active_team_aura_source(characters, &"fairy_speed_on_heal", time)
 	for actor_variant in characters:
 		var actor: Dictionary = actor_variant
 		if actor["alive"] and actor["heal_per_second"] > 0.0 and _are_bento_effects_active(actor, time):
-			_heal_actor(actor, actor["heal_per_second"] * delta, _log, time, bool(team_effects.get("fairy_speed_on_heal", false)))
+			_heal_actor(actor, actor["heal_per_second"] * delta, _log, time, fairy_speed_on_heal)
 
 func _apply_attrition(delta: float, time: float, monster: Dictionary, characters: Array[Dictionary], _log: Array[String]) -> void:
 	monster["current_hp"] -= ATTRITION_DPS * delta
@@ -1082,7 +1098,6 @@ func _process_monster_attack(time: float, monster: Dictionary, characters: Array
 	if monster["id"] == &"nc2_auto_cooker":
 		monster["attack_count"] = int(monster.get("attack_count", 0)) + 1
 		if int(monster["attack_count"]) % 3 == 0:
-			target["disable_until"] = maxf(float(target.get("disable_until", 0.0)), time + 3.0)
 			target["action_disable_until"] = maxf(float(target.get("action_disable_until", 0.0)), time + 3.0)
 	var honey_slow: float = _honey_drink_slow_amount(characters, time)
 	if honey_slow > 0.0:
