@@ -24,6 +24,8 @@ func _run() -> void:
 		failures.append("Settings button should remain flat")
 	if not quit_button.flat:
 		failures.append("Quit button should remain flat")
+	title.queue_free()
+	await process_frame
 	if failures.is_empty():
 		print("TITLE_TEST_PASS")
 		quit(0)

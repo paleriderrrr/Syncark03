@@ -227,6 +227,7 @@ func _run() -> void:
 	_assert(run_state.move_placed_expansion(placed_expansion["cells"][0], expansion_move_anchor), "Moving a rotated expansion should preserve a valid occupied-cell calculation")
 	var moved_expansion: Dictionary = run_state.get_selected_character_state()["placed_expansions"].back()
 	_assert(int(moved_expansion.get("rotation", 0)) == 1, "Moving a placed expansion should not lose its rotation")
+	_test_board_expansion_hover_rejects_disconnected_layout(run_state)
 
 	var next_monster: Dictionary = run_state.get_next_monster_summary()
 	_assert(not next_monster.is_empty(), "Next monster summary should exist on active route")
@@ -273,6 +274,53 @@ func _find_valid_anchor_for_selected_item(run_state: Node) -> Vector2i:
 			if run_state.can_place_selected_item(anchor):
 				return anchor
 	return Vector2i(-1, -1)
+
+func _test_board_expansion_hover_rejects_disconnected_layout(run_state: Node) -> void:
+	run_state.select_character(&"warrior")
+	var state: Dictionary = run_state.get_selected_character_state()
+	state["placed_foods"].clear()
+	state["base_anchor"] = Vector2i.ZERO
+	var bridge_shape: Array[Vector2i] = [Vector2i.ZERO]
+	var bridge_cells: Array[Vector2i] = [Vector2i(3, 1)]
+	var leaf_shape: Array[Vector2i] = [Vector2i.ZERO]
+	var leaf_cells: Array[Vector2i] = [Vector2i(4, 1)]
+	state["placed_expansions"] = [
+		{
+			"instance_id": &"bridge_expansion",
+			"label": "1x1",
+			"shape_cells": bridge_shape,
+			"rotation": 0,
+			"anchor": Vector2i(3, 1),
+			"cells": bridge_cells,
+		},
+		{
+			"instance_id": &"leaf_expansion",
+			"label": "1x1",
+			"shape_cells": leaf_shape,
+			"rotation": 0,
+			"anchor": Vector2i(4, 1),
+			"cells": leaf_cells,
+		},
+	]
+	run_state.call("_rebuild_active_cells", state)
+	_assert(run_state.begin_board_expansion_action(Vector2i(3, 1)), "Bridge expansion should be selectable before hover validation")
+	var board := BentoBoardView.new()
+	root.add_child(board)
+	board.refresh_board(state, [], run_state.food_lookup)
+	var payload := {
+		"source": &"board_expansion",
+		"instance_id": &"bridge_expansion",
+		"rotation": 0,
+		"shape_cells": bridge_shape,
+		"grab_offset": Vector2i.ZERO,
+	}
+	var accepts_disconnected_hover: bool = board._can_drop_data(
+		Vector2(float(board.cell_pixel_size * 5) + 1.0, float(board.cell_pixel_size) + 1.0),
+		payload
+	)
+	_assert(not run_state.can_place_selected_item(Vector2i(5, 1)), "State placement should reject moving a bridge expansion away from the base")
+	_assert(not accepts_disconnected_hover, "Board hover validation should reject expansion moves that disconnect existing expansions")
+	board.queue_free()
 
 func _find_valid_expansion_move_anchor(run_state: Node, instance_id: StringName) -> Vector2i:
 	var state: Dictionary = run_state.get_selected_character_state()

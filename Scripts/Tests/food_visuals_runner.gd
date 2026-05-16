@@ -22,6 +22,9 @@ func _run() -> void:
 	_assert(lookup.has(&"sesame"), "Food visuals should load uppercase-extension textures like sesame.PNG")
 	_assert(lookup.has(&"baguette"), "Food visuals should load uppercase-extension textures like baguette.PNG")
 	_assert(is_same(lookup, second_lookup), "Food visuals should reuse the same runtime lookup instead of rebuilding it")
+	_assert(FoodVisuals.get_background_texture() != null, "Food visuals should expose a valid UI background texture")
+	_assert(FoodVisuals.get_panel_texture_a() != null, "Food visuals should expose a valid UI panel A texture")
+	_assert(FoodVisuals.get_panel_texture_b() != null, "Food visuals should expose a valid UI panel B texture")
 
 	if _failures.is_empty():
 		print("FOOD_VISUALS_TEST_PASS")

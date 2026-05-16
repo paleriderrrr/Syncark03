@@ -4,9 +4,9 @@ class_name FoodVisuals
 const FOOD_CATALOG_PATH := "res://Data/Foods/food_catalog.tres"
 const FOOD_ICON_DIR := "res://Art/Food"
 const FOOD_BOARD_ICON_DIR := "res://Art/FoodBoard"
-const UI_BACKGROUND_PATH := "res://Art/UI/闁煎啿鏈▍?png"
-const UI_PANEL_TEXTURE_A := "res://Art/UI/UI1.png"
-const UI_PANEL_TEXTURE_B := "res://Art/UI/UI2.png"
+const UI_BACKGROUND_PATH := "res://Art/UI/Background.png"
+const UI_PANEL_TEXTURE_A := "res://Art/UI/UI1-2.png"
+const UI_PANEL_TEXTURE_B := "res://Art/UI/UI2-2.png"
 const FOOD_ICON_SUFFIXES := [".png", ".PNG"]
 
 static var _food_texture_lookup_cache: Dictionary = {}

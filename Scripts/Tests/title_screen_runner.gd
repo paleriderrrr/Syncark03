@@ -23,23 +23,24 @@ func _run() -> void:
 	var center_fog: ColorRect = screen.get_node_or_null("CenterFog")
 	var edge_fog: ColorRect = screen.get_node_or_null("EdgeFog")
 	var continue_button: TextureButton = screen.get_node_or_null("%ContinueButton")
+	var expects_shader_materials: bool = DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy"
 	_assert(center_fog != null, "Center fog should exist")
 	if center_fog != null:
 		_assert(center_fog.get_index() > main_backdrop.get_index(), "Center fog should render above the main backdrop")
 		_assert(center_fog.get_index() < cover_base_1.get_index(), "Center fog should render behind the cover stack")
 		var center_material: ShaderMaterial = center_fog.material as ShaderMaterial
-		_assert(center_material != null, "Center fog should use a shader material")
+		_assert((center_material != null) == expects_shader_materials, "Center fog shader material should match renderer support")
 	_assert(edge_fog != null, "Edge fog should exist")
 	if edge_fog != null:
 		_assert(edge_fog.get_index() > floating_art_b.get_index(), "Edge fog should render in front of the decorative art stack")
 		_assert(edge_fog.get_index() < start_glow.get_index(), "Edge fog should stay below the start button glow")
 		var edge_material: ShaderMaterial = edge_fog.material as ShaderMaterial
-		_assert(edge_material != null, "Edge fog should use a shader material")
+		_assert((edge_material != null) == expects_shader_materials, "Edge fog shader material should match renderer support")
 	_assert(start_glow != null, "Start glow overlay should exist")
 	if start_glow != null:
 		_assert(start_glow.modulate.a >= 0.35, "Start glow should present a clearly visible idle highlight")
 		var material: ShaderMaterial = start_glow.material as ShaderMaterial
-		_assert(material != null, "Start glow should use a shader material")
+		_assert((material != null) == expects_shader_materials, "Start glow shader material should match renderer support")
 		if material != null:
 			var glow_color_variant: Variant = material.get_shader_parameter("glow_color")
 			if glow_color_variant is Color:
@@ -75,6 +76,7 @@ func _run() -> void:
 		_assert(resumed_continue_button.visible, "Continue button should become visible when a save exists")
 	resumed_screen.queue_free()
 	run_state.delete_saved_run()
+	await process_frame
 	if _failures.is_empty():
 		print("TITLE_SCREEN_TEST_PASS")
 		quit(0)

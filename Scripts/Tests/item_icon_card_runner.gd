@@ -72,7 +72,7 @@ func _run() -> void:
 			"drag_session": true,
 		}
 		card._notification(Control.NOTIFICATION_DRAG_END)
-		_assert(not bool(run_state.selected_item.get("drag_session", false)), "Card drag end should clear stale selected-item drag session state")
+		_assert(run_state.selected_item.is_empty(), "Card drag end should clear the whole stale selected item after a cancelled drag")
 
 	card.queue_free()
 	if _failures.is_empty():

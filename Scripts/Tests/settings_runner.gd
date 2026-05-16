@@ -54,5 +54,10 @@ func _run() -> void:
 	assert(not run_state.has_saved_run(), "Dev clear save button should delete the persisted save")
 	assert(dev_clear_save_button.disabled, "Dev clear save button should disable itself after deleting the save")
 	assert(dev_clear_save_button.text == "暂无存档", "Empty clear-save button should use localized text")
+	run_state.set_settings_return_scene("res://Scenes/main_editor_screen.tscn")
+	assert(root.call("_consume_return_scene") == "res://Scenes/main_editor_screen.tscn", "Settings screen should consume the configured return scene")
+	assert(run_state.settings_return_scene_path == "res://Scenes/title_screen.tscn", "Back button should consume the configured settings return scene")
+	root.queue_free()
+	await process_frame
 	print("SETTINGS_TEST_PASS")
 	quit()

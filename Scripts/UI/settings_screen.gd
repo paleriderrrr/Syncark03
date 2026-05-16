@@ -39,7 +39,7 @@ func _on_restart_pressed() -> void:
 
 func _on_back_pressed() -> void:
 	_ui_sfx().play_button()
-	get_tree().change_scene_to_file(TITLE_SCENE_PATH)
+	get_tree().change_scene_to_file(_consume_return_scene())
 
 func _on_editor_pressed() -> void:
 	_ui_sfx().play_button()
@@ -47,8 +47,10 @@ func _on_editor_pressed() -> void:
 
 func _on_close_pressed() -> void:
 	_ui_sfx().play_button()
-	var return_path: String = _run_state().consume_settings_return_scene(TITLE_SCENE_PATH)
-	get_tree().change_scene_to_file(return_path)
+	get_tree().change_scene_to_file(_consume_return_scene())
+
+func _consume_return_scene() -> String:
+	return _run_state().consume_settings_return_scene(TITLE_SCENE_PATH)
 
 func _on_dev_clear_save_pressed() -> void:
 	_ui_sfx().play_button()

@@ -9,6 +9,9 @@ const START_BUTTON_IDLE_ALPHA := 1.0
 const START_BUTTON_PULSE_ALPHA := 0.96
 const LOADING_SCENE_PATH := "res://Scenes/loading_screen.tscn"
 const MAIN_EDITOR_SCENE_PATH := "res://Scenes/main_editor_screen.tscn"
+const COVER_GLOW_SHADER_PATH := "res://Shaders/title_cover_edge_glow.gdshader"
+const CENTER_FOG_SHADER_PATH := "res://Shaders/title_center_fog.gdshader"
+const EDGE_FOG_SHADER_PATH := "res://Shaders/title_edge_fog.gdshader"
 @onready var cover_base_1: TextureRect = %CoverBase1
 @onready var cover_base_2: TextureRect = %CoverBase2
 @onready var cover_base_3: TextureRect = %CoverBase3
@@ -48,6 +51,7 @@ func _ui_sfx() -> Node:
 
 func _ready() -> void:
 	_bgm_player().play_non_battle()
+	_configure_shader_materials()
 	_configure_cover_pivots()
 	_cache_ambient_bases()
 	_start_ambient_effects()
@@ -114,6 +118,54 @@ func _configure_cover_pivots() -> void:
 		node.pivot_offset = node.size * 0.5
 	start_button.pivot_offset = start_button.size * 0.5
 	continue_button.pivot_offset = continue_button.size * 0.5
+
+func _configure_shader_materials() -> void:
+	center_fog.visible = false
+	if not _supports_canvas_shaders():
+		return
+	var glow_shader: Shader = load(COVER_GLOW_SHADER_PATH) as Shader
+	var center_shader: Shader = load(CENTER_FOG_SHADER_PATH) as Shader
+	var edge_shader: Shader = load(EDGE_FOG_SHADER_PATH) as Shader
+	if glow_shader == null or center_shader == null or edge_shader == null:
+		push_error("Title shader resources are missing.")
+		return
+	center_fog.material = _make_center_fog_material(center_shader)
+	center_fog.visible = true
+	for glow in [cover_glow_1, cover_glow_2, cover_glow_3, cover_glow_4, start_glow]:
+		glow.material = _make_glow_material(glow_shader)
+	edge_fog.material = _make_edge_fog_material(edge_shader)
+
+func _supports_canvas_shaders() -> bool:
+	if DisplayServer.get_name() == "headless":
+		return false
+	return RenderingServer.get_current_rendering_method() != "dummy"
+
+func _make_glow_material(shader: Shader) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("glow_color", Color.WHITE)
+	material.set_shader_parameter("glow_size", 18.0)
+	material.set_shader_parameter("glow_intensity", 8.0)
+	return material
+
+func _make_center_fog_material(shader: Shader) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("fog_color", Color.WHITE)
+	material.set_shader_parameter("fog_alpha", 0.42)
+	material.set_shader_parameter("fog_center", Vector2(0.5, 0.52))
+	material.set_shader_parameter("fog_radius", Vector2(2.0, 0.25))
+	material.set_shader_parameter("fog_softness", 0.52)
+	return material
+
+func _make_edge_fog_material(shader: Shader) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("fog_color", Color.WHITE)
+	material.set_shader_parameter("fog_alpha", 0.4)
+	material.set_shader_parameter("edge_width", 0.05)
+	material.set_shader_parameter("edge_softness", 0.1)
+	return material
 
 func _cache_ambient_bases() -> void:
 	_title_base_y = title_art.position.y

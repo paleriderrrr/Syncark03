@@ -5,6 +5,9 @@ const TICK := 0.25
 const ATTRITION_START_TIME := 120.0
 const ATTRITION_DPS := 7.0
 
+var _random_source: Object = null
+var _standalone_rng := RandomNumberGenerator.new()
+
 static func simulate(run_state: Object, party_order: Array[StringName] = []) -> Dictionary:
 	var engine: CombatEngine = CombatEngine.new()
 	return engine._simulate_internal(run_state, party_order)
@@ -119,6 +122,7 @@ func _preview_adjacency_synergy_from_source(run_state: Object, state: Dictionary
 	}
 
 func _simulate_internal(run_state: Object, party_order: Array[StringName] = []) -> Dictionary:
+	_random_source = run_state
 	var report: Dictionary = {
 		"result": "lose",
 		"duration": 0.0,
@@ -843,7 +847,7 @@ func _apply_monster_opening_skill(monster: Dictionary, characters: Array[Diction
 				if actor["alive"]:
 					living.append(actor)
 			if not living.is_empty():
-				var target: Dictionary = living[randi() % living.size()]
+				var target: Dictionary = living[_random_index(living.size())]
 				target["disable_until"] = 3.0
 				_log.append("[0.0s] %s disables %s's bento effects for 3s." % [monster["name"], target["name"]])
 		_:
@@ -926,7 +930,7 @@ func _process_monster_timed_effects(time: float, monster: Dictionary, characters
 			if actor["alive"]:
 				living.append(actor)
 		if not living.is_empty():
-			var target: Dictionary = living[randi() % living.size()]
+			var target: Dictionary = living[_random_index(living.size())]
 			target["healing_reduction_until"] = time + 3.0
 			target["healing_reduction_pct"] = 0.5
 			_log.append("[%.1fs] %s applies heal reduction to %s." % [time, monster["name"], target["name"]])
@@ -1003,17 +1007,18 @@ func _process_character_attacks(time: float, characters: Array[Dictionary], mons
 		var attack_data: Dictionary = _calculate_actor_attack(actor, time, monster)
 		var damage: float = float(attack_data["damage"])
 		var speed_bonus_pct: float = float(attack_data["speed_bonus_pct"])
-		if bento_active and randf() < actor["crit_chance"]:
+		if bento_active and _random_float() < actor["crit_chance"]:
 			damage *= actor["crit_multiplier"]
 			_log.append("[%.1fs] %s lands a critical hit for %.1f." % [time, actor["name"], damage])
 		damage = _apply_monster_incoming_damage_modifiers(monster, damage)
 		monster["current_hp"] -= damage
-		_handle_monster_hit_by_character(monster, actor, characters, damage, time, _log)
+		if damage > 0.0:
+			_handle_monster_hit_by_character(monster, actor, characters, damage, time, _log)
 		if bento_active and actor["forbidden_attack_reduction"] > 0.0 and damage > 0.0:
 			monster["attack_multiplier"] *= maxf(0.1, 1.0 - actor["forbidden_attack_reduction"])
-		if bento_active and damage > 0.0 and actor["amber_cancel_chance"] > 0.0 and randf() < actor["amber_cancel_chance"]:
+		if bento_active and damage > 0.0 and actor["amber_cancel_chance"] > 0.0 and _random_float() < actor["amber_cancel_chance"]:
 			monster["skip_next_attack"] = true
-		if bento_active and actor["frozen_extra_slow_chance"] > 0.0 and randf() < actor["frozen_extra_slow_chance"]:
+		if bento_active and actor["frozen_extra_slow_chance"] > 0.0 and _random_float() < actor["frozen_extra_slow_chance"]:
 			_add_monster_attack_speed_slow(monster, 5.0)
 		if attack_data["extra_enemy_slow"] > 0.0:
 			_add_monster_attack_speed_slow(monster, attack_data["extra_enemy_slow"])
@@ -1061,7 +1066,7 @@ func _calculate_actor_attack(actor: Dictionary, time: float, monster: Dictionary
 			attack += floor(lost_ratio / 0.1) * 3.0
 	attack += 0.0
 	return {
-		"damage": attack + bonus_damage,
+		"damage": maxf(0.0, attack + bonus_damage),
 		"speed_bonus_pct": speed_bonus,
 		"extra_enemy_slow": extra_enemy_slow,
 	}
@@ -1153,7 +1158,7 @@ func _handle_monster_hit_by_character(monster: Dictionary, attacker: Dictionary,
 					if actor["alive"]:
 						living.append(actor)
 				if not living.is_empty():
-					var target: Dictionary = living[randi() % living.size()]
+					var target: Dictionary = living[_random_index(living.size())]
 					monster["half_hp_burst_used"] = true
 					_log.append("[%.1fs] %s unleashes Burst Charge." % [time, monster["name"]])
 					_apply_damage_to_actor(target, 35.0, _log, time, monster["name"])
@@ -1188,7 +1193,7 @@ func _select_monster_target(monster: Dictionary, characters: Array[Dictionary]) 
 				living.append(actor)
 		if living.is_empty():
 			return {}
-		return living[randi() % living.size()]
+		return living[_random_index(living.size())]
 	var order: Array = monster.get("target_order", [])
 	for role_id in order:
 		for actor in characters:
@@ -1299,3 +1304,16 @@ func _cleanup_log(report: Dictionary, _log: Array[String], characters: Array[Dic
 	report["monster_id"] = monster["id"]
 	report["monster_hp"] = monster["current_hp"]
 	report["monster_max_hp"] = monster["max_hp"]
+
+func _random_float() -> float:
+	if _random_source != null and _random_source.has_method("combat_randf"):
+		return float(_random_source.combat_randf())
+	return _standalone_rng.randf()
+
+func _random_index(size: int) -> int:
+	if size <= 0:
+		push_error("Cannot pick a random index from an empty collection.")
+		return 0
+	if _random_source != null and _random_source.has_method("combat_randi_range"):
+		return int(_random_source.combat_randi_range(0, size - 1))
+	return _standalone_rng.randi_range(0, size - 1)
