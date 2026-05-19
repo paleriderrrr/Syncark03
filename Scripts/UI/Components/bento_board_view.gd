@@ -332,6 +332,9 @@ func _notification(what: int) -> void:
 		clear_synergy_highlights()
 		queue_redraw()
 		_clear_food_hover()
+		var run_state: Node = get_node_or_null("/root/RunState")
+		if run_state != null and not run_state.selected_item.is_empty() and bool(run_state.selected_item.get("drag_session", false)):
+			run_state.clear_selection()
 	elif what == NOTIFICATION_DRAG_BEGIN:
 		_clear_food_hover()
 	elif what == NOTIFICATION_MOUSE_EXIT:
@@ -470,7 +473,9 @@ func _validate_payload_cells(payload: Dictionary, cells: Array[Vector2i]) -> boo
 				return false
 			if ShapeUtils.overlaps(active_cells, cells):
 				return false
-			return ShapeUtils.shares_edge(cells, active_cells)
+			if not ShapeUtils.shares_edge(cells, active_cells):
+				return false
+			return _expansion_layout_connected_with_added_payload(payload, cells)
 		&"board_expansion":
 			var active_without_self: Array[Vector2i] = active_cells.duplicate()
 			var existing_cells: Array[Vector2i] = _cells_for_expansion(payload.get("instance_id", &""))
@@ -480,7 +485,9 @@ func _validate_payload_cells(payload: Dictionary, cells: Array[Vector2i]) -> boo
 				_remove_cell(active_without_self, owned_cell)
 			if ShapeUtils.overlaps(active_without_self, cells):
 				return false
-			return ShapeUtils.shares_edge(cells, active_without_self)
+			if not ShapeUtils.shares_edge(cells, active_without_self):
+				return false
+			return _expansion_layout_connected_with_moved_payload(payload, cells)
 		&"board_base":
 			var delta: Vector2i = cells[0] - _character_state.get("base_anchor", Vector2i.ZERO)
 			for expansion in _character_state.get("placed_expansions", []):
@@ -509,6 +516,75 @@ func _cells_for_expansion(instance_id: StringName) -> Array[Vector2i]:
 		if expansion.get("instance_id", &"") == instance_id:
 			return _typed_cells(expansion.get("cells", []))
 	return []
+
+func _expansion_layout_connected_with_added_payload(payload: Dictionary, cells: Array[Vector2i]) -> bool:
+	var layout: Array[Dictionary] = _duplicated_expansion_layout()
+	layout.append({
+		"instance_id": payload.get("instance_id", payload.get("offer_id", &"")),
+		"anchor": _anchor_for_payload_cells(payload, cells),
+		"shape_cells": _resolve_payload_shape_cells(payload),
+		"rotation": int(payload.get("rotation", 0)),
+		"cells": cells.duplicate(),
+	})
+	return _expansions_connected_to_base(layout)
+
+func _expansion_layout_connected_with_moved_payload(payload: Dictionary, cells: Array[Vector2i]) -> bool:
+	var moving_id: StringName = payload.get("instance_id", &"")
+	var layout: Array[Dictionary] = []
+	for expansion_variant in _character_state.get("placed_expansions", []):
+		var expansion: Dictionary = expansion_variant.duplicate(true)
+		if expansion.get("instance_id", &"") == moving_id:
+			expansion["anchor"] = _anchor_for_payload_cells(payload, cells)
+			expansion["shape_cells"] = _resolve_payload_shape_cells(payload)
+			expansion["rotation"] = int(payload.get("rotation", 0))
+			expansion["cells"] = cells.duplicate()
+		layout.append(expansion)
+	return _expansions_connected_to_base(layout)
+
+func _duplicated_expansion_layout() -> Array[Dictionary]:
+	var layout: Array[Dictionary] = []
+	for expansion_variant in _character_state.get("placed_expansions", []):
+		var expansion: Dictionary = expansion_variant
+		layout.append(expansion.duplicate(true))
+	return layout
+
+func _anchor_for_payload_cells(payload: Dictionary, cells: Array[Vector2i]) -> Vector2i:
+	var local_cells: Array[Vector2i] = _resolve_payload_shape_cells(payload)
+	if cells.is_empty() or local_cells.is_empty():
+		return Vector2i.ZERO
+	return cells[0] - local_cells[0]
+
+func _expansions_connected_to_base(expansions: Array[Dictionary]) -> bool:
+	var active_cells: Array[Vector2i] = _base_cells()
+	if active_cells.is_empty():
+		return false
+	for expansion in expansions:
+		for cell_variant in expansion.get("cells", []):
+			active_cells.append(cell_variant)
+	var active_lookup: Dictionary = ShapeUtils.cells_to_lookup(active_cells)
+	var queue: Array[Vector2i] = []
+	var visited: Dictionary = {}
+	for base_cell in _base_cells():
+		var base_key: String = "%d:%d" % [base_cell.x, base_cell.y]
+		if active_lookup.has(base_key):
+			queue.append(base_cell)
+			visited[base_key] = true
+	var offsets: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+	var cursor: int = 0
+	while cursor < queue.size():
+		var current: Vector2i = queue[cursor]
+		cursor += 1
+		for offset in offsets:
+			var neighbor: Vector2i = current + offset
+			var neighbor_key: String = "%d:%d" % [neighbor.x, neighbor.y]
+			if not active_lookup.has(neighbor_key) or visited.has(neighbor_key):
+				continue
+			visited[neighbor_key] = true
+			queue.append(neighbor)
+	return visited.size() == active_lookup.size()
+
+func _base_cells() -> Array[Vector2i]:
+	return ShapeUtils.translate_cells(_typed_cells(_character_state.get("base_shape", [])), _character_state.get("base_anchor", Vector2i.ZERO))
 
 func _typed_cells(cells: Array) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []

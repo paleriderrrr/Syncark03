@@ -285,31 +285,347 @@ func _build_run_snapshot() -> Dictionary:
 func _apply_run_snapshot(snapshot: Dictionary) -> bool:
 	if snapshot.is_empty():
 		return false
-	var restored_character_states: Dictionary = snapshot.get("character_states", {})
+	if stage_flow_config == null or character_roster == null or monster_roster == null or food_catalog == null:
+		return _reject_run_snapshot("static data is not loaded")
+	var restored_character_states_variant: Variant = snapshot.get("character_states", {})
+	if not (restored_character_states_variant is Dictionary):
+		return _reject_run_snapshot("character_states must be a dictionary")
+	var restored_character_states: Dictionary = restored_character_states_variant
 	if restored_character_states.is_empty():
+		return _reject_run_snapshot("character_states cannot be empty")
+	var restored_route_index: int = int(snapshot.get("current_route_index", 0))
+	var restored_market_index: int = int(snapshot.get("current_market_index", 1))
+	var restored_reroll_count: int = int(snapshot.get("current_reroll_count", 0))
+	if restored_route_index < 0 or restored_market_index < 0 or restored_reroll_count < 0:
+		return _reject_run_snapshot("route, market, and reroll indexes must be non-negative")
+	if restored_route_index >= stage_flow_config.route_nodes.size():
+		return _reject_run_snapshot("current_route_index exceeds route length")
+	if restored_market_index < 1 or restored_market_index > 4:
+		return _reject_run_snapshot("current_market_index must be in tier range 1..4")
+	if int(snapshot.get("instance_counter", 1)) <= 0:
+		return _reject_run_snapshot("instance_counter must be positive")
+	if int(snapshot.get("current_gold", 0)) < 0:
+		return _reject_run_snapshot("current_gold must be non-negative")
+	if int(snapshot.get("free_food_purchase_count", 0)) < 0 or int(snapshot.get("spice_purchase_refund", 0)) < 0:
+		return _reject_run_snapshot("purchase side-effect counters must be non-negative")
+	var restored_selected_character_id := StringName(snapshot.get("selected_character_id", &"warrior"))
+	if not restored_character_states.has(restored_selected_character_id):
+		return _reject_run_snapshot("selected character is missing from character_states")
+	var restored_normal_monster_order: Array[StringName] = _duplicate_string_name_array(snapshot.get("normal_monster_order", []))
+	if restored_normal_monster_order.is_empty():
+		return _reject_run_snapshot("normal_monster_order cannot be empty")
+	if not _validate_normal_monster_order(restored_normal_monster_order):
+		return false
+	var pre_battle_snapshot_variant: Variant = snapshot.get("pre_battle_snapshot", {})
+	if not (pre_battle_snapshot_variant is Dictionary):
+		return _reject_run_snapshot("pre_battle_snapshot must be a dictionary")
+	var instance_ids: Dictionary = {}
+	if not _validate_inventory_snapshot(snapshot.get("shared_inventory", []), instance_ids):
+		return false
+	if not _validate_character_states_snapshot(restored_character_states, instance_ids):
+		return false
+	if not _validate_market_offers_snapshot(snapshot.get("current_market_offers", [])):
+		return false
+	if not _validate_battle_reports_snapshot(snapshot.get("battle_reports", [])):
 		return false
 	current_gold = int(snapshot.get("current_gold", stage_flow_config.initial_gold if stage_flow_config else 30))
-	current_route_index = int(snapshot.get("current_route_index", 0))
-	current_market_index = int(snapshot.get("current_market_index", 1))
-	current_reroll_count = int(snapshot.get("current_reroll_count", 0))
-	selected_character_id = StringName(snapshot.get("selected_character_id", &"warrior"))
+	current_route_index = restored_route_index
+	current_market_index = restored_market_index
+	current_reroll_count = restored_reroll_count
+	selected_character_id = restored_selected_character_id
 	shared_inventory = _duplicate_dictionary_array(snapshot.get("shared_inventory", []))
 	character_states = restored_character_states.duplicate(true)
 	current_market_offers = _duplicate_dictionary_array(snapshot.get("current_market_offers", []))
-	normal_monster_order = _duplicate_string_name_array(snapshot.get("normal_monster_order", []))
+	normal_monster_order = restored_normal_monster_order
 	free_food_purchase_count = int(snapshot.get("free_food_purchase_count", 0))
 	spice_purchase_refund = int(snapshot.get("spice_purchase_refund", 0))
 	battle_reports = _duplicate_dictionary_array(snapshot.get("battle_reports", []))
-	pre_battle_snapshot = snapshot.get("pre_battle_snapshot", {}).duplicate(true)
+	var restored_pre_battle_snapshot: Dictionary = pre_battle_snapshot_variant
+	pre_battle_snapshot = restored_pre_battle_snapshot.duplicate(true)
 	run_finished = bool(snapshot.get("run_finished", false))
 	_instance_counter = int(snapshot.get("instance_counter", 1))
 	if snapshot.has("rng_seed"):
 		_rng.seed = int(snapshot.get("rng_seed", _rng.seed))
 	if snapshot.has("rng_state"):
 		_rng.state = int(snapshot.get("rng_state", _rng.state))
-	if not character_states.has(selected_character_id):
-		selected_character_id = &"warrior"
 	return true
+
+func _reject_run_snapshot(reason: String) -> bool:
+	push_warning("Invalid run snapshot: %s" % reason)
+	return false
+
+func _validate_normal_monster_order(order: Array[StringName]) -> bool:
+	for monster_id in order:
+		var monster: MonsterDefinition = get_monster_definition(monster_id)
+		if monster == null:
+			return _reject_run_snapshot("normal monster order references unknown monster: %s" % String(monster_id))
+		if monster.category == &"boss":
+			return _reject_run_snapshot("normal monster order cannot contain boss monster: %s" % String(monster_id))
+	return true
+
+func _validate_inventory_snapshot(value: Variant, instance_ids: Dictionary) -> bool:
+	if not (value is Array):
+		return _reject_run_snapshot("shared_inventory must be an array")
+	var inventory: Array = value
+	for item_variant in inventory:
+		if not (item_variant is Dictionary):
+			return _reject_run_snapshot("inventory entries must be dictionaries")
+		var item: Dictionary = item_variant
+		if not _register_instance_id(item.get("instance_id", &""), instance_ids, "inventory"):
+			return false
+		var definition_id := StringName(item.get("definition_id", &""))
+		if get_food_definition(definition_id) == null:
+			return _reject_run_snapshot("inventory references unknown food: %s" % String(definition_id))
+		if not _is_valid_rotation(item.get("rotation", 0)):
+			return _reject_run_snapshot("inventory item rotation is invalid")
+		if int(item.get("reroll_bonus_count", 0)) < 0:
+			return _reject_run_snapshot("inventory reroll bonus cannot be negative")
+	return true
+
+func _validate_character_states_snapshot(states: Dictionary, instance_ids: Dictionary) -> bool:
+	for definition_variant in character_roster.characters:
+		var definition: CharacterDefinition = definition_variant
+		if not states.has(definition.id):
+			return _reject_run_snapshot("missing character state: %s" % String(definition.id))
+		var state_variant: Variant = states[definition.id]
+		if not (state_variant is Dictionary):
+			return _reject_run_snapshot("character state must be a dictionary: %s" % String(definition.id))
+		var state: Dictionary = state_variant
+		if StringName(state.get("id", definition.id)) != definition.id:
+			return _reject_run_snapshot("character state id mismatch: %s" % String(definition.id))
+		if float(state.get("hp_ratio", 1.0)) < 0.0 or float(state.get("hp_ratio", 1.0)) > 1.0:
+			return _reject_run_snapshot("character hp_ratio must be in 0..1")
+		if not _is_vector2i_array(state.get("base_shape", []), false):
+			return _reject_run_snapshot("base_shape must be a non-empty Vector2i array")
+		if not (state.get("base_anchor", null) is Vector2i):
+			return _reject_run_snapshot("base_anchor must be Vector2i")
+		if not _is_vector2i_array(state.get("active_cells", []), false):
+			return _reject_run_snapshot("active_cells must be a non-empty Vector2i array")
+		var base_cells: Array[Vector2i] = ShapeUtils.translate_cells(_typed_cells_from_variant(state["base_shape"]), state["base_anchor"])
+		if not ShapeUtils.within_bounds(base_cells, GRID_WIDTH, GRID_HEIGHT):
+			return _reject_run_snapshot("base cells are out of bounds")
+		if not _validate_expansion_arrays_for_character(definition.id, state, instance_ids, base_cells):
+			return false
+		if not _validate_placed_foods_for_character(definition.id, state, instance_ids):
+			return false
+		var expected_active_cells: Array[Vector2i] = _build_active_cells_for_expansions(state, state.get("placed_expansions", []))
+		if not _cell_sets_equal(_typed_cells_from_variant(state["active_cells"]), expected_active_cells):
+			return _reject_run_snapshot("active_cells do not match base plus placed expansions")
+		if not _are_expansions_connected_to_base(state, state.get("placed_expansions", [])):
+			return _reject_run_snapshot("placed expansions are disconnected from base")
+	return true
+
+func _validate_expansion_arrays_for_character(character_id: StringName, state: Dictionary, instance_ids: Dictionary, base_cells: Array[Vector2i]) -> bool:
+	if not (state.get("placed_expansions", []) is Array):
+		return _reject_run_snapshot("placed_expansions must be an array")
+	if not (state.get("pending_expansions", []) is Array):
+		return _reject_run_snapshot("pending_expansions must be an array")
+	var occupied_cells: Dictionary = ShapeUtils.cells_to_lookup(base_cells)
+	for expansion_variant in state.get("placed_expansions", []):
+		if not (expansion_variant is Dictionary):
+			return _reject_run_snapshot("placed expansion entries must be dictionaries")
+		var expansion: Dictionary = expansion_variant
+		if not _validate_expansion_record(expansion, instance_ids, "placed expansion"):
+			return false
+		var cells: Array[Vector2i] = _typed_cells_from_variant(expansion["cells"])
+		if not ShapeUtils.within_bounds(cells, GRID_WIDTH, GRID_HEIGHT):
+			return _reject_run_snapshot("placed expansion cells are out of bounds")
+		if not _cells_match_shape(expansion.get("shape_cells", []), int(expansion.get("rotation", 0)), expansion.get("anchor", Vector2i.ZERO), cells):
+			return _reject_run_snapshot("placed expansion cells do not match shape, rotation, and anchor")
+		for cell in cells:
+			var key: String = "%d:%d" % [cell.x, cell.y]
+			if occupied_cells.has(key):
+				return _reject_run_snapshot("placed expansion cells overlap occupied board cells")
+			occupied_cells[key] = true
+	for pending_variant in state.get("pending_expansions", []):
+		if not (pending_variant is Dictionary):
+			return _reject_run_snapshot("pending expansion entries must be dictionaries")
+		var pending: Dictionary = pending_variant
+		if not _validate_expansion_record(pending, instance_ids, "pending expansion", false):
+			return false
+		if StringName(pending.get("target_character_id", &"")) != character_id:
+			return _reject_run_snapshot("pending expansion target does not match owning character")
+	return true
+
+func _validate_expansion_record(expansion: Dictionary, instance_ids: Dictionary, label: String, require_cells: bool = true) -> bool:
+	if not _register_instance_id(expansion.get("instance_id", &""), instance_ids, label):
+		return false
+	if String(expansion.get("label", "")).is_empty():
+		return _reject_run_snapshot("%s label cannot be empty" % label)
+	if not _is_vector2i_array(expansion.get("shape_cells", []), false):
+		return _reject_run_snapshot("%s shape_cells must be a non-empty Vector2i array" % label)
+	if not _is_valid_rotation(expansion.get("rotation", 0)):
+		return _reject_run_snapshot("%s rotation is invalid" % label)
+	if require_cells:
+		if not (expansion.get("anchor", null) is Vector2i):
+			return _reject_run_snapshot("%s anchor must be Vector2i" % label)
+		if not _is_vector2i_array(expansion.get("cells", []), false):
+			return _reject_run_snapshot("%s cells must be a non-empty Vector2i array" % label)
+	return true
+
+func _validate_placed_foods_for_character(character_id: StringName, state: Dictionary, instance_ids: Dictionary) -> bool:
+	if not (state.get("placed_foods", []) is Array):
+		return _reject_run_snapshot("placed_foods must be an array")
+	var active_cells: Array[Vector2i] = _typed_cells_from_variant(state["active_cells"])
+	var occupied_food_cells: Dictionary = {}
+	for item_variant in state.get("placed_foods", []):
+		if not (item_variant is Dictionary):
+			return _reject_run_snapshot("placed food entries must be dictionaries")
+		var item: Dictionary = item_variant
+		if not _register_instance_id(item.get("instance_id", &""), instance_ids, "placed food"):
+			return false
+		var definition_id := StringName(item.get("definition_id", &""))
+		var definition: FoodDefinition = get_food_definition(definition_id)
+		if definition == null:
+			return _reject_run_snapshot("placed food references unknown food: %s" % String(definition_id))
+		if not (item.get("anchor", null) is Vector2i):
+			return _reject_run_snapshot("placed food anchor must be Vector2i")
+		if not _is_valid_rotation(item.get("rotation", 0)):
+			return _reject_run_snapshot("placed food rotation is invalid")
+		if not _is_vector2i_array(item.get("cells", []), false):
+			return _reject_run_snapshot("placed food cells must be a non-empty Vector2i array")
+		if int(item.get("reroll_bonus_count", 0)) < 0:
+			return _reject_run_snapshot("placed food reroll bonus cannot be negative")
+		var cells: Array[Vector2i] = _typed_cells_from_variant(item["cells"])
+		if not ShapeUtils.within_bounds(cells, GRID_WIDTH, GRID_HEIGHT):
+			return _reject_run_snapshot("placed food cells are out of bounds")
+		if not ShapeUtils.contains_all(active_cells, cells):
+			return _reject_run_snapshot("placed food cells are outside active cells for %s" % String(character_id))
+		if not _cells_match_shape(definition.shape_cells, int(item.get("rotation", 0)), item.get("anchor", Vector2i.ZERO), cells):
+			return _reject_run_snapshot("placed food cells do not match definition shape, rotation, and anchor")
+		for cell in cells:
+			var key: String = "%d:%d" % [cell.x, cell.y]
+			if occupied_food_cells.has(key):
+				return _reject_run_snapshot("placed foods overlap")
+			occupied_food_cells[key] = true
+	return true
+
+func _validate_market_offers_snapshot(value: Variant) -> bool:
+	if not (value is Array):
+		return _reject_run_snapshot("current_market_offers must be an array")
+	var offer_ids: Dictionary = {}
+	for offer_variant in value:
+		if not (offer_variant is Dictionary):
+			return _reject_run_snapshot("market offers must be dictionaries")
+		var offer: Dictionary = offer_variant
+		var offer_id := StringName(offer.get("offer_id", &""))
+		if offer_id == &"":
+			return _reject_run_snapshot("market offer id cannot be empty")
+		if offer_ids.has(offer_id):
+			return _reject_run_snapshot("duplicate market offer id: %s" % String(offer_id))
+		offer_ids[offer_id] = true
+		if int(offer.get("slot_index", 0)) < 0:
+			return _reject_run_snapshot("market offer slot index must be non-negative")
+		if int(offer.get("price", 0)) < 0:
+			return _reject_run_snapshot("market offer price cannot be negative")
+		match offer.get("kind", &""):
+			&"food":
+				var definition_id := StringName(offer.get("definition_id", &""))
+				if get_food_definition(definition_id) == null:
+					return _reject_run_snapshot("market food offer references unknown food: %s" % String(definition_id))
+				if int(offer.get("quantity", 0)) <= 0:
+					return _reject_run_snapshot("market food offer quantity must be positive")
+				if float(offer.get("discount", 0.0)) <= 0.0:
+					return _reject_run_snapshot("market food offer discount must be positive")
+				if not [&"common", &"rare", &"epic"].has(StringName(offer.get("rarity", &""))):
+					return _reject_run_snapshot("market food offer rarity is invalid")
+			&"expansion":
+				var target_id := StringName(offer.get("target_character_id", &""))
+				if not character_states.has(target_id) and not _character_roster_has(target_id):
+					return _reject_run_snapshot("market expansion offer targets unknown character: %s" % String(target_id))
+				if String(offer.get("label", "")).is_empty():
+					return _reject_run_snapshot("market expansion offer label cannot be empty")
+				if not _is_vector2i_array(offer.get("shape_cells", []), false):
+					return _reject_run_snapshot("market expansion offer shape must be non-empty")
+			_:
+				return _reject_run_snapshot("market offer kind is invalid")
+	return true
+
+func _validate_battle_reports_snapshot(value: Variant) -> bool:
+	if not (value is Array):
+		return _reject_run_snapshot("battle_reports must be an array")
+	for report_variant in value:
+		if not (report_variant is Dictionary):
+			return _reject_run_snapshot("battle reports must be dictionaries")
+		var report: Dictionary = report_variant
+		var result: String = String(report.get("result", ""))
+		if result != "win" and result != "lose":
+			return _reject_run_snapshot("battle report result is invalid")
+		var monster_id := StringName(report.get("monster_id", &""))
+		if monster_id != &"" and get_monster_definition(monster_id) == null:
+			return _reject_run_snapshot("battle report references unknown monster: %s" % String(monster_id))
+	return true
+
+func _register_instance_id(value: Variant, instance_ids: Dictionary, label: String) -> bool:
+	var instance_id := StringName(value)
+	if instance_id == &"":
+		return _reject_run_snapshot("%s instance_id cannot be empty" % label)
+	if instance_ids.has(instance_id):
+		return _reject_run_snapshot("duplicate instance_id in snapshot: %s" % String(instance_id))
+	instance_ids[instance_id] = true
+	return true
+
+func _character_roster_has(character_id: StringName) -> bool:
+	if character_roster == null:
+		return false
+	for definition_variant in character_roster.characters:
+		var definition: CharacterDefinition = definition_variant
+		if definition.id == character_id:
+			return true
+	return false
+
+func _is_vector2i_array(value: Variant, allow_empty: bool) -> bool:
+	if not (value is Array):
+		return false
+	var cells: Array = value
+	if not allow_empty and cells.is_empty():
+		return false
+	for cell_variant in cells:
+		if not (cell_variant is Vector2i):
+			return false
+	return true
+
+func _typed_cells_from_variant(value: Variant) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	if not (value is Array):
+		return result
+	var cells: Array = value
+	for cell_variant in cells:
+		result.append(cell_variant)
+	return result
+
+func _is_valid_rotation(value: Variant) -> bool:
+	if not (value is int):
+		return false
+	var rotation: int = int(value)
+	return rotation >= 0 and rotation < 4
+
+func _cells_match_shape(shape_value: Variant, rotation: int, anchor: Vector2i, cells: Array[Vector2i]) -> bool:
+	if not _is_vector2i_array(shape_value, false):
+		return false
+	var shape_cells: Array[Vector2i] = _typed_cells_from_variant(shape_value)
+	var expected_cells: Array[Vector2i] = ShapeUtils.translate_cells(ShapeUtils.rotate_cells(shape_cells, rotation), anchor)
+	return _cell_sets_equal(expected_cells, cells)
+
+func _cell_sets_equal(a: Array[Vector2i], b: Array[Vector2i]) -> bool:
+	if a.size() != b.size():
+		return false
+	var lookup: Dictionary = ShapeUtils.cells_to_lookup(a)
+	if lookup.size() != a.size():
+		return false
+	var other_lookup: Dictionary = ShapeUtils.cells_to_lookup(b)
+	if other_lookup.size() != b.size():
+		return false
+	for key in lookup.keys():
+		if not other_lookup.has(key):
+			return false
+	return true
+
+func combat_randf() -> float:
+	return _rng.randf()
+
+func combat_randi_range(from: int, to: int) -> int:
+	return _rng.randi_range(from, to)
 
 func _write_persistence_payload(payload: Dictionary) -> bool:
 	var file: FileAccess = FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
@@ -379,7 +695,7 @@ func _init_normal_monster_order() -> void:
 func get_current_node_type() -> StringName:
 	if stage_flow_config == null or stage_flow_config.route_nodes.is_empty():
 		return &"unknown"
-	return stage_flow_config.route_nodes[min(current_route_index, stage_flow_config.route_nodes.size() - 1)]
+	return stage_flow_config.route_nodes[clampi(current_route_index, 0, stage_flow_config.route_nodes.size() - 1)]
 
 func get_node_display_name(node_type: StringName) -> String:
 	match node_type:
@@ -410,6 +726,9 @@ func get_character_display_names() -> Dictionary:
 
 func select_character(character_id: StringName) -> void:
 	if selected_character_id == character_id:
+		return
+	if not character_states.has(character_id):
+		push_error("Cannot select unknown character: %s" % String(character_id))
 		return
 	selected_character_id = character_id
 	selected_character_changed.emit(selected_character_id)
@@ -612,10 +931,13 @@ func _generate_market_offers() -> void:
 		return
 	var used_food_ids: Dictionary = {}
 	for slot_index in market_config.slot_count:
+		var offer: Dictionary = {}
 		if _rng.randf() < market_config.expansion_slot_chance:
-			current_market_offers.append(_roll_expansion_offer(slot_index))
+			offer = _roll_expansion_offer(slot_index)
 		else:
-			current_market_offers.append(_roll_food_offer(slot_index, used_food_ids))
+			offer = _roll_food_offer(slot_index, used_food_ids)
+		if not offer.is_empty():
+			current_market_offers.append(offer)
 	state_changed.emit()
 
 func refresh_market_offers() -> bool:
@@ -630,10 +952,13 @@ func refresh_market_offers() -> bool:
 	current_market_offers.clear()
 	var used_food_ids: Dictionary = {}
 	for slot_index in market_config.slot_count:
+		var offer: Dictionary = {}
 		if _rng.randf() < market_config.expansion_slot_chance:
-			current_market_offers.append(_roll_expansion_offer(slot_index))
+			offer = _roll_expansion_offer(slot_index)
 		else:
-			current_market_offers.append(_roll_food_offer(slot_index, used_food_ids))
+			offer = _roll_food_offer(slot_index, used_food_ids)
+		if not offer.is_empty():
+			current_market_offers.append(offer)
 	state_changed.emit()
 	return true
 
@@ -646,11 +971,24 @@ func get_current_refresh_cost() -> int:
 	return int(curve[min(current_reroll_count, curve.size() - 1)])
 
 func _roll_expansion_offer(slot_index: int) -> Dictionary:
-	var roll: float = _rng.randf()
+	if market_config == null or market_config.expansion_offers.is_empty():
+		push_error("Market config has no expansion offers.")
+		return {}
+	if character_roster == null or character_roster.characters.is_empty():
+		push_error("Character roster has no characters for expansion offers.")
+		return {}
+	var total_weight: float = 0.0
+	for entry_variant in market_config.expansion_offers:
+		var entry: Dictionary = entry_variant
+		total_weight += maxf(0.0, float(entry.get("weight", 0.0)))
+	if total_weight <= 0.0:
+		push_error("Market expansion offer weights must be positive.")
+		return {}
+	var roll: float = _rng.randf() * total_weight
 	var accumulated: float = 0.0
 	var picked: Dictionary = market_config.expansion_offers[0]
 	for entry in market_config.expansion_offers:
-		accumulated += float(entry["weight"])
+		accumulated += maxf(0.0, float(entry.get("weight", 0.0)))
 		if roll <= accumulated:
 			picked = entry
 			break
@@ -666,6 +1004,9 @@ func _roll_expansion_offer(slot_index: int) -> Dictionary:
 	}
 
 func _get_rarity_weights_for_market() -> Dictionary:
+	if market_config == null or market_config.rarity_weights_by_market.is_empty():
+		push_error("Market config has no rarity weights.")
+		return {}
 	for entry in market_config.rarity_weights_by_market:
 		if int(entry["market"]) == get_current_market_tier():
 			return entry
@@ -673,6 +1014,11 @@ func _get_rarity_weights_for_market() -> Dictionary:
 
 func _roll_food_offer(slot_index: int, used_food_ids: Dictionary = {}) -> Dictionary:
 	var weights: Dictionary = _get_rarity_weights_for_market()
+	if weights.is_empty():
+		return {}
+	if food_catalog == null or food_catalog.foods.is_empty():
+		push_error("Food catalog has no foods for market offers.")
+		return {}
 	var rarity: StringName = _pick_rarity(weights)
 	var candidates: Array[FoodDefinition] = []
 	for definition in food_catalog.foods:
@@ -684,6 +1030,9 @@ func _roll_food_offer(slot_index: int, used_food_ids: Dictionary = {}) -> Dictio
 				candidates.append(definition)
 	if candidates.is_empty():
 		candidates = food_catalog.foods
+	if candidates.is_empty():
+		push_error("Food catalog has no candidates for market offer generation.")
+		return {}
 	var definition: FoodDefinition = candidates[_rng.randi_range(0, candidates.size() - 1)]
 	var quantity_range: Vector2i = market_config.quantity_ranges.get(String(rarity), Vector2i.ONE)
 	var quantity: int = _rng.randi_range(quantity_range.x, quantity_range.y)
@@ -1025,6 +1374,9 @@ func get_selected_item_cells() -> Array[Vector2i]:
 		if item.is_empty():
 			return []
 		var definition: FoodDefinition = get_food_definition(item["definition_id"])
+		if definition == null:
+			push_error("Missing food definition for selected inventory item: %s" % String(item.get("definition_id", &"")))
+			return []
 		return ShapeUtils.rotate_cells(definition.shape_cells, int(selected_item["rotation"]))
 	if source == &"market_offer":
 		var offer: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
@@ -1443,6 +1795,9 @@ func get_selected_item_summary() -> String:
 		if item.is_empty():
 			return "未选择物品"
 		var definition: FoodDefinition = get_food_definition(item["definition_id"])
+		if definition == null:
+			push_error("Missing food definition for selected inventory summary: %s" % String(item.get("definition_id", &"")))
+			return "未知食物"
 		return "放置食物: %s" % definition.display_name
 	if selected_item["source"] == &"market_expansion":
 		var market_expansion: Dictionary = _find_market_offer(selected_item.get("offer_id", &""))
@@ -1464,6 +1819,9 @@ func get_inventory_display_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	for item in shared_inventory:
 		var definition: FoodDefinition = get_food_definition(item["definition_id"])
+		if definition == null:
+			push_error("Missing food definition for inventory entry: %s" % String(item.get("definition_id", &"")))
+			continue
 		entries.append({
 			"instance_id": item["instance_id"],
 			"label": "%s [%s]" % [definition.display_name, definition.category],
@@ -1576,6 +1934,9 @@ func get_market_display_entries() -> Array[Dictionary]:
 	for offer in current_market_offers:
 		if offer["kind"] == &"food":
 			var definition: FoodDefinition = get_food_definition(offer["definition_id"])
+			if definition == null:
+				push_error("Missing food definition for market offer: %s" % String(offer.get("definition_id", &"")))
+				continue
 			entries.append({
 				"offer_id": offer["offer_id"],
 				"label": "%s x%d [%s] - %d金币" % [definition.display_name, offer["quantity"], offer["rarity"], offer["price"]],

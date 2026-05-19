@@ -40,6 +40,8 @@ func _validate_monster_roster(run_state: Node) -> void:
 func _run_monster_cases(run_state: Node) -> void:
 	var engine: CombatEngine = CombatEngine.new()
 	_test_attrition_timing()
+	_test_negative_bonus_damage_clamps_to_zero(engine)
+	_test_zero_damage_does_not_trigger_monster_reaction(engine)
 	_test_fruit_tree_opening(run_state, engine)
 	_test_cream_overlord_on_hit(engine)
 	_test_monster_death_stops_actions(engine)
@@ -53,6 +55,24 @@ func _run_monster_cases(run_state: Node) -> void:
 
 func _test_attrition_timing() -> void:
 	_assert(is_equal_approx(CombatEngine.ATTRITION_START_TIME, 120.0), "Combat attrition should start after 2 minutes")
+
+func _test_negative_bonus_damage_clamps_to_zero(engine: CombatEngine) -> void:
+	var monster: Dictionary = _make_monster_stub(&"cream_overlord", 300.0, 10.0, 1.6)
+	var attacker: Dictionary = _make_actor(&"warrior")
+	attacker["base_attack"] = 2.0
+	attacker["bonus_damage"] = -5.0
+	var attack_data: Dictionary = engine._calculate_actor_attack(attacker, 2.0, monster)
+	_assert(is_equal_approx(float(attack_data.get("damage", -1.0)), 0.0), "Negative food damage modifiers should clamp final outgoing damage to zero")
+
+func _test_zero_damage_does_not_trigger_monster_reaction(engine: CombatEngine) -> void:
+	var monster: Dictionary = _make_monster_stub(&"cream_overlord", 300.0, 10.0, 1.6)
+	var attacker: Dictionary = _make_actor(&"warrior")
+	attacker["base_attack"] = 0.0
+	attacker["bonus_damage"] = 0.0
+	attacker["next_attack_time"] = 0.0
+	var log: Array[String] = []
+	engine._process_character_attacks(0.0, [attacker], monster, {}, log)
+	_assert(int(attacker.get("monster_attack_down_stacks", 0)) == 0, "Zero-damage attacks should not trigger monster on-hit reactions")
 
 func _test_fruit_tree_opening(run_state: Node, engine: CombatEngine) -> void:
 	var monster: Dictionary = engine._build_monster(run_state.monster_lookup[&"fruit_tree_king"])
