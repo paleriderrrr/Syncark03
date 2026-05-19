@@ -195,6 +195,7 @@ stretch_mode = 5
 
 [node name="DevClearSaveButton" type="Button" parent="CenterContainer/PanelRoot" unique_id=1937638210]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 offset_left = 214.0
 offset_top = 835.0
